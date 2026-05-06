@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { ArrowRight, Menu, X, Shield, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { ConnectButton } from "@/components/connect-button";
 
 export function Hero2() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -32,11 +34,12 @@ export function Hero2() {
             <a href="#features" className="text-sm text-white/60 hover:text-white transition-colors">Features</a>
             <a href="#how-it-works" className="text-sm text-white/60 hover:text-white transition-colors">How It Works</a>
             <a href="https://github.com/sifix-ai" target="_blank" rel="noopener noreferrer" className="text-sm text-white/60 hover:text-white transition-colors">GitHub</a>
+            <ConnectButton />
             <Link href="/dashboard">
-              <button className="h-10 px-6 rounded-full bg-gradient-0g text-white text-sm font-medium hover:shadow-glow-accent transition-all flex items-center gap-2">
-                <Shield className="w-4 h-4" />
+              <Button size="sm" className="bg-[#FF6363] hover:bg-[#FF6363]/90 text-white shadow-lg hover:shadow-[0_0_20px_rgba(255,99,99,0.3)] transition-all">
+                <Shield className="w-4 h-4 mr-2" />
                 Launch Dashboard
-              </button>
+              </Button>
             </Link>
           </div>
 
@@ -99,15 +102,15 @@ export function Hero2() {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0">
             <Link href="/dashboard">
-              <button className="h-12 rounded-full bg-gradient-0g px-8 text-base font-medium text-white hover:shadow-glow-accent transition-all flex items-center">
+              <Button size="lg" className="bg-[#FF6363] hover:bg-[#FF6363]/90 text-white px-8 shadow-lg hover:shadow-[0_0_30px_rgba(255,99,99,0.3)] transition-all">
                 Launch Dashboard
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </button>
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Button>
             </Link>
             <a href="https://github.com/sifix-ai" target="_blank" rel="noopener noreferrer">
-              <button className="h-12 rounded-full border border-white/[0.2] px-8 text-base font-medium text-white hover:bg-white/[0.08] transition-all">
+              <Button size="lg" variant="outline" className="border-white/20 text-white hover:bg-white/10 px-8">
                 View Documentation
-              </button>
+              </Button>
             </a>
           </div>
 
