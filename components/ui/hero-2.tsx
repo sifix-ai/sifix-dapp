@@ -6,18 +6,63 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ConnectButton } from "@/components/connect-button";
 import { useAccount } from "wagmi";
+import { motion } from "framer-motion";
+
+function FloatingPaths({ position }: { position: number }) {
+  const paths = Array.from({ length: 36 }, (_, i) => ({
+    id: i,
+    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
+      380 - i * 5 * position
+    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
+      152 - i * 5 * position
+    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
+      684 - i * 5 * position
+    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
+    width: 0.5 + i * 0.03,
+  }));
+
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      <svg
+        className="w-full h-full text-violet-400"
+        viewBox="0 0 696 316"
+        fill="none"
+      >
+        <title>Background Paths</title>
+        {paths.map((path) => (
+          <motion.path
+            key={path.id}
+            d={path.d}
+            stroke="currentColor"
+            strokeWidth={path.width}
+            strokeOpacity="0.1"
+            fill="none"
+            initial={{ pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 10, repeat: Infinity, ease: "linear", delay: path.id * 0.1 }}
+          />
+        ))}
+      </svg>
+    </div>
+  );
+}
 
 export function Hero2() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { isConnected } = useAccount();
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a0118]">
-      {/* Animated gradient orbs - purple/pink/indigo ONLY */}
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#0a0118] via-[#0a0118] to-[#0f0a1f]">
+      {/* Animated Paths Background */}
+      <div className="absolute inset-0">
+        <FloatingPaths position={1} />
+        <FloatingPaths position={-1} />
+      </div>
+
+      {/* Gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-20%] right-[-10%] w-[700px] h-[700px] bg-gradient-to-br from-violet-600/25 to-pink-600/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-gradient-to-tr from-indigo-600/20 to-violet-600/15 rounded-full blur-3xl" />
-        <div className="absolute top-[40%] left-[30%] w-[500px] h-[500px] bg-gradient-to-br from-pink-600/10 to-violet-600/10 rounded-full blur-3xl" />
+        <div className="absolute top-[-20%] right-[-10%] w-[700px] h-[700px] bg-gradient-to-br from-violet-600/15 to-pink-600/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-gradient-to-tr from-indigo-600/10 to-violet-600/8 rounded-full blur-3xl" />
       </div>
 
       {/* Subtle dot grid pattern */}
@@ -144,68 +189,6 @@ export function Hero2() {
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-pink-400" />
                 <span className="font-semibold">Powered by GPT-4</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Hero Visual - Dashboard Preview */}
-          <div className="relative mx-auto mt-24 w-full max-w-7xl">
-            {/* Glow effect */}
-            <div className="absolute -inset-20 bg-gradient-to-r from-violet-600/20 via-pink-600/15 to-violet-600/20 blur-3xl opacity-60" />
-            
-            {/* Main dashboard preview */}
-            <div className="relative border-2 border-violet-500/20 rounded-3xl bg-[#1a1625]/50 shadow-premium-lg p-2 backdrop-blur-sm">
-              {/* Browser chrome */}
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-violet-500/10">
-                <div className="flex gap-2">
-                  <div className="w-3 h-3 rounded-full bg-pink-500" />
-                  <div className="w-3 h-3 rounded-full bg-violet-500" />
-                  <div className="w-3 h-3 rounded-full bg-indigo-500" />
-                </div>
-                <div className="flex-1 mx-4 px-4 py-1.5 bg-[#0a0118] rounded-lg text-xs text-violet-400/60 font-mono border border-violet-500/10">
-                  sifix.ai/dashboard
-                </div>
-              </div>
-              
-              {/* Dashboard content */}
-              <div className="aspect-[16/10] bg-gradient-to-br from-[#0a0118] via-[#1a1625] to-[#0a0118] rounded-b-2xl p-8 relative overflow-hidden">
-                {/* Subtle dot grid */}
-                <div className="absolute inset-0 opacity-[0.03]" style={{
-                  backgroundImage: `radial-gradient(circle, #8b5cf6 1px, transparent 1px)`,
-                  backgroundSize: '40px 40px'
-                }} />
-                
-                {/* Content */}
-                <div className="relative z-10 flex flex-col items-center justify-center h-full">
-                  {/* Large shield icon */}
-                  <div className="relative mb-8">
-                    <div className="absolute inset-0 bg-gradient-to-br from-violet-500 to-pink-500 blur-2xl opacity-30 animate-pulse-slow" />
-                    <div className="relative w-32 h-32 bg-gradient-to-br from-violet-500 to-pink-500 rounded-3xl flex items-center justify-center shadow-xl shadow-violet-500/30 transform hover:scale-110 transition-transform duration-300">
-                      <Shield className="w-16 h-16 text-white" strokeWidth={2.5} />
-                    </div>
-                  </div>
-                  
-                  <h3 className="text-3xl font-bold text-violet-50 mb-3">Real-Time Protection</h3>
-                  <p className="text-violet-300/60 text-lg mb-8 max-w-md text-center">
-                    Every transaction analyzed by AI before execution
-                  </p>
-                  
-                  {/* Stats row - NO GREEN */}
-                  <div className="flex gap-6 mt-4">
-                    <div className="px-6 py-3 bg-violet-500/10 border border-violet-500/20 rounded-xl backdrop-blur-sm">
-                      <div className="text-2xl font-bold text-violet-300">10K+</div>
-                      <div className="text-xs text-violet-400/60 mt-1 font-semibold">Protected</div>
-                    </div>
-                    <div className="px-6 py-3 bg-pink-500/10 border border-pink-500/20 rounded-xl backdrop-blur-sm">
-                      <div className="text-2xl font-bold text-pink-300">1.2K+</div>
-                      <div className="text-xs text-violet-400/60 mt-1 font-semibold">Blocked</div>
-                    </div>
-                    <div className="px-6 py-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl backdrop-blur-sm">
-                      <div className="text-2xl font-bold text-indigo-300">99.9%</div>
-                      <div className="text-xs text-violet-400/60 mt-1 font-semibold">Uptime</div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>

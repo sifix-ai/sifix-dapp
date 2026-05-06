@@ -58,15 +58,15 @@ export function BackgroundPaths({
     const words = title.split(" ");
 
     return (
-        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#0a0118] via-[#1a1625] to-[#0a0118]">
+        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-gradient-to-b from-[#1a0a25] to-[#0f0a1f]">
             <div className="absolute inset-0">
                 <FloatingPaths position={1} />
                 <FloatingPaths position={-1} />
             </div>
-            
+
             {/* Gradient orbs - purple/pink only */}
-            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-violet-600/20 to-pink-600/15 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-gradient-to-br from-pink-600/15 to-violet-600/20 rounded-full blur-3xl" />
+            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-violet-600/10 to-pink-600/8 rounded-full blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-gradient-to-br from-pink-600/8 to-violet-600/10 rounded-full blur-3xl" />
             
             <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
                 <motion.div
