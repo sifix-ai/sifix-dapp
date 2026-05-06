@@ -94,7 +94,7 @@ Consider:
   private static mockAnalysis(input: AIAnalysisInput): AIAnalysisResult {
     // Simple heuristic-based analysis
     const isContract = input.data && input.data !== '0x';
-    const hasValue = BigInt(input.value) > 0n;
+    const hasValue = BigInt(input.value) > BigInt(0);
 
     let riskScore = 10;
     let detectedThreats: string[] = [];

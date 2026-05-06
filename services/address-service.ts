@@ -1,7 +1,9 @@
 // Address Service - SIFIX threat intelligence queries
 
 import { prisma } from '@/lib/prisma';
-import type { Address, ThreatReport, RiskLevel } from '@prisma/client';
+import type { Address, ThreatReport } from '@prisma/client';
+
+export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export class AddressService {
   /**

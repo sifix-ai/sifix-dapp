@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       return apiError('Invalid to address', 400);
     }
 
-    // Scan transaction
+    // Scan transaction (already saves internally)
     const result = await ScannerService.scanTransaction({
       from,
       to,
@@ -27,9 +27,6 @@ export async function POST(request: NextRequest) {
       data,
       userAddress,
     });
-
-    // Save scan result
-    await ScannerService.saveScan({ from, to, value, data, userAddress }, result);
 
     return apiResponse({
       from,
