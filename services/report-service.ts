@@ -84,7 +84,14 @@ export class ReportService {
     limit?: number;
     offset?: number;
   }) {
-    const { limit = 50, offset = 0, ...where } = filters;
+    const { limit = 50, offset = 0, status, threatType, riskLevel, reporterAddress } = filters;
+
+    // Build where clause without null values
+    const where: any = {};
+    if (status) where.status = status;
+    if (threatType) where.threatType = threatType;
+    if (riskLevel) where.riskLevel = riskLevel;
+    if (reporterAddress) where.reporterAddress = reporterAddress;
 
     return prisma.threatReport.findMany({
       where,
