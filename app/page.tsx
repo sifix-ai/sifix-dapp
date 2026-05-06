@@ -1,8 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { Shield, AlertTriangle, Search as SearchIcon, TrendingUp, ArrowRight, ExternalLink, Sparkles, Zap, Lock } from "lucide-react"
-import { motion } from "framer-motion"
+import { Shield, AlertTriangle, Search as SearchIcon, TrendingUp, Sparkles, Zap, Lock } from "lucide-react"
 import { useEffect, useRef } from "react"
 
 // Neural network animation component
@@ -88,29 +87,6 @@ function NeuralNetwork() {
 }
 
 export default function Home() {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.2
-      }
-    }
-  }
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    }
-  }
-
   return (
     <div className="min-h-screen bg-[#07080a]">
       {/* Header */}
@@ -161,50 +137,36 @@ export default function Home() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#55b3ff]/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
         
         <div className="container mx-auto px-4 relative z-10">
-          <motion.div
-            variants={containerVariants}
-            initial="hidden"
-            animate="visible"
-            className="max-w-5xl mx-auto text-center"
-          >
+          <div className="max-w-5xl mx-auto text-center">
             {/* Badge */}
-            <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.03] border border-white/[0.08] rounded-full text-sm text-white/80 mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.03] border border-white/[0.08] rounded-full text-sm text-white/80 mb-8">
               <Sparkles className="w-4 h-4 text-[#FF6363]" />
               <span className="uppercase tracking-wider text-xs font-semibold">AI-Powered Security</span>
               <span className="w-2 h-2 bg-[#FF6363] rounded-full animate-pulse" />
-            </motion.div>
+            </div>
 
             {/* Main Headline */}
-            <motion.h1 
-              variants={itemVariants}
-              className="text-6xl md:text-8xl font-bold tracking-tight text-white mb-6 leading-[1.1]"
-            >
+            <h1 className="text-6xl md:text-8xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
               Protect Your
               <br />
               <span className="bg-gradient-to-r from-[#FF6363] via-[#FF6363]/80 to-[#55b3ff] bg-clip-text text-transparent">
                 Web3 Wallet
               </span>
-            </motion.h1>
+            </h1>
 
             {/* Subtitle */}
-            <motion.p 
-              variants={itemVariants}
-              className="text-xl md:text-2xl text-white/60 mb-12 max-w-3xl mx-auto leading-relaxed"
-            >
+            <p className="text-xl md:text-2xl text-white/60 mb-12 max-w-3xl mx-auto leading-relaxed">
               AI agent that intercepts transactions, simulates risks in real-time, 
               and reports threats to on-chain reputation system before you sign.
-            </motion.p>
+            </p>
 
             {/* CTA Buttons */}
-            <motion.div 
-              variants={itemVariants}
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16"
-            >
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-16">
               <Link href="/search">
                 <button className="group inline-flex items-center justify-center gap-2 whitespace-nowrap text-base font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF6363]/20 disabled:pointer-events-none disabled:opacity-50 bg-[#FF6363] text-white shadow-lg shadow-[#FF6363]/30 hover:shadow-xl hover:shadow-[#FF6363]/40 hover:scale-105 active:scale-95 h-14 rounded-full px-10 w-full sm:w-auto uppercase tracking-wider">
                   <Zap className="w-5 h-5" />
                   Check Address
-                  <ArrowRight className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" />
+                  <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
                 </button>
               </Link>
               
@@ -216,16 +178,13 @@ export default function Home() {
                 <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-base font-semibold transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/20 disabled:pointer-events-none disabled:opacity-50 border-2 border-white/[0.12] bg-white/[0.03] text-white shadow-sm hover:bg-white/[0.08] hover:border-white/[0.16] h-14 rounded-full px-10 w-full sm:w-auto uppercase tracking-wider backdrop-blur-sm">
                   <Lock className="w-5 h-5" />
                   Install Extension
-                  <ExternalLink className="w-4 h-4" />
+                  <span className="text-xs">↗</span>
                 </button>
               </a>
-            </motion.div>
+            </div>
 
             {/* Stats */}
-            <motion.div 
-              variants={itemVariants}
-              className="grid grid-cols-3 gap-8 max-w-3xl mx-auto p-8 bg-white/[0.02] border border-white/[0.08] rounded-2xl backdrop-blur-sm"
-            >
+            <div className="grid grid-cols-3 gap-8 max-w-3xl mx-auto p-8 bg-white/[0.02] border border-white/[0.08] rounded-2xl backdrop-blur-sm">
               <div className="text-center">
                 <div className="text-4xl font-bold text-white mb-2 tracking-tight">24/7</div>
                 <div className="text-sm text-white/60 font-medium uppercase tracking-wider">AI Monitoring</div>
@@ -238,8 +197,8 @@ export default function Home() {
                 <div className="text-4xl font-bold text-white mb-2 tracking-tight">0G Chain</div>
                 <div className="text-sm text-white/60 font-medium uppercase tracking-wider">On-Chain Data</div>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -247,30 +206,18 @@ export default function Home() {
       <section className="py-32 relative">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-              className="text-center mb-20"
-            >
+            <div className="text-center mb-20">
               <h2 className="text-5xl md:text-6xl font-bold tracking-tight text-white mb-6">
                 How SIFIX <span className="text-[#FF6363]">Protects</span> You
               </h2>
               <p className="text-xl text-white/60 max-w-2xl mx-auto">
                 Three-layer security system powered by AI and blockchain
               </p>
-            </motion.div>
+            </div>
 
             <div className="grid md:grid-cols-3 gap-8">
               {/* Card 1 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.1 }}
-                className="group relative p-8 bg-gradient-to-b from-white/[0.04] to-white/[0.02] border border-white/[0.08] rounded-3xl hover:border-[#FF6363]/30 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_rgba(255,99,99,0.4)] overflow-hidden"
-              >
+              <div className="group relative p-8 bg-gradient-to-b from-white/[0.04] to-white/[0.02] border border-white/[0.08] rounded-3xl hover:border-[#FF6363]/30 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_rgba(255,99,99,0.4)] overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#FF6363]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
                 <div className="relative z-10">
@@ -287,16 +234,10 @@ export default function Home() {
                     Real-time analysis prevents malicious TX from executing.
                   </p>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Card 2 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                className="group relative p-8 bg-gradient-to-b from-white/[0.04] to-white/[0.02] border border-white/[0.08] rounded-3xl hover:border-[#55b3ff]/30 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_rgba(85,179,255,0.4)] overflow-hidden"
-              >
+              <div className="group relative p-8 bg-gradient-to-b from-white/[0.04] to-white/[0.02] border border-white/[0.08] rounded-3xl hover:border-[#55b3ff]/30 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_rgba(85,179,255,0.4)] overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#55b3ff]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
                 <div className="relative z-10">
@@ -313,16 +254,10 @@ export default function Home() {
                     with 95%+ accuracy in under 100ms.
                   </p>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Card 3 */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: 0.3 }}
-                className="group relative p-8 bg-gradient-to-b from-white/[0.04] to-white/[0.02] border border-white/[0.08] rounded-3xl hover:border-[#5fc992]/30 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_rgba(95,201,146,0.4)] overflow-hidden"
-              >
+              <div className="group relative p-8 bg-gradient-to-b from-white/[0.04] to-white/[0.02] border border-white/[0.08] rounded-3xl hover:border-[#5fc992]/30 transition-all duration-500 hover:shadow-[0_20px_60px_-20px_rgba(95,201,146,0.4)] overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-b from-[#5fc992]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
                 <div className="relative z-10">
@@ -339,7 +274,7 @@ export default function Home() {
                     reputation system for addresses.
                   </p>
                 </div>
-              </motion.div>
+              </div>
             </div>
           </div>
         </div>
