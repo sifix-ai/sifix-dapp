@@ -1,5 +1,16 @@
 // SIFIX Smart Contract Configuration
 
+// 0G Chain Testnet
+export const ZEROG_CHAIN_ID = 16600;
+
+export const SUPPORTED_CHAIN_IDS = [ZEROG_CHAIN_ID] as const;
+
+export const CONTRACT_ADDRESSES = {
+  [ZEROG_CHAIN_ID]: {
+    SifixReputation: '0x544a39149d5169E4e1bDf7F8492804224CB70152',
+  },
+} as const;
+
 export const SIFIX_REPUTATION_ADDRESS = '0x544a39149d5169E4e1bDf7F8492804224CB70152' as const;
 
 export const SIFIX_REPUTATION_ABI = [
