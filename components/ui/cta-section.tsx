@@ -2,6 +2,8 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 function FloatingPaths({ position }: { position: number }) {
     const paths = Array.from({ length: 36 }, (_, i) => ({
@@ -20,7 +22,7 @@ function FloatingPaths({ position }: { position: number }) {
     return (
         <div className="absolute inset-0 pointer-events-none">
             <svg
-                className="w-full h-full text-slate-950 dark:text-white"
+                className="w-full h-full text-white"
                 viewBox="0 0 696 316"
                 fill="none"
             >
@@ -31,11 +33,11 @@ function FloatingPaths({ position }: { position: number }) {
                         d={path.d}
                         stroke="currentColor"
                         strokeWidth={path.width}
-                        strokeOpacity={0.1 + path.id * 0.03}
+                        strokeOpacity={0.05 + path.id * 0.01}
                         initial={{ pathLength: 0.3, opacity: 0.6 }}
                         animate={{
                             pathLength: 1,
-                            opacity: [0.3, 0.6, 0.3],
+                            opacity: [0.2, 0.4, 0.2],
                             pathOffset: [0, 1, 0],
                         }}
                         transition={{
@@ -50,19 +52,20 @@ function FloatingPaths({ position }: { position: number }) {
     );
 }
 
-export function BackgroundPaths({
-    title = "Ready to Protect Your Crypto",
-}: {
-    title?: string;
-}) {
+export function CTASection() {
+    const title = "Ready to Protect Your Wallet?";
     const words = title.split(" ");
 
     return (
-        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-white dark:bg-neutral-950">
+        <section className="relative min-h-[80vh] w-full flex items-center justify-center overflow-hidden bg-[#07080a]">
             <div className="absolute inset-0">
                 <FloatingPaths position={1} />
                 <FloatingPaths position={-1} />
             </div>
+            
+            {/* Gradient Orbs */}
+            <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FF6363]/20 rounded-full blur-[128px] -z-10" />
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#55b3ff]/20 rounded-full blur-[128px] -z-10" />
 
             <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
                 <motion.div
@@ -71,11 +74,11 @@ export function BackgroundPaths({
                     transition={{ duration: 2 }}
                     className="max-w-4xl mx-auto"
                 >
-                    <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 tracking-tighter">
+                    <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 tracking-tight">
                         {words.map((word, wordIndex) => (
                             <span
                                 key={wordIndex}
-                                className="inline-block mr-4 last:mr-0"
+                                className="inline-block mr-3 last:mr-0"
                             >
                                 {word.split("").map((letter, letterIndex) => (
                                     <motion.span
@@ -91,42 +94,53 @@ export function BackgroundPaths({
                                             damping: 25,
                                         }}
                                         className="inline-block text-transparent bg-clip-text 
-                                        bg-gradient-to-r from-neutral-900 to-neutral-700/80 
-                                        dark:from-white dark:to-white/80"
+                                        bg-gradient-to-r from-white to-white/80"
                                     >
                                         {letter}
                                     </motion.span>
                                 ))}
                             </span>
                         ))}
-                    </h1>
+                    </h2>
 
-                    <div
-                        className="inline-block group relative bg-gradient-to-b from-black/10 to-white/10 
-                        dark:from-white/10 dark:to-black/10 p-px rounded-2xl backdrop-blur-lg 
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.8, duration: 0.6 }}
+                        className="text-lg md:text-xl text-white/60 mb-12 max-w-2xl mx-auto"
+                    >
+                        Join thousands of users protecting their crypto assets with AI-powered security
+                    </motion.p>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.2, duration: 0.6 }}
+                        className="inline-block group relative bg-gradient-to-b from-white/10 to-white/5 
+                        p-px rounded-2xl backdrop-blur-lg 
                         overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300"
                     >
-                        <Button
-                            variant="ghost"
-                            className="rounded-[1.15rem] px-8 py-6 text-lg font-semibold backdrop-blur-md 
-                            bg-white/95 hover:bg-white/100 dark:bg-black/95 dark:hover:bg-black/100 
-                            text-black dark:text-white transition-all duration-300 
-                            group-hover:-translate-y-0.5 border border-black/10 dark:border-white/10
-                            hover:shadow-md dark:hover:shadow-neutral-800/50"
-                        >
-                            <span className="opacity-90 group-hover:opacity-100 transition-opacity">
-                                Launch Dashboard
-                            </span>
-                            <span
-                                className="ml-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-1.5 
-                                transition-all duration-300"
+                        <Link href="/dashboard/search">
+                            <Button
+                                variant="ghost"
+                                className="rounded-[1.15rem] px-8 py-6 text-lg font-semibold backdrop-blur-md 
+                                bg-[#FF6363] hover:bg-[#FF6363]/90
+                                text-white transition-all duration-300 
+                                group-hover:-translate-y-0.5 border-0
+                                hover:shadow-lg hover:shadow-[#FF6363]/20"
                             >
-                                →
-                            </span>
-                        </Button>
-                    </div>
+                                <span className="opacity-100 transition-opacity">
+                                    Get Started Now
+                                </span>
+                                <ArrowRight
+                                    className="ml-3 w-5 h-5 group-hover:translate-x-1.5 
+                                    transition-all duration-300"
+                                />
+                            </Button>
+                        </Link>
+                    </motion.div>
                 </motion.div>
             </div>
-        </div>
+        </section>
     );
 }

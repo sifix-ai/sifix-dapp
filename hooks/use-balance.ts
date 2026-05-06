@@ -7,7 +7,7 @@ import { formatUnits } from "viem";
 export function useBalance() {
   const { address } = useAccount();
   const publicClient = usePublicClient();
-  const [balance, setBalance] = useState<bigint>(0n);
+  const [balance, setBalance] = useState<bigint>(BigInt(0));
   const [formattedBalance, setFormattedBalance] = useState<string>("");
 
   useEffect(() => {
@@ -17,9 +17,12 @@ export function useBalance() {
         setFormattedBalance(parseFloat(formatUnits(balance, 18)).toFixed(4));
       }).catch((error) => {
         console.error("Failed to fetch balance:", error);
-        setBalance(0n);
+        setBalance(BigInt(0));
         setFormattedBalance("");
       });
+    } else {
+      setBalance(BigInt(0));
+      setFormattedBalance("0.0000");
     }
   }, [address, publicClient]);
 

@@ -13,7 +13,7 @@ export function useGasEstimation() {
     error?: string;
   }>({
     gasCost: "0",
-    gasEstimate: 0n,
+    gasEstimate: BigInt(0),
     loading: false
   });
 
@@ -62,7 +62,7 @@ export function useGasEstimation() {
     estimateGas,
     resetGasEstimate: () => setGasEstimate({
       gasCost: "0",
-      gasEstimate: 0n,
+      gasEstimate: BigInt(0),
       loading: false
     })
   };

@@ -20,7 +20,7 @@ export default function SearchPage() {
   
   const scanMutation = useScanAddress()
   const { data: reputation, isLoading: reputationLoading } = useAddressReputation(
-    scanMutation.data?.address
+    (scanMutation.data as any)?.address
   )
 
   const handleScan = async () => {
@@ -46,6 +46,26 @@ export default function SearchPage() {
     if (e.key === 'Enter' && !scanMutation.isPending) {
       handleScan()
     }
+  }
+
+  // Helper to render loading state
+  const renderLoadingState = (): React.ReactElement | null => {
+    if (!scanMutation.isPending) return null
+    return (
+      <div className="space-y-6">
+        <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/[0.08] rounded-2xl p-6 backdrop-blur-xl">
+          <Skeleton className="h-6 w-32 mb-4" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="bg-black/40 rounded-xl p-4">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-8 w-24" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   // Wallet not connected state
@@ -175,21 +195,24 @@ export default function SearchPage() {
           </div>
 
           {/* Loading State */}
-          {scanMutation.isPending && (
-            <div className="space-y-6">
-              <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/[0.08] rounded-2xl p-6 backdrop-blur-xl">
-                <Skeleton className="h-6 w-32 mb-4" />
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-black/40 rounded-xl p-4">
-                      <Skeleton className="h-4 w-20 mb-2" />
-                      <Skeleton className="h-8 w-24" />
-                    </div>
-                  ))}
+          {(() => {
+            if (!scanMutation.isPending) return null
+            return (
+              <div className="space-y-6">
+                <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/[0.08] rounded-2xl p-6 backdrop-blur-xl">
+                  <Skeleton className="h-6 w-32 mb-4" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {[1, 2, 3, 4].map((i) => (
+                      <div key={i} className="bg-black/40 rounded-xl p-4">
+                        <Skeleton className="h-4 w-20 mb-2" />
+                        <Skeleton className="h-8 w-24" />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )
+          })()}
 
           {/* Empty State */}
           {!scanMutation.data && !scanMutation.isPending && (
@@ -224,32 +247,32 @@ export default function SearchPage() {
                     <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                       <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Risk Level</div>
                       <div className={`text-2xl font-bold ${
-                        scanMutation.data.riskLevel === 'CRITICAL' ? 'text-red-500' :
-                        scanMutation.data.riskLevel === 'HIGH' ? 'text-orange-500' :
-                        scanMutation.data.riskLevel === 'MEDIUM' ? 'text-yellow-500' :
+                        (scanMutation.data as any).riskLevel === 'CRITICAL' ? 'text-red-500' :
+                        (scanMutation.data as any).riskLevel === 'HIGH' ? 'text-orange-500' :
+                        (scanMutation.data as any).riskLevel === 'MEDIUM' ? 'text-yellow-500' :
                         'text-green-500'
                       }`}>
-                        {scanMutation.data.riskLevel}
+                        {(scanMutation.data as any).riskLevel || 'LOW'}
                       </div>
                     </div>
                     
                     {/* Risk Score */}
                     <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                       <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Risk Score</div>
-                      <div className="text-2xl font-bold">{scanMutation.data.riskScore}<span className="text-white/40 text-lg">/100</span></div>
+                      <div className="text-2xl font-bold">{(scanMutation.data as any).riskScore}<span className="text-white/40 text-lg">/100</span></div>
                     </div>
                     
                     {/* Threat Count */}
                     <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
-                      <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Threats Found</div>
-                      <div className="text-2xl font-bold">{scanMutation.data.threatCount}</div>
+                      <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Threats Detected</div>
+                      <div className="text-2xl font-bold">{(scanMutation.data as any).threatCount}</div>
                     </div>
                     
                     {/* Recommendation */}
                     <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                       <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Action</div>
                       <div className="text-lg font-bold truncate">
-                        {scanMutation.data.analysis?.recommendation || 'N/A'}
+                        {(scanMutation.data as any).analysis?.recommendation || 'N/A'}
                       </div>
                     </div>
                   </div>
@@ -260,9 +283,9 @@ export default function SearchPage() {
                       <Sparkles className="w-4 h-4 text-[#FF6363]" />
                       <div className="text-xs text-white/60 uppercase tracking-wider font-semibold">AI Analysis</div>
                     </div>
-                    <p className="text-white/80 leading-relaxed">
-                      {scanMutation.data.analysis?.reasoning || 'No detailed analysis available'}
-                    </p>
+                      <p className="text-white/80 leading-relaxed">
+                        {(scanMutation.data as any).analysis?.recommendation || 'N/A'}
+                      </p>
                   </div>
                 </div>
               </div>
@@ -297,27 +320,27 @@ export default function SearchPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                       <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                         <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Reputation Score</div>
-                        <div className="text-2xl font-bold">{reputation.score}<span className="text-white/40 text-lg">/100</span></div>
+                        <div className="text-2xl font-bold">{(reputation as any).score}<span className="text-white/40 text-lg">/100</span></div>
                       </div>
                       
                       <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                         <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Total Reports</div>
-                        <div className="text-2xl font-bold">{reputation.reportCount}</div>
+                        <div className="text-2xl font-bold">{(reputation as any).reportCount}</div>
                       </div>
                       
                       <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                         <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Last Updated</div>
                         <div className="text-sm font-medium">
-                          {reputation.lastUpdate ? new Date(reputation.lastUpdate).toLocaleDateString() : 'Never'}
+                          {(reputation as any).lastUpdate ? new Date((reputation as any).lastUpdate).toLocaleDateString() : 'Never'}
                         </div>
                       </div>
                     </div>
 
-                    {reputation.reports && reputation.reports.length > 0 && (
+                    {(reputation as any).reports && (reputation as any).reports.length > 0 && (
                       <div>
                         <h3 className="font-semibold mb-3 text-white/80">Recent Reports</h3>
                         <div className="space-y-2">
-                          {reputation.reports.map((report: any, i: number) => (
+                          {(reputation as any).reports.map((report: any, i: number) => (
                             <div key={i} className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-3">

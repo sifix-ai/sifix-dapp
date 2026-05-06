@@ -5,7 +5,7 @@ import { usePublicClient } from "wagmi";
 
 export function useBlockNumber() {
   const publicClient = usePublicClient();
-  const [blockNumber, setBlockNumber] = useState<bigint>(0n);
+  const [blockNumber, setBlockNumber] = useState<bigint>(BigInt(0));
   const [isUpdated, setIsUpdated] = useState(false);
 
   useEffect(() => {

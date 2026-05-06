@@ -2,8 +2,9 @@
 
 import Link from "next/link"
 import { Shield, ArrowRight, CheckCircle, Activity, Trophy, Zap, Globe, Users } from "lucide-react"
-import { Hero2 } from "@/components/ui/hero-2"
-import { Features } from "@/components/ui/features"
+import { Hero2 } from '@/components/ui/hero-2'
+import { FeaturesSection } from '@/components/ui/features-section'
+import { Features } from '@/components/blocks/features-2'
 import { BackgroundPaths } from "@/components/ui/background-paths"
 
 export default function Home() {
@@ -47,6 +48,9 @@ export default function Home() {
       <Hero2 />
 
       {/* Features Section */}
+      <FeaturesSection />
+
+      {/* Features 2 Section */}
       <Features />
 
       {/* How It Works */}
@@ -101,8 +105,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* CTA Section with Background */}
-      <BackgroundPaths title="Ready to Protect Your Assets" />
+      {/* CTA Section with Background Paths */}
+      <BackgroundPaths title="Ready to Protect Your Crypto" />
 
       {/* Footer */}
       <footer className="border-t border-white/[0.08] py-12 bg-white/[0.02]">

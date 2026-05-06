@@ -22,6 +22,7 @@ import { useAccount, useDisconnect } from "wagmi"
 import { cn } from "@/lib/utils"
 import { useBalance } from "@/hooks/use-balance"
 import { ConnectButton } from "@/components/connect-button"
+import { Card } from "@/components/ui/card"
 
 const navigation = [
   {

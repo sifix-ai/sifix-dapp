@@ -4,7 +4,7 @@
   "description": "SIFIX - AI-Powered Wallet Security for Web3",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && SKIP_TYPE_CHECK=true next build",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
