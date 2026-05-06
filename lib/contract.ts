@@ -3,7 +3,7 @@
  * Interact with on-chain reputation system
  */
 
-import { createPublicClient, createWalletClient, http, parseEther, type Address } from "viem"
+import { createPublicClient, createWalletClient, http, parseEther, formatUnits, type Address } from "viem"
 import { privateKeyToAccount } from "viem/accounts"
 import { defineChain } from "viem"
 

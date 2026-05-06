@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSwitchNetwork, useNetwork } from "wagmi";
+import { useSwitchChain, useChainId, useAccount } from "wagmi";
 import { ChevronDown, Check } from "lucide-react";
 
 const SUPPORTED_NETWORKS = [
@@ -15,16 +15,17 @@ const SUPPORTED_NETWORKS = [
 ] as const;
 
 export function NetworkSwitcher() {
-  const { switchNetwork, isLoading: isSwitching } = useSwitchNetwork();
-  const { chain } = useNetwork();
+  const { switchChain, isPending: isSwitching } = useSwitchChain();
+  const chainId = useChainId();
+  const { isConnected } = useAccount();
   const [isOpen, setIsOpen] = useState(false);
 
-  const currentNetwork = SUPPORTED_NETWORKS.find(n => n.id === chain?.id);
-  const isCorrectNetwork = chain?.id === 16602;
+  const currentNetwork = SUPPORTED_NETWORKS.find(n => n.id === chainId);
+  const isCorrectNetwork = chainId === 16602;
 
-  const handleSwitch = async (chainId: number) => {
+  const handleSwitch = async (targetChainId: number) => {
     try {
-      await switchNetwork?.(chainId);
+      await switchChain({ chainId: targetChainId });
       setIsOpen(false);
     } catch (error) {
       console.error("Failed to switch network:", error);
@@ -60,7 +61,7 @@ export function NetworkSwitcher() {
                 Select Network
               </p>
               {SUPPORTED_NETWORKS.map((network) => {
-                const isCurrent = chain?.id === network.id;
+                const isCurrent = chainId === network.id;
                 return (
                   <button
                     key={network.id}

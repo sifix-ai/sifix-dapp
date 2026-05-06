@@ -16,7 +16,6 @@ import {
 import { wagmiConfig } from '@/lib/wagmi';
 import artifact from '@/SifixReputation.json';
 import { isAddress, keccak256, pad, toBytes } from 'viem';
-import { 0g } from 'wagmi/chains';
 
 export type ReportStep =
   | 'idle'
@@ -152,8 +151,8 @@ export function useReportThreat(): UseReportThreatReturn {
         let contractAddress: `0x${string}` | '' = existingAddress;
 
         if (!contractAddress) {
-          if (chainId === 0g.id) {
-            throw new Error('Kontrak belum di-deploy ke 0G mainnet. Silakan switch ke 0G Newton (testnet) untuk mencoba.');
+          if (chainId === 16602) {
+            throw new Error('Contract not deployed to 0G Newton testnet. Please check contract configuration.');
           }
 
           // Deploy the contract — user approves in wallet
