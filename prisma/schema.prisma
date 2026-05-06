@@ -1,87 +1,29 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// SIFIX - AI-Powered Wallet Security
+// Prisma schema for threat intelligence and reputation system
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
 }
 
 // ============================================
 // ENUMS
 // ============================================
 
-enum AddressStatus {
-  LEGIT
-  SCAM
-  SUSPICIOUS
-  UNKNOWN
-}
-
-enum AddressCategory {
-  DEFI
-  NFT
-  BRIDGE
-  DEX
-  LENDING
+enum ThreatType {
   PHISHING
-  DRAINER
-  AIRDROP_SCAM
+  MALICIOUS_CONTRACT
+  APPROVAL_SCAM
   RUGPULL
-  IMPOSTER
-  OTHER
-}
-
-enum AddressType {
-  EOA              // Externally Owned Account (wallet)
-  SMART_CONTRACT   // Regular smart contract
-  PROXY            // Proxy contract
-  FACTORY          // Factory contract
-}
-
-enum ContractType {
-  DEX
-  NFT
-  TOKEN_20         // ERC-20
-  TOKEN_721        // ERC-721 NFT
-  TOKEN_1155       // ERC-1155 Multi-token
-  BRIDGE
-  LENDING
-  STAKING
-  YIELD
-  GOVERNANCE
-  MULTISIG
-  AIRDROP
-  MINTER
+  HONEYPOT
   DRAINER
-  PHISHING
-  IMPOSTER
-  ROUTER
-  VAULT
-  FACTORY
+  IMPERSONATION
+  SUSPICIOUS_ACTIVITY
   OTHER
-}
-
-enum DataSource {
-  COMMUNITY
-  SCANNER
-  EXTERNAL
-  SEED
-  ADMIN
-}
-
-enum ReportStatus {
-  PENDING
-  VERIFIED
-  REJECTED
-  DISPUTED
-}
-
-enum VoteType {
-  FOR
-  AGAINST
 }
 
 enum RiskLevel {
@@ -91,10 +33,17 @@ enum RiskLevel {
   CRITICAL
 }
 
-enum TargetType {
-  ADDRESS
-  ENS
-  DOMAIN
+enum ReportStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  DISPUTED
+}
+
+enum AddressType {
+  EOA              // Externally Owned Account
+  SMART_CONTRACT   // Smart contract
+  PROXY            // Proxy contract
 }
 
 // ============================================
@@ -102,326 +51,182 @@ enum TargetType {
 // ============================================
 
 model Address {
-  id          String   @id @default(cuid())
-  address     String   @unique @db.VarChar(42)
-  name        String?  @db.VarChar(255)
-  displayName String?  @db.VarChar(255) // Alternative name from different sources
-  chain       String   @default("base") @db.VarChar(50)
-  status      AddressStatus @default(UNKNOWN)
-  riskScore   Int      @default(0) @db.SmallInt
-  category    AddressCategory @default(OTHER)
-  addressType AddressType @default(EOA) // EOA, SMART_CONTRACT, PROXY, FACTORY
-  contractType ContractType? // For smart contracts: DEX, NFT, TOKEN, etc
-  source      DataSource @default(SEED)
-  description String?  @db.Text
-  url         String?  @db.VarChar(2048)
-  website     String?  @db.VarChar(2048) // Official website
-  logoUrl     String?  @db.VarChar(2048)
-  twitter     String?  @db.VarChar(255) // Social media for verification
-  telegram    String?  @db.VarChar(255)
-  discord     String?  @db.VarChar(255)
-  tvl         Decimal? @db.Decimal(20, 2)
-  verifiedBy  String?  @db.VarChar(42)
-  verifiedAt  DateTime?
-  firstSeenAt DateTime @default(now()) @db.Timestamptz(6) // When first detected/scanned
-  lastSeenAt  DateTime @default(now()) @db.Timestamptz(6) // Last activity detected
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
+  id          String      @id @default(cuid())
+  address     String      @unique
+  chain       String      @default("0g-newton")
+  addressType AddressType @default(EOA)
+  riskScore   Int         @default(0)
+  riskLevel   RiskLevel   @default(LOW)
+  totalReports Int        @default(0)
+  firstSeenAt DateTime    @default(now())
+  lastSeenAt  DateTime    @default(now())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   // Relations
-  reports        Report[]
-  scans          ContractScan[]
-  tags           AddressTag[]
-  sourceLinks    ExternalSource[]
-  watchlist      Watchlist[]
-  ensRecords     EnsRecord[]
-  contractSignatures ContractSignature[] @relation("ContractSignatures")
+  reports     ThreatReport[]
+  scans       TransactionScan[]
+  reputation  ReputationScore?
 
-  @@index([status])
-  @@index([category])
   @@index([riskScore])
-  @@index([source])
+  @@index([riskLevel])
   @@index([chain])
-  @@index([source, chain, status])
-  @@index([status, riskScore])
-  @@index([addressType])
-  @@index([contractType])
-  @@index([firstSeenAt])
-  @@index([lastSeenAt])
-  @@index([status, firstSeenAt]) // Recent scams by status
   @@map("addresses")
 }
 
-model Report {
-  id              String   @id @default(cuid())
+model ThreatReport {
+  id              String       @id @default(cuid())
   addressId       String
-  reporterAddress String   @db.VarChar(42)
-  reason          String   @db.Text
-  evidenceUrl     String?  @db.VarChar(2048)
-  category        AddressCategory @default(OTHER)
-  status          ReportStatus @default(PENDING)
-  votesFor        Int      @default(0)
-  votesAgainst    Int      @default(0)
-  txHash          String?  @unique @db.VarChar(66)
-  reasonHash      String?  @db.VarChar(66)
-  reasonData      Json?
-  resolvedAt      DateTime? @db.Timestamptz(6)
-  createdAt       DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
-
-  // Relations
-  address   Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
-  votes     Vote[]
-
-  @@index([status])
-  @@index([reporterAddress])
-  @@index([createdAt])
-  @@index([addressId])
-  @@index([reporterAddress, status, createdAt])
-  @@index([status, votesFor, votesAgainst])
-  @@map("reports")
-}
-
-model Vote {
-  id          String   @id @default(cuid())
-  reportId    String
-  voterAddress String  @db.VarChar(42)
-  vote        VoteType
-  txHash      String?  @unique @db.VarChar(66)
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-
-  // Relations
-  report     Report   @relation(fields: [reportId], references: [id], onDelete: Cascade)
-
-  @@unique([reportId, voterAddress])
-  @@index([voterAddress])
-  @@map("votes")
-}
-
-model OnchainVoteEvent {
-  id              String     @id @default(cuid())
-  chainId         Int
-  contractAddress String     @db.VarChar(42)
-  txHash          String     @db.VarChar(66)
-  logIndex        Int
-  blockNumber     BigInt     @db.BigInt
-  blockTimestamp  DateTime?  @db.Timestamptz(6)
-  reporterAddress String     @db.VarChar(42)
-  targetId        String     @db.VarChar(66)
-  targetType      TargetType
-  reasonHash      String     @db.VarChar(66)
-  isScam          Boolean
-  createdAt       DateTime   @default(now()) @db.Timestamptz(6)
-
-  @@unique([txHash, logIndex])
-  @@index([chainId, blockNumber])
-  @@index([targetId, targetType])
-  @@index([reporterAddress])
-  @@index([reasonHash])
-  @@map("onchain_vote_events")
-}
-
-model ContractScan {
-  id              String   @id @default(cuid())
-  addressId       String
-  checkerAddress  String?  @db.VarChar(42)
-  bytecodeHash    String?  @db.VarChar(66)
-  bytecodeLength  Int?     // Bytecode size for quick analysis
-  riskScore       Int      @db.SmallInt
+  address         Address      @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  
+  reporterAddress String
+  threatType      ThreatType
+  severity        Int          // 0-100
   riskLevel       RiskLevel
-  patterns        Json     // Detected scam patterns
-  detectedSignatures Json? // Function signatures found
-  isVerified      Boolean  @default(false)
-  isProxy         Boolean  @default(false)
-  proxyType       String?  @db.VarChar(50) // ERC1967, Gnosis, UUPS, etc
-  implementationAddress String? @db.VarChar(42) // For proxy contracts
-  scannerVersion  String   @default("1.0.0") @db.VarChar(20)
-  scanDuration    Int?     @db.Integer
-  createdAt       DateTime @default(now()) @db.Timestamptz(6)
+  
+  // Evidence
+  evidenceHash    String       // IPFS/0G Storage hash
+  explanation     String       // AI-generated explanation
+  transactionHash String?      // Related transaction
+  
+  // AI Analysis
+  aiModel         String       @default("gpt-4")
+  confidence      Int          // 0-100
+  simulationData  String?      // JSON simulation results
+  
+  // Status
+  status          ReportStatus @default(PENDING)
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  
+  // On-chain
+  onchainTxHash   String?      // Transaction hash when reported on-chain
+  blockNumber     Int?
+  
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
-  // Relations
-  address   Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  @@index([addressId])
+  @@index([reporterAddress])
+  @@index([threatType])
+  @@index([riskLevel])
+  @@index([status])
+  @@index([createdAt])
+  @@map("threat_reports")
+}
 
+model TransactionScan {
+  id              String    @id @default(cuid())
+  addressId       String
+  address         Address   @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  
+  // Transaction details
+  from            String
+  to              String
+  value           String?   // BigInt as string
+  data            String?   // Hex data
+  
+  // Simulation results
+  simulationSuccess Boolean
+  gasUsed         String?   // BigInt as string
+  stateChanges    String?   // JSON
+  
+  // AI Analysis
+  riskScore       Int       // 0-100
+  riskLevel       RiskLevel
+  recommendation  String    // APPROVE, REJECT, WARN
+  explanation     String
+  detectedThreats String?   // JSON array of threats
+  
+  // Metadata
+  scanDuration    Int?      // milliseconds
+  agentVersion    String    @default("1.0.0")
+  
+  createdAt       DateTime  @default(now())
+
+  @@index([addressId])
+  @@index([from])
   @@index([riskLevel])
   @@index([createdAt])
-  @@index([addressId])
-  @@index([bytecodeHash]) // For finding similar contracts
-  @@index([isProxy])
-  @@index([checkerAddress])
-  @@map("contract_scans")
+  @@map("transaction_scans")
 }
 
-model AddressTag {
-  id        String   @id @default(cuid())
-  addressId String
-  tag       String   @db.VarChar(100)
-  taggedBy  String?  @db.VarChar(255)
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
+model ReputationScore {
+  id              String   @id @default(cuid())
+  addressId       String   @unique
+  address         Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  
+  // Scores
+  overallScore    Int      @default(0)  // 0-100
+  reporterScore   Int      @default(0)  // Quality of reports submitted
+  accuracyScore   Int      @default(0)  // Accuracy of past reports
+  
+  // Stats
+  reportsSubmitted Int     @default(0)
+  reportsVerified  Int     @default(0)
+  reportsRejected  Int     @default(0)
+  
+  // On-chain data
+  onchainReputation Int?   // From SifixReputation contract
+  lastSyncedAt     DateTime?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  // Relations
-  address   Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
-
-  @@unique([addressId, tag])
-  @@index([tag])
-  @@map("address_tags")
-}
-
-model ExternalSource {
-  id          String   @id @default(cuid())
-  addressId   String
-  source      String   @db.VarChar(50)
-  sourceId    String?  @db.VarChar(255)
-  sourceUrl   String?  @db.VarChar(2048)
-  rawData     Json?
-  confidence  Int?     @db.SmallInt // Confidence score from source (0-100)
-  category    String?  @db.VarChar(100) // Category from external source
-  tags        String[] @default([]) // Tags from external source
-  firstSeenAt DateTime @default(now()) @db.Timestamptz(6)
-  lastSeenAt  DateTime @default(now()) @db.Timestamptz(6)
-  syncedAt    DateTime @default(now()) @db.Timestamptz(6)
-
-  // Relations
-  address   Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
-
-  @@unique([addressId, source, sourceId])
-  @@index([source])
-  @@index([source, category])
-  @@index([confidence])
-  @@map("external_sources")
-}
-
-model Watchlist {
-  id          String   @id @default(cuid())
-  userAddress String   @db.VarChar(42)
-  addressId   String
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-
-  // Relations
-  address   Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
-
-  @@unique([userAddress, addressId])
-  @@index([userAddress])
-  @@map("watchlists")
+  @@index([overallScore])
+  @@index([reporterScore])
+  @@map("reputation_scores")
 }
 
 // ============================================
 // SYSTEM TABLES
 // ============================================
 
+model UserProfile {
+  id              String   @id @default(cuid())
+  address         String   @unique
+  
+  // Stats
+  scansPerformed  Int      @default(0)
+  threatsDetected Int      @default(0)
+  reportsSubmitted Int     @default(0)
+  
+  // Settings
+  autoReport      Boolean  @default(false)  // Auto-report HIGH/CRITICAL threats
+  notifyOnThreat  Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
+  @@map("user_profiles")
+}
+
+model SearchHistory {
+  id             String   @id @default(cuid())
+  userAddress    String?
+  searchType     String   // "address" | "transaction"
+  query          String
+  riskScore      Int      @default(0)
+  riskLevel      RiskLevel @default(LOW)
+  result         String?  // JSON snapshot
+  createdAt      DateTime @default(now())
+
+  @@index([userAddress])
+  @@index([createdAt])
+  @@map("search_history")
+}
 
 model SyncLog {
-  id            String   @id @default(cuid())
-  source        String   @db.VarChar(50)
-  status        String   @db.VarChar(20)
-  recordsAdded  Int      @default(0)
-  recordsUpdated Int     @default(0)
-  error         String?  @db.Text
-  startedAt     DateTime @default(now()) @db.Timestamptz(6)
-  completedAt   DateTime? @db.Timestamptz(6)
+  id              String   @id @default(cuid())
+  source          String   // "0g-storage" | "contract"
+  status          String   // "success" | "failed"
+  recordsAdded    Int      @default(0)
+  recordsUpdated  Int      @default(0)
+  error           String?
+  startedAt       DateTime @default(now())
+  completedAt     DateTime?
 
   @@index([source])
   @@index([startedAt])
   @@map("sync_logs")
-}
-
-model UserProfile {
-  id              String   @id @default(cuid())
-  address         String   @unique @db.VarChar(42)
-  ensName         String?  @db.VarChar(255)
-  reportsSubmitted Int     @default(0)
-  reportsVerified Int      @default(0)
-  tagsSubmitted   Int      @default(0)
-  reputation      Int      @default(0)
-  createdAt       DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt       DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([reputation])
-  @@index([reportsSubmitted])
-  @@index([reportsVerified])
-  @@index([tagsSubmitted])
-  @@map("user_profiles")
-}
-
-// Phishing/scam domains from external sources
-model ScamDomain {
-  id          String   @id @default(cuid())
-  domain      String   @unique @db.VarChar(500)
-  name        String?  @db.VarChar(255)
-  category    String   @default("PHISHING") @db.VarChar(50)
-  status      String   @default("ACTIVE") @db.VarChar(20)
-  source      String   @default("scamsniffer") @db.VarChar(50)
-  description String?  @db.Text
-  riskScore   Int      @default(80) @db.SmallInt
-  rawData     Json?
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
-
-  @@index([domain])
-  @@index([status])
-  @@index([source])
-  @@index([riskScore])
-  @@index([category])
-  @@map("scam_domains")
-}
-
-// ENS Records for name resolution
-model EnsRecord {
-  id          String   @id @default(cuid())
-  addressId   String   @db.VarChar(42)
-  ensName     String   @unique @db.VarChar(255) // .eth name without .eth suffix
-  fullName    String   @db.VarChar(500) // Full name with .eth
-  avatar      String?  @db.VarChar(2048)
-  resolvedAt  DateTime @default(now()) @db.Timestamptz(6)
-  lastChecked DateTime @default(now()) @db.Timestamptz(6)
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-  updatedAt   DateTime @updatedAt @db.Timestamptz(6)
-
-  // Relations
-  address Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
-
-  @@index([ensName])
-  @@index([addressId])
-  @@index([fullName])
-  @@map("ens_records")
-}
-
-// Contract function signatures for type detection and similarity matching
-model ContractSignature {
-  id          String   @id @default(cuid())
-  addressId   String
-  selector    String   @db.VarChar(10) // Function selector (0xXXXXXXXX)
-  functionName String? @db.VarChar(255) // Detected function name
-  signature   String   @db.VarChar(255) // Full signature
-  riskLevel   String?  @db.VarChar(20) // LOW/MEDIUM/HIGH/CRITICAL if this is a dangerous function
-  isMalicious Boolean  @default(false) // Known scam function
-  createdAt   DateTime @default(now()) @db.Timestamptz(6)
-
-  // Relations
-  address Address @relation("ContractSignatures", fields: [addressId], references: [id], onDelete: Cascade)
-
-  @@unique([addressId, selector])
-  @@index([selector]) // Find all contracts with same function
-  @@index([addressId])
-  @@index([isMalicious])
-  @@map("contract_signatures")
-}
-
-// Universal search history — captures every address/ENS/domain check per user
-model SearchHistory {
-  id             String   @id @default(cuid())
-  checkerAddress String?  @db.VarChar(42) // wallet that triggered the search
-  searchType     String   @db.VarChar(20) // "address" | "ens" | "domain"
-  query          String   @db.VarChar(500) // raw search query
-  resolvedTo     String?  @db.VarChar(500) // resolved address or canonical form
-  riskScore      Int      @default(0) @db.SmallInt
-  riskLevel      String   @default("LOW") @db.VarChar(20)
-  result         Json?    // full result snapshot (optional)
-  createdAt      DateTime @default(now()) @db.Timestamptz(6)
-
-  @@index([checkerAddress])
-  @@index([searchType])
-  @@index([createdAt])
-  @@index([checkerAddress, createdAt])
-  @@map("search_history")
 }
