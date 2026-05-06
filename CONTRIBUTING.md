@@ -1,6 +1,6 @@
-# Contributing to DOMAN
+# Contributing to SIFIX
 
-Thank you for your interest in contributing to DOMAN! 🎉
+Thank you for your interest in contributing to SIFIX! 🎉
 
 We welcome contributions of all kinds — bug fixes, features, documentation improvements, and more.
 
