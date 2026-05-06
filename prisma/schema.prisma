@@ -7,42 +7,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-}
-
-// ============================================
-// ENUMS
-// ============================================
-
-enum ThreatType {
-  PHISHING
-  MALICIOUS_CONTRACT
-  APPROVAL_SCAM
-  RUGPULL
-  HONEYPOT
-  DRAINER
-  IMPERSONATION
-  SUSPICIOUS_ACTIVITY
-  OTHER
-}
-
-enum RiskLevel {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
-
-enum ReportStatus {
-  PENDING
-  VERIFIED
-  REJECTED
-  DISPUTED
-}
-
-enum AddressType {
-  EOA              // Externally Owned Account
-  SMART_CONTRACT   // Smart contract
-  PROXY            // Proxy contract
+  url      = env("DATABASE_URL")
 }
 
 // ============================================
@@ -53,9 +18,9 @@ model Address {
   id          String      @id @default(cuid())
   address     String      @unique
   chain       String      @default("0g-newton")
-  addressType AddressType @default(EOA)
+  addressType String      @default("EOA") // EOA, SMART_CONTRACT, PROXY
   riskScore   Int         @default(0)
-  riskLevel   RiskLevel   @default(LOW)
+  riskLevel   String      @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
   totalReports Int        @default(0)
   firstSeenAt DateTime    @default(now())
   lastSeenAt  DateTime    @default(now())
@@ -79,9 +44,9 @@ model ThreatReport {
   address         Address      @relation(fields: [addressId], references: [id], onDelete: Cascade)
   
   reporterAddress String
-  threatType      ThreatType
+  threatType      String       // PHISHING, MALICIOUS_CONTRACT, etc
   severity        Int          // 0-100
-  riskLevel       RiskLevel
+  riskLevel       String       // LOW, MEDIUM, HIGH, CRITICAL
   
   // Evidence
   evidenceHash    String       // IPFS/0G Storage hash
@@ -94,7 +59,7 @@ model ThreatReport {
   simulationData  String?      // JSON simulation results
   
   // Status
-  status          ReportStatus @default(PENDING)
+  status          String       @default("PENDING") // PENDING, VERIFIED, REJECTED, DISPUTED
   verifiedBy      String?
   verifiedAt      DateTime?
   
@@ -132,7 +97,7 @@ model TransactionScan {
   
   // AI Analysis
   riskScore       Int       // 0-100
-  riskLevel       RiskLevel
+  riskLevel       String    // LOW, MEDIUM, HIGH, CRITICAL
   recommendation  String    // APPROVE, REJECT, WARN
   explanation     String
   detectedThreats String?   // JSON array of threats
@@ -206,7 +171,7 @@ model SearchHistory {
   searchType     String   // "address" | "transaction"
   query          String
   riskScore      Int      @default(0)
-  riskLevel      RiskLevel @default(LOW)
+  riskLevel      String   @default("LOW")
   result         String?  // JSON snapshot
   createdAt      DateTime @default(now())
 
