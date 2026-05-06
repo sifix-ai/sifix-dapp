@@ -2,7 +2,7 @@
 
 import { AuthGuard } from '@/components/auth-guard'
 import { DashboardHeader } from '@/components/dashboard/header'
-import { DashboardSidebar } from '@/components/dashboard/sidebar'
+import { Sidebar } from '@/components/dashboard/sidebar'
 
 export default function DashboardLayout({
   children,
@@ -14,7 +14,7 @@ export default function DashboardLayout({
       <div className="min-h-screen bg-black">
         <DashboardHeader />
         <div className="flex">
-          <DashboardSidebar />
+          <Sidebar />
           <main className="flex-1 p-8">
             {children}
           </main>
