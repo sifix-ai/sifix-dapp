@@ -3,6 +3,7 @@
 import { prisma } from '@/lib/prisma';
 import type { RiskLevel } from '@prisma/client';
 import { AddressService } from './address-service';
+import { AIService } from './ai-service';
 
 export interface ScanTransactionInput {
   from: string;
@@ -21,102 +22,102 @@ export interface ScanResult {
   recommendation: 'APPROVE' | 'REJECT' | 'WARN';
   explanation: string;
   detectedThreats?: string[];
+  confidence?: number;
 }
 
 export class ScannerService {
   /**
-   * Scan transaction via SIFIX Agent
+   * Scan transaction with AI analysis
    */
   static async scanTransaction(input: ScanTransactionInput): Promise<ScanResult> {
-    // TODO: Call SIFIX Agent API
-    // For now, return mock data based on address reputation
-    
+    // 1. Check if address exists in database
     const toAddress = await AddressService.getDetails(input.to);
     
-    if (!toAddress) {
-      // Unknown address - low risk by default
-      return {
-        simulationSuccess: true,
-        riskScore: 20,
-        riskLevel: 'LOW',
-        recommendation: 'APPROVE',
-        explanation: 'Address not found in threat database. Transaction appears safe.',
-      };
+    // 2. Analyze with AI
+    const aiAnalysis = await AIService.analyzeTransaction({
+      from: input.from,
+      to: input.to,
+      value: input.value || '0',
+      data: input.data || '0x',
+    });
+
+    // 3. Combine with existing reputation if available
+    let finalRiskScore = aiAnalysis.riskScore;
+    if (toAddress && toAddress.riskScore > aiAnalysis.riskScore) {
+      finalRiskScore = Math.max(toAddress.riskScore, aiAnalysis.riskScore);
     }
 
-    // Use existing risk score
-    const riskScore = toAddress.riskScore;
-    let recommendation: 'APPROVE' | 'REJECT' | 'WARN' = 'APPROVE';
-    
-    if (riskScore >= 80) recommendation = 'REJECT';
-    else if (riskScore >= 40) recommendation = 'WARN';
-
-    const threats = toAddress.reports
-      .filter((r) => r.status === 'VERIFIED')
-      .map((r) => r.threatType);
+    // 4. Save scan to database
+    await this.saveScan({
+      from: input.from,
+      to: input.to,
+      value: input.value || '0',
+      data: input.data || '0x',
+      riskScore: finalRiskScore,
+      riskLevel: aiAnalysis.riskLevel,
+      aiAnalysis: aiAnalysis.explanation,
+      userAddress: input.userAddress,
+    });
 
     return {
       simulationSuccess: true,
-      riskScore,
-      riskLevel: toAddress.riskLevel,
-      recommendation,
-      explanation: this.generateExplanation(toAddress.riskLevel, threats),
-      detectedThreats: threats,
+      riskScore: finalRiskScore,
+      riskLevel: aiAnalysis.riskLevel,
+      recommendation: aiAnalysis.recommendation,
+      explanation: aiAnalysis.explanation,
+      detectedThreats: aiAnalysis.detectedThreats,
+      confidence: aiAnalysis.confidence,
     };
   }
 
   /**
-   * Save scan result to database
+   * Save scan to database
    */
-  static async saveScan(input: ScanTransactionInput, result: ScanResult) {
-    const address = await AddressService.getOrCreate(input.to);
+  private static async saveScan(data: {
+    from: string;
+    to: string;
+    value: string;
+    data: string;
+    riskScore: number;
+    riskLevel: RiskLevel;
+    aiAnalysis: string;
+    userAddress?: string;
+  }) {
+    try {
+      // Get or create address
+      const address = await AddressService.getOrCreate(data.to);
 
-    return prisma.transactionScan.create({
-      data: {
-        addressId: address.id,
-        from: input.from.toLowerCase(),
-        to: input.to.toLowerCase(),
-        value: input.value,
-        data: input.data,
-        simulationSuccess: result.simulationSuccess,
-        gasUsed: result.gasUsed,
-        stateChanges: result.stateChanges,
-        riskScore: result.riskScore,
-        riskLevel: result.riskLevel,
-        recommendation: result.recommendation,
-        explanation: result.explanation,
-        detectedThreats: result.detectedThreats ? JSON.stringify(result.detectedThreats) : null,
-      },
-    });
+      await prisma.transactionScan.create({
+        data: {
+          addressId: address.id,
+          fromAddress: data.from.toLowerCase(),
+          toAddress: data.to.toLowerCase(),
+          value: data.value,
+          data: data.data,
+          riskScore: data.riskScore,
+          riskLevel: data.riskLevel,
+          aiAnalysis: data.aiAnalysis,
+          userAddress: data.userAddress?.toLowerCase(),
+        },
+      });
+    } catch (error) {
+      console.error('Failed to save scan:', error);
+    }
   }
 
   /**
-   * Get scan history for user
+   * Get scan history for address
    */
-  static async getHistory(userAddress: string, limit: number = 50) {
+  static async getScanHistory(address: string, limit: number = 10) {
     return prisma.transactionScan.findMany({
-      where: { from: userAddress.toLowerCase() },
-      include: {
-        address: true,
+      where: {
+        OR: [
+          { fromAddress: address.toLowerCase() },
+          { toAddress: address.toLowerCase() },
+        ],
       },
       orderBy: { createdAt: 'desc' },
       take: limit,
     });
-  }
-
-  /**
-   * Generate explanation based on risk level
-   */
-  private static generateExplanation(riskLevel: RiskLevel, threats: string[]): string {
-    if (riskLevel === 'CRITICAL') {
-      return `⛔ CRITICAL THREAT DETECTED! This address has been reported for ${threats.join(', ')}. DO NOT PROCEED with this transaction.`;
-    }
-    if (riskLevel === 'HIGH') {
-      return `⚠️ HIGH RISK! This address has been flagged for ${threats.join(', ')}. Proceed with extreme caution.`;
-    }
-    if (riskLevel === 'MEDIUM') {
-      return `⚡ MEDIUM RISK. This address has some reports for ${threats.join(', ')}. Review carefully before proceeding.`;
-    }
-    return '✅ LOW RISK. No significant threats detected. Transaction appears safe.';
   }
 }
