@@ -1,0 +1,4 @@
+# Please edit this file to reflect the correct migration history for your database.
+# Read more: https://pris.ly/d/migrate#migration-history
+
+provider = "sqlite"
