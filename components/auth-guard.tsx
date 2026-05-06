@@ -2,88 +2,172 @@
 
 import { useAccount } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { Shield, Sparkles } from 'lucide-react'
+import { Shield, Sparkles, TrendingUp } from 'lucide-react'
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isConnected } = useAccount()
 
   if (!isConnected) {
     return (
-      <div className="min-h-screen bg-[#07080a] text-white flex items-center justify-center p-4 relative overflow-hidden">
-        {/* Gradient Orbs Background */}
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FF6363]/20 rounded-full blur-[120px] animate-pulse -z-10" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#55b3ff]/20 rounded-full blur-[120px] animate-pulse -z-10" style={{ animationDelay: '1s' }} />
-        
-        <div className="max-w-md w-full relative z-10">
-          {/* Icon */}
-          <div className="flex justify-center mb-8">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-[#FF6363]/30 to-[#55b3ff]/30 rounded-3xl blur-2xl" />
-              <div className="relative w-24 h-24 bg-gradient-to-br from-[#FF6363]/20 to-[#55b3ff]/20 border border-white/[0.08] rounded-3xl flex items-center justify-center backdrop-blur-xl">
-                <Shield className="w-12 h-12 text-[#FF6363]" />
-              </div>
+      <div className="min-h-screen bg-[#07080a] flex items-center justify-center p-4">
+        {/* Background gradients */}
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-[#FF6363]/20 rounded-full blur-[120px] animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-[#55b3ff]/20 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }} />
+
+        <div className="relative z-10 max-w-md w-full">
+          {/* Card */}
+          <div className="bg-white/[0.03] border border-white/[0.08] rounded-3xl backdrop-blur-xl p-8">
+            {/* Icon */}
+            <div className="w-16 h-16 bg-[#FF6363]/10 border border-[#FF6363]/20 rounded-2xl flex items-center justify-center mb-6 mx-auto">
+              <Shield className="w-8 h-8 text-[#FF6363]" />
             </div>
-          </div>
-          
-          {/* Content */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-white via-white to-white/60 bg-clip-text text-transparent">
+
+            {/* Title */}
+            <h1 className="text-3xl font-bold text-white text-center mb-3 tracking-tight">
               Connect Your Wallet
             </h1>
-            
-            <p className="text-lg text-white/60 leading-relaxed mb-2">
-              Connect your Web3 wallet to access SIFIX security features
+
+            {/* Description */}
+            <p className="text-white/60 text-center mb-8 leading-relaxed">
+              Connect your wallet to access AI-powered security features and protect your transactions.
             </p>
-            
-            <p className="text-sm text-white/40">
-              Scan addresses, view threat intelligence, and protect your assets
-            </p>
-          </div>
-          
-          {/* Connect Button - Wrapped with custom styling */}
-          <div className="flex justify-center mb-8">
-            <div className="relative">
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#FF6363] to-[#55b3ff] rounded-xl blur opacity-50" />
-              <div className="relative bg-[#07080a] rounded-xl p-1">
-                <ConnectButton />
-              </div>
+
+            {/* Custom Connect Button */}
+            <div className="flex justify-center mb-8">
+              <ConnectButton.Custom>
+                {({
+                  account,
+                  chain,
+                  openAccountModal,
+                  openChainModal,
+                  openConnectModal,
+                  authenticationStatus,
+                  mounted,
+                }) => {
+                  const ready = mounted && authenticationStatus !== 'loading'
+                  const connected =
+                    ready &&
+                    account &&
+                    chain &&
+                    (!authenticationStatus || authenticationStatus === 'authenticated')
+
+                  return (
+                    <div
+                      {...(!ready && {
+                        'aria-hidden': true,
+                        style: {
+                          opacity: 0,
+                          pointerEvents: 'none',
+                          userSelect: 'none',
+                        },
+                      })}
+                    >
+                      {(() => {
+                        if (!connected) {
+                          return (
+                            <button
+                              onClick={openConnectModal}
+                              type="button"
+                              className="group relative px-8 py-4 bg-[#FF6363] text-white font-semibold rounded-xl hover:bg-[#FF6363]/90 transition-all duration-300 hover:scale-105 active:scale-95 shadow-lg shadow-[#FF6363]/30 hover:shadow-xl hover:shadow-[#FF6363]/40 uppercase tracking-wider text-sm"
+                            >
+                              <span className="flex items-center gap-2">
+                                Connect Wallet
+                                <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+                              </span>
+                            </button>
+                          )
+                        }
+
+                        if (chain.unsupported) {
+                          return (
+                            <button
+                              onClick={openChainModal}
+                              type="button"
+                              className="px-8 py-4 bg-red-500 text-white font-semibold rounded-xl hover:bg-red-600 transition-colors"
+                            >
+                              Wrong network
+                            </button>
+                          )
+                        }
+
+                        return (
+                          <div className="flex gap-3">
+                            <button
+                              onClick={openChainModal}
+                              type="button"
+                              className="px-4 py-2 bg-white/[0.05] border border-white/[0.08] text-white rounded-xl hover:bg-white/[0.08] transition-colors"
+                            >
+                              {chain.hasIcon && (
+                                <div
+                                  style={{
+                                    background: chain.iconBackground,
+                                    width: 12,
+                                    height: 12,
+                                    borderRadius: 999,
+                                    overflow: 'hidden',
+                                    marginRight: 4,
+                                  }}
+                                >
+                                  {chain.iconUrl && (
+                                    <img
+                                      alt={chain.name ?? 'Chain icon'}
+                                      src={chain.iconUrl}
+                                      style={{ width: 12, height: 12 }}
+                                    />
+                                  )}
+                                </div>
+                              )}
+                              {chain.name}
+                            </button>
+
+                            <button
+                              onClick={openAccountModal}
+                              type="button"
+                              className="px-4 py-2 bg-white/[0.05] border border-white/[0.08] text-white rounded-xl hover:bg-white/[0.08] transition-colors font-mono text-sm"
+                            >
+                              {account.displayName}
+                              {account.displayBalance
+                                ? ` (${account.displayBalance})`
+                                : ''}
+                            </button>
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  )
+                }}
+              </ConnectButton.Custom>
             </div>
-          </div>
-          
-          {/* Info Cards */}
-          <div className="space-y-3">
-            <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/[0.08] rounded-xl p-4 backdrop-blur-xl">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-[#FF6363]/10 border border-[#FF6363]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+
+            {/* Info cards */}
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+                <div className="w-10 h-10 bg-[#FF6363]/10 border border-[#FF6363]/20 rounded-lg flex items-center justify-center shrink-0">
                   <Sparkles className="w-5 h-5 text-[#FF6363]" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1 text-white">AI-Powered Security</h3>
-                  <p className="text-sm text-white/60 leading-relaxed">
-                    Real-time transaction analysis with GPT-4 powered threat detection
+                <div>
+                  <h3 className="text-white font-semibold text-sm mb-1">AI-Powered Security</h3>
+                  <p className="text-white/60 text-xs leading-relaxed">
+                    Real-time transaction analysis with GPT-4 powered risk detection
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 bg-white/[0.02] border border-white/[0.06] rounded-xl">
+                <div className="w-10 h-10 bg-[#55b3ff]/10 border border-[#55b3ff]/20 rounded-lg flex items-center justify-center shrink-0">
+                  <TrendingUp className="w-5 h-5 text-[#55b3ff]" />
+                </div>
+                <div>
+                  <h3 className="text-white font-semibold text-sm mb-1">On-Chain Reputation</h3>
+                  <p className="text-white/60 text-xs leading-relaxed">
+                    Decentralized threat reports stored on 0G Chain
                   </p>
                 </div>
               </div>
             </div>
-            
-            <div className="bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/[0.08] rounded-xl p-4 backdrop-blur-xl">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 bg-[#55b3ff]/10 border border-[#55b3ff]/20 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <Shield className="w-5 h-5 text-[#55b3ff]" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-semibold mb-1 text-white">On-Chain Reputation</h3>
-                  <p className="text-sm text-white/60 leading-relaxed">
-                    Decentralized threat reports stored on 0G Chain for transparency
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Footer */}
-          <div className="mt-8 text-center">
-            <p className="text-xs text-white/40">
+
+            {/* Footer */}
+            <p className="text-white/40 text-xs text-center mt-6">
               Supported wallets: MetaMask, WalletConnect, Coinbase Wallet, and more
             </p>
           </div>

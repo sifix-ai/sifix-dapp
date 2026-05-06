@@ -16,12 +16,9 @@ import {
 import { useState } from "react";
 
 const navItems = [
-  { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Checker", href: "/dashboard/checker", icon: Search },
-  { label: "History", href: "/dashboard/history", icon: History },
-  { label: "Watchlist", href: "/dashboard/watchlist", icon: Eye },
-  { label: "Tags", href: "/dashboard/tags", icon: Tag },
-  { label: "Settings", href: "/dashboard/settings", icon: Settings },
+  { label: "Search", href: "/dashboard/search", icon: Search },
+  { label: "Threats", href: "/dashboard/threats", icon: Shield },
+  { label: "Analytics", href: "/dashboard/analytics", icon: LayoutDashboard },
 ];
 
 export function Sidebar() {
@@ -59,7 +56,7 @@ export function Sidebar() {
             <Shield size={16} className="text-white" />
           </div>
           <Link href="/dashboard" className="text-lg font-bold tracking-tight">
-            DOMAN
+            SIFIX
           </Link>
         </div>
 
