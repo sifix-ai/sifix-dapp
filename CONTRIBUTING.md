@@ -26,9 +26,7 @@ We welcome contributions of all kinds — bug fixes, features, documentation imp
    git clone https://github.com/<username>/sifix-dapp.git
    cd sifix-dapp
    git remote add upstream https://github.com/sifix-ai/sifix-dapp.git
-3. **Add upstream** remote:
-   ```bash
-   git remote add upstream https://github.com/artomily/doman.git
+3. **Add upstream** remote (already done in step 2):
    ```
 
 ---
