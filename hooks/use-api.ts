@@ -42,10 +42,16 @@ export function useThreatFeed(limit = 10) {
     queryFn: async () => {
       const response = await fetch(`${API_BASE_URL}/api/v1/threats?limit=${limit}`)
       if (!response.ok) throw new Error('Failed to fetch threats')
-      return response.json()
+      const result = await response.json()
+      return result.success ? result.data : result
     },
     refetchInterval: 30000, // Refetch every 30 seconds
   })
+}
+
+// Alias for useThreatFeed
+export function useThreats(limit = 50) {
+  return useThreatFeed(limit)
 }
 
 // Report threat
