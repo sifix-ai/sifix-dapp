@@ -1,80 +1,106 @@
-/**
- * Stats Service
- *
- * Service for aggregating and calculating platform statistics.
- */
+// Stats Service - Platform statistics
 
-import prisma from '@/lib/prisma';
-import type { PlatformStats } from '@/types/api';
+import { prisma } from '@/lib/prisma';
 
-/**
- * Get overall platform statistics
- */
-export async function getOverallStats(): Promise<PlatformStats> {
-  const [
-    totalAddresses,
-    legitCount,
-    scamCount,
-    suspiciousCount,
-    unknownCount,
-    totalReports,
-    verifiedReports,
-    pendingReports,
-    topCategories,
-    recentScams,
-    scansToday,
-  ] = await Promise.all([
-    // Total addresses
-    prisma.address.count(),
-    // Count by status
-    prisma.address.count({ where: { status: 'LEGIT' } }),
-    prisma.address.count({ where: { status: 'SCAM' } }),
-    prisma.address.count({ where: { status: 'SUSPICIOUS' } }),
-    prisma.address.count({ where: { status: 'UNKNOWN' } }),
-    // Report stats
-    prisma.report.count(),
-    prisma.report.count({ where: { status: 'VERIFIED' } }),
-    prisma.report.count({ where: { status: 'PENDING' } }),
-    // Top categories
-    prisma.address.groupBy({
-      by: ['category'],
-      _count: { category: true },
-      orderBy: { _count: { category: 'desc' } },
-      take: 5,
-    }),
-    // Recent scams (last 7 days)
-    prisma.address.findMany({
-      where: {
-        status: 'SCAM',
-        createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+export class StatsService {
+  /**
+   * Get platform statistics
+   */
+  static async getStats() {
+    const [
+      totalAddresses,
+      totalReports,
+      totalScans,
+      criticalThreats,
+      recentReports,
+      topReporters,
+    ] = await Promise.all([
+      // Total addresses tracked
+      prisma.address.count(),
+
+      // Total threat reports
+      prisma.threatReport.count(),
+
+      // Total transaction scans
+      prisma.transactionScan.count(),
+
+      // Critical threats (last 7 days)
+      prisma.threatReport.count({
+        where: {
+          riskLevel: 'CRITICAL',
+          status: 'VERIFIED',
+          createdAt: {
+            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+          },
+        },
+      }),
+
+      // Recent reports (last 24h)
+      prisma.threatReport.count({
+        where: {
+          createdAt: {
+            gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
+          },
+        },
+      }),
+
+      // Top reporters
+      prisma.reputationScore.findMany({
+        orderBy: { reporterScore: 'desc' },
+        take: 10,
+        include: {
+          address: true,
+        },
+      }),
+    ]);
+
+    return {
+      totalAddresses,
+      totalReports,
+      totalScans,
+      criticalThreats,
+      recentReports,
+      topReporters: topReporters.map((r) => ({
+        address: r.address.address,
+        score: r.reporterScore,
+        reportsSubmitted: r.reportsSubmitted,
+        reportsVerified: r.reportsVerified,
+      })),
+    };
+  }
+
+  /**
+   * Get leaderboard
+   */
+  static async getLeaderboard(limit: number = 50) {
+    return prisma.reputationScore.findMany({
+      orderBy: { overallScore: 'desc' },
+      take: limit,
+      include: {
+        address: true,
       },
-      select: { address: true },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-    }),
-    // Scans today
-    prisma.contractScan.count({
-      where: {
-        createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      },
-    }),
-  ]);
+    });
+  }
 
-  return {
-    totalAddresses,
-    legitCount,
-    scamCount,
-    suspiciousCount,
-    unknownCount,
-    totalReports,
-    verifiedReports,
-    pendingReports,
-    topCategories: topCategories.map((cat) => ({
-      category: cat.category as any,
-      count: cat._count.category,
-    })),
-    recentScams: recentScams.map((addr) => addr.address),
-    scansToday,
-    updatedAt: new Date().toISOString(),
-  };
+  /**
+   * Get user stats
+   */
+  static async getUserStats(address: string) {
+    const profile = await prisma.userProfile.findUnique({
+      where: { address: address.toLowerCase() },
+    });
+
+    const reputation = await prisma.reputationScore.findFirst({
+      where: {
+        address: {
+          address: address.toLowerCase(),
+        },
+      },
+    });
+
+    return {
+      profile,
+      reputation,
+    };
+  }
 }
