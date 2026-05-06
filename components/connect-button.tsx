@@ -81,17 +81,17 @@ export function ConnectButton() {
   return (
     <div className="relative">
       <Button
-        size="sm"
+        size="lg"
         onClick={handleConnect}
         disabled={isPending || connectors.length === 0}
-        className="bg-[#FF6363] hover:bg-[#FF6363]/90 text-white border-0 shadow-lg hover:shadow-[0_0_20px_rgba(255,99,99,0.3)] transition-all duration-300"
+        className="bg-[#FF6363] hover:bg-[#FF6363]/90 text-white border-0 px-10 py-7 text-lg font-bold shadow-[0_0_40px_rgba(255,99,99,0.4)] hover:shadow-[0_0_60px_rgba(255,99,99,0.6)] transition-all duration-300 hover:scale-105"
       >
-        <Wallet className="w-4 h-4 mr-2" />
+        <Wallet className="w-6 h-6 mr-3" />
         Connect Wallet
       </Button>
       {(localError || connectError) && (
-        <div className="absolute top-full right-0 mt-2 flex items-center gap-1 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded px-2 py-1 max-w-xs whitespace-nowrap">
-          <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+        <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 flex items-center gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 max-w-xs whitespace-nowrap backdrop-blur-sm">
+          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
           <span className="truncate">{localError || connectError?.message}</span>
         </div>
       )}
