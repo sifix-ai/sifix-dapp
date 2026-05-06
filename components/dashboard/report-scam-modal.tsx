@@ -165,7 +165,7 @@ function Step2Preview({ targetAddress, selectedReasons, customText, chainId, isD
   };
   const hash = hashReasonData(reasonData);
   // On mainnet without a deployed contract, require switching to testnet first
-  const mainnetMissingContract = !isDomain && chainId === base.id && !CONTRACT_ADDRESSES[base.id];
+    const mainnetMissing = !isDomain && chainId === base.id && !(CONTRACT_ADDRESSES as any)[base.id];
   const isSupported = isDomain || ((SUPPORTED_CHAIN_IDS as readonly number[]).includes(chainId) && !mainnetMissingContract);
 
   return (
