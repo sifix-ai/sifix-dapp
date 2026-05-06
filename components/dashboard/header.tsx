@@ -2,11 +2,11 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Bell, Search, Wallet, LogOut, ChevronDown, Copy, Check } from "lucide-react";
-import { useAccount, useConnect, useDisconnect, useNetwork } from "wagmi";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
 import { useBalance } from "@/hooks/use-balance";
 
 function NetworkStatus() {
-  const { chain } = useNetwork();
+  const { chain } = useAccount();
 
   if (!chain) {
     return (
