@@ -1,97 +1,48 @@
-/**
- * Address Lookup Endpoint
- * GET /api/v1/address/[address]
- *
- * Get detailed information about an address including:
- * - Status (LEGIT, SCAM, SUSPICIOUS, UNKNOWN)
- * - Risk score
- * - Category
- * - Tags
- * - Reports
- * - Recent scans
- */
+// GET /api/v1/address/:address - Get address reputation
 
-import { NextRequest } from 'next/server';
-import { apiSuccess, errors, parseQueryParams, withErrorHandler } from '@/lib/api-response';
-import { addressSchema } from '@/lib/validation';
-import prisma from '@/lib/prisma';
-import type { AddressDTO } from '@/types/api';
+import { NextRequest, NextResponse } from 'next/server';
+import { AddressService } from '@/services/address-service';
+import { apiResponse, apiError } from '@/lib/api-response';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ address: string }> }
+  { params }: { params: { address: string } }
 ) {
-  return withErrorHandler(async () => {
-    const { address: addressParam } = await params;
+  try {
+    const { address } = params;
 
-    // Validate address format
-    const addressResult = addressSchema.safeParse(addressParam);
-    if (!addressResult.success) {
-      return errors.invalidAddress(addressResult.error.errors);
+    if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      return apiError('Invalid address format', 400);
     }
 
-    const address = addressResult.data;
+    const data = await AddressService.getDetails(address);
 
-    // Fetch address with relations
-    const addressData = await prisma.address.findUnique({
-      where: { address },
-      include: {
-        tags: {
-          select: {
-            id: true,
-            tag: true,
-            taggedBy: true,
-            createdAt: true,
-          },
-          orderBy: { createdAt: 'asc' },
-        },
-        scans: {
-          orderBy: { createdAt: 'desc' },
-          take: 1,
-          select: {
-            id: true,
-            createdAt: true,
-          },
-        },
-        _count: {
-          select: { reports: true },
-        },
-      },
-    });
-
-    // If address not found, return 404
-    if (!addressData) {
-      return errors.addressNotFound(address);
+    if (!data) {
+      return apiError('Address not found', 404);
     }
 
-    // Format response
-    const response: AddressDTO = {
-      id: addressData.id,
-      address: addressData.address,
-      name: addressData.name,
-      chain: addressData.chain,
-      status: addressData.status,
-      riskScore: addressData.riskScore,
-      category: addressData.category,
-      source: addressData.source,
-      description: addressData.description,
-      url: addressData.url,
-      logoUrl: addressData.logoUrl,
-      tvl: addressData.tvl ? Number(addressData.tvl) : null,
-      verifiedBy: addressData.verifiedBy,
-      verifiedAt: addressData.verifiedAt?.toISOString() || null,
-      createdAt: addressData.createdAt.toISOString(),
-      updatedAt: addressData.updatedAt.toISOString(),
-      tags: addressData.tags.map((tag: any) => ({
-        id: tag.id,
-        tag: tag.tag,
-        taggedBy: tag.taggedBy,
-        createdAt: tag.createdAt.toISOString(),
+    return apiResponse({
+      address: data.address,
+      chain: data.chain,
+      addressType: data.addressType,
+      riskScore: data.riskScore,
+      riskLevel: data.riskLevel,
+      totalReports: data.totalReports,
+      reports: data.reports.map((r) => ({
+        id: r.id,
+        threatType: r.threatType,
+        severity: r.severity,
+        riskLevel: r.riskLevel,
+        explanation: r.explanation,
+        status: r.status,
+        createdAt: r.createdAt,
       })),
-      reportCount: addressData._count.reports,
-      lastScanned: addressData.scans[0]?.createdAt.toISOString() || null,
-    };
-
-    return apiSuccess(response);
-  });
+      reputation: data.reputation,
+      firstSeenAt: data.firstSeenAt,
+      lastSeenAt: data.lastSeenAt,
+    });
+  } catch (error) {
+    console.error('Error fetching address:', error);
+    return apiError('Internal server error', 500);
+  }
 }
