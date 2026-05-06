@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { AddressService } from '@/services/address-service';
-import { apiResponse, apiError } from '@/lib/api-response';
+import { apiSuccess, apiError } from '@/lib/api-response';
 
 export async function GET(
   request: NextRequest,
@@ -21,7 +21,7 @@ export async function GET(
       return apiError('Address not found', 404);
     }
 
-    return apiResponse({
+    return apiSuccess({
       address: data.address,
       chain: data.chain,
       addressType: data.addressType,

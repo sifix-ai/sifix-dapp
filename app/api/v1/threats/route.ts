@@ -3,7 +3,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { ReportService } from '@/services/report-service';
-import { apiResponse, apiError } from '@/lib/api-response';
+import { apiSuccess, apiError } from '@/lib/api-response';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     const reports = await ReportService.list(filters);
 
-    return apiResponse({
+    return apiSuccess({
       reports: reports.reports.map((r) => ({
         id: r.id,
         address: r.address.address,
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
       simulationData,
     });
 
-    return apiResponse(
+    return apiSuccess(
       {
         id: report.id,
         address: report.address.address,

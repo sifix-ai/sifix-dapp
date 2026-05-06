@@ -26,7 +26,7 @@ function NetworkModeButtons() {
             : "text-muted hover:text-foreground"
         }`}
         aria-pressed={isTestnetActive}
-        title="Scanning is currently enabled on 0G Newton"
+        title="Scanning is currently enabled on Base Sepolia"
       >
         Testnet
       </button>

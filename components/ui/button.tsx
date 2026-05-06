@@ -17,10 +17,10 @@ type ButtonProps = ButtonAsButton | ButtonAsLink;
 
 const variants: Record<ButtonVariant, string> = {
   primary:
-    "bg-blue-600 text-white hover:bg-blue-700 font-semibold hover:shadow-[0_0_24px_rgba(59,130,246,0.4)] transition-shadow",
+    "bg-accent text-white hover:bg-accent-dark font-semibold hover:shadow-[0_0_24px_rgba(59,130,246,0.4)] transition-shadow",
   secondary:
-    "border border-gray-700 text-white hover:bg-gray-800 hover:border-blue-500/40",
-  ghost: "text-gray-400 hover:text-white",
+    "border border-card-border text-foreground hover:bg-surface hover:border-accent/40",
+  ghost: "text-muted hover:text-foreground",
   danger: "bg-red-600 text-white hover:bg-red-700",
 };
 
@@ -36,7 +36,7 @@ export function Button({
   className = "",
   ...props
 }: ButtonProps) {
-  const classes = `inline-flex items-center justify-center rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${variants[variant]} ${sizes[size]} ${className}`;
+  const classes = `inline-flex items-center justify-center rounded-full transition-colors ${variants[variant]} ${sizes[size]} ${className}`;
 
   if ("href" in props && props.href) {
     return <a className={classes} {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)} />;

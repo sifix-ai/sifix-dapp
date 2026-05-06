@@ -1,7 +1,7 @@
 // Health check endpoint
 
 import { NextRequest } from 'next/server';
-import { apiResponse, apiError } from '@/lib/api-response';
+import { apiSuccess, apiError } from '@/lib/api-response';
 import { prisma } from '@/lib/prisma';
 
 export async function GET(request: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     // Test database connection
     await prisma.$queryRaw`SELECT 1`;
 
-    return apiResponse({
+    return apiSuccess({
       status: 'healthy',
       timestamp: new Date().toISOString(),
       database: 'connected',

@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
 
-type Variant = "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
-type Size = "default" | "sm" | "lg" | "icon";
+type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Size = "sm" | "md" | "lg";
 
 interface GuardedButtonProps {
   href: string;
@@ -22,8 +22,8 @@ interface GuardedButtonProps {
  */
 export function GuardedButton({
   href,
-  variant = "default",
-  size = "default",
+  variant = "primary",
+  size = "md",
   className,
   children,
 }: GuardedButtonProps) {

@@ -2,7 +2,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { StatsService } from '@/services/stats-service';
-import { apiResponse, apiError } from '@/lib/api-response';
+import { apiSuccess, apiError } from '@/lib/api-response';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
 
     const leaderboard = await StatsService.getLeaderboard(limit);
 
-    return apiResponse({
+    return apiSuccess({
       leaderboard: leaderboard.map((entry) => ({
         address: entry.address.address,
         overallScore: entry.overallScore,

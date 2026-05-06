@@ -49,7 +49,7 @@ export function normalizeAddress(address: string): string {
 }
 
 /**
- * Generate address color 0gd on address hash
+ * Generate address color based on address hash
  * Useful for generating consistent avatars/backgrounds
  */
 export function getAddressColor(address: string): string {
