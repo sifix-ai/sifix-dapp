@@ -1,7 +1,7 @@
 /**
  * Viem Client Configuration
  *
- * Configures Viem clients for interacting with Base Sepolia blockchain.
+ * Configures Viem clients for interacting with 0G Newton blockchain.
  * - Public client: For reading blockchain data (getCode, readContract, etc.)
  * - Wallet client: For server-side contract writes (with private key)
  *
@@ -10,24 +10,17 @@
  */
 
 import { createPublicClient, createWalletClient, http, type Chain, type PublicClient, type WalletClient } from 'viem';
-import { base, baseSepolia, mainnet, sepolia } from 'viem/chains';
+import { SIFIX_CHAIN } from '@/config/chains';
 
 /**
  * Validate required environment variables
  */
 function validateEnv(): {
-  sepoliaRpcUrl: string;
-  mainnetRpcUrl: string;
+  rpcUrl: string;
   privateKey?: `0x${string}`;
 } {
-  const sepoliaRpcUrl =
-    process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL ??
-    process.env.NEXT_PUBLIC_BASE_RPC_URL ??
-    'https://sepolia.base.org';
-
-  const mainnetRpcUrl =
-    process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL ??
-    'https://mainnet.base.org';
+  const rpcUrl =
+    process.env.NEXT_PUBLIC_RPC_URL ?? 'https://evmrpc-testnet.0g.ai';
 
   const privateKey = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined;
 
@@ -40,67 +33,23 @@ function validateEnv(): {
     throw new Error('WALLET_PRIVATE_KEY must be 66 characters (0x + 64 hex chars)');
   }
 
-  return { sepoliaRpcUrl, mainnetRpcUrl, privateKey };
+  return { rpcUrl, privateKey };
 }
 
 /**
- * Custom Base Sepolia chain configuration with additional metadata
+ * Custom 0G Newton chain configuration
  */
-export const baseMainnetConfig: Chain = {
-  ...base,
-  name: 'Base',
+export const sifixChainConfig: Chain = {
+  ...SIFIX_CHAIN,
+  name: '0G Newton Testnet',
   nativeCurrency: {
-    name: 'Ether',
-    symbol: 'ETH',
+    name: 'A0GI',
+    symbol: 'A0GI',
     decimals: 18,
   },
 };
 
-/**
- * Custom Base Sepolia chain configuration with additional metadata
- */
-export const baseSepoliaConfig: Chain = {
-  ...baseSepolia,
-  name: 'Base Sepolia',
-  nativeCurrency: {
-    name: 'Ether',
-    symbol: 'ETH',
-    decimals: 18,
-  },
-};
-
-const { sepoliaRpcUrl, mainnetRpcUrl, privateKey } = validateEnv();
-
-function getDefaultScanChainId(): number {
-  const raw =
-    process.env.NEXT_PUBLIC_SCAN_CHAIN_ID ??
-    process.env.NEXT_PUBLIC_BASE_CHAIN_ID ??
-    `${baseSepolia.id}`;
-  const parsed = Number.parseInt(raw, 10);
-  if (parsed === base.id || parsed === baseSepolia.id) return parsed;
-  return baseSepolia.id;
-}
-
-const baseMainnetClient = createPublicClient({
-  chain: baseMainnetConfig,
-  transport: http(mainnetRpcUrl, {
-    timeout: 30_000,
-    retryCount: 3,
-  }),
-});
-
-const baseSepoliaClient = createPublicClient({
-  chain: baseSepoliaConfig,
-  transport: http(sepoliaRpcUrl, {
-    timeout: 30_000,
-    retryCount: 3,
-  }),
-});
-
-export function getScanClient(chainId?: number): PublicClient {
-  const targetChainId = chainId ?? getDefaultScanChainId();
-  return targetChainId === base.id ? baseMainnetClient : baseSepoliaClient;
-}
+const { rpcUrl, privateKey } = validateEnv();
 
 /**
  * Public Client
@@ -111,7 +60,13 @@ export function getScanClient(chainId?: number): PublicClient {
  * - getBalance() - Get address balance
  * - etc.
  */
-export const publicClient = getScanClient();
+export const publicClient = createPublicClient({
+  chain: sifixChainConfig,
+  transport: http(rpcUrl, {
+    timeout: 30_000,
+    retryCount: 3,
+  }),
+});
 
 /**
  * Wallet Client (Server-Side Only!)
@@ -125,41 +80,14 @@ export const publicClient = getScanClient();
  */
 export const walletClient = privateKey
   ? createWalletClient({
-    chain: baseSepoliaConfig,
-    transport: http(sepoliaRpcUrl, {
-      timeout: 30_000,
-      retryCount: 3,
-    }),
-    account: privateKey,
-  })
+      chain: sifixChainConfig,
+      transport: http(rpcUrl, {
+        timeout: 30_000,
+        retryCount: 3,
+      }),
+      account: privateKey,
+    })
   : null;
-
-/**
- * Ethereum Client for ENS Resolution
- *
- * ENS (Ethereum Name Service) is deployed on Ethereum mainnet.
- * For testing, we support both mainnet and sepolia.
- *
- * IMPORTANT: For production ENS resolution, use Ethereum mainnet RPC.
- */
-import { fallback } from 'viem';
-
-// Detect if using sepolia or mainnet based on env var
-const isEnsSepolia = process.env.ETHEREUM_RPC_URL?.includes('sepolia');
-
-export const ensClient = createPublicClient({
-  chain: isEnsSepolia ? sepolia : mainnet,
-  transport: fallback([
-    http(process.env.ETHEREUM_RPC_URL || 'https://eth.drpc.org', {
-      timeout: 30_000,
-      retryCount: 2,
-    }),
-    http('https://eth.public-rpc.com', {
-      timeout: 30_000,
-      retryCount: 1,
-    }),
-  ]),
-});
 
 /**
  * Check if address is a valid Ethereum address
@@ -173,13 +101,13 @@ export function isValidAddress(address: string): boolean {
  * Get contract bytecode
  * Returns null if address has no code (EOA)
  */
-export async function getBytecode(address: string, chainId?: number): Promise<`0x${string}` | null> {
+export async function getBytecode(address: string): Promise<`0x${string}` | null> {
   if (!isValidAddress(address)) {
     throw new Error('Invalid address format');
   }
 
   try {
-    const bytecode = await getScanClient(chainId).getCode({
+    const bytecode = await publicClient.getCode({
       address: address as `0x${string}`,
     });
 
@@ -197,8 +125,8 @@ export async function getBytecode(address: string, chainId?: number): Promise<`0
 /**
  * Get bytecode hash for similarity detection
  */
-export async function getBytecodeHash(address: string, chainId?: number): Promise<string | null> {
-  const bytecode = await getBytecode(address, chainId);
+export async function getBytecodeHash(address: string): Promise<string | null> {
+  const bytecode = await getBytecode(address);
   if (!bytecode) return null;
 
   // Simple hash: first 10 bytes + last 10 bytes for quick comparison
@@ -209,20 +137,20 @@ export async function getBytecodeHash(address: string, chainId?: number): Promis
 /**
  * Check if address is a contract (has bytecode)
  */
-export async function isContract(address: string, chainId?: number): Promise<boolean> {
-  const bytecode = await getBytecode(address, chainId);
+export async function isContract(address: string): Promise<boolean> {
+  const bytecode = await getBytecode(address);
   return bytecode !== null && bytecode !== '0x';
 }
 
 /**
  * Get transaction receipt
  */
-export async function getTransactionReceipt(txHash: string, chainId?: number) {
+export async function getTransactionReceipt(txHash: string) {
   if (!txHash.startsWith('0x') || txHash.length !== 66) {
     throw new Error('Invalid transaction hash format');
   }
 
-  return getScanClient(chainId).getTransactionReceipt({
+  return publicClient.getTransactionReceipt({
     hash: txHash as `0x${string}`,
   });
 }
@@ -233,7 +161,7 @@ export async function getTransactionReceipt(txHash: string, chainId?: number) {
 export type { Chain, PublicClient, WalletClient };
 
 // ============================================
-// ENS / INPUT TYPE DETECTION
+// INPUT TYPE DETECTION
 // ============================================
 
 export type ScanInputType = 'address' | 'ens' | 'domain';
@@ -254,25 +182,12 @@ export function detectInputType(input: string): ScanInputType {
 }
 
 /**
- * Resolve an ENS name to its underlying Ethereum address.
- * Uses mainnet ENS registry (ENS only works on mainnet, not testnet).
- * Returns null if the name has no resolver or no address record.
- */
-export async function resolveEns(ensName: string): Promise<`0x${string}` | null> {
-  try {
-    const address = await ensClient.getEnsAddress({
-      name: ensName,
-    });
-    return address ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Given any user input (address / ENS / domain) return its normalised
- * address (0x…) and detected input type.  Returns null address for domains
+ * address (0x…) and detected input type. Returns null address for domains
  * so callers can perform a database-only lookup instead of a chain lookup.
+ *
+ * Note: ENS resolution is not supported on 0G chain. ENS names will
+ * return null address.
  */
 export async function resolveInput(input: string): Promise<{
   inputType: ScanInputType;
@@ -285,8 +200,8 @@ export async function resolveInput(input: string): Promise<{
   }
 
   if (type === 'ens') {
-    const resolved = await resolveEns(input.trim());
-    return { inputType: 'ens', resolvedAddress: resolved };
+    // ENS is not supported on 0G chain
+    return { inputType: 'ens', resolvedAddress: null };
   }
 
   // domain – no on-chain resolution; caller searches the database by url field

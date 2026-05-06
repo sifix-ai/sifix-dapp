@@ -12,27 +12,41 @@ export default {
         sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
-        background: '#07080a',
-        foreground: '#f9f9f9',
+        background: '#0a0a0f',
+        foreground: '#e5e5e5',
         primary: {
-          DEFAULT: '#FF6363',
+          DEFAULT: '#ff6b6b',
+          dark: '#e55a5a',
           foreground: '#ffffff',
         },
         secondary: {
           DEFAULT: '#18191a',
-          foreground: '#f9f9f9',
+          foreground: '#e5e5e5',
         },
         accent: {
-          DEFAULT: '#55b3ff',
+          DEFAULT: '#4ecdc4',
+          foreground: '#ffffff',
+        },
+        teal: {
+          DEFAULT: '#4ecdc4',
+          dark: '#3db8b0',
+          foreground: '#ffffff',
+        },
+        coral: {
+          DEFAULT: '#ff6b6b',
+          dark: '#e55a5a',
           foreground: '#ffffff',
         },
         destructive: {
-          DEFAULT: '#FF6363',
+          DEFAULT: '#ff6b6b',
           foreground: '#ffffff',
         },
         border: '#252829',
         input: '#252829',
-        ring: '#FF6363',
+        ring: '#ff6b6b',
+        muted: '#9CA3AF',
+        card: '#101111',
+        surface: '#07080a',
       },
       borderRadius: {
         lg: '0.75rem',

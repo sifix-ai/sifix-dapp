@@ -208,3 +208,57 @@ export function severityToNumber(
   const map = { LOW: 0, MEDIUM: 1, HIGH: 2, CRITICAL: 3 }
   return map[severity]
 }
+
+/**
+ * Estimate gas for reporting threat
+ */
+export async function estimateGasForReport(
+  targetAddress: Address,
+  severity: number,
+  evidenceHash: string
+): Promise<{ gasEstimate: bigint; gasCost: string; error?: string }> {
+  try {
+    const privateKey = process.env.PRIVATE_KEY
+    if (!privateKey) {
+      return {
+        gasEstimate: 0n,
+        gasCost: "0",
+        error: "No private key configured for gas estimation"
+      }
+    }
+
+    const account = privateKeyToAccount(privateKey as `0x${string}`)
+    const walletClient = createWalletClient({
+      account,
+      chain: zgChain,
+      transport: http()
+    })
+
+    // Estimate gas for the transaction
+    const gasEstimate = await walletClient.estimateContractGas({
+      address: CONTRACT_ADDRESS,
+      abi: CONTRACT_ABI,
+      functionName: "reportThreat",
+      args: [targetAddress, severity, evidenceHash]
+    })
+
+    // Get current gas price
+    const gasPrice = await publicClient.getGasPrice()
+
+    // Calculate total gas cost in A0GI
+    const gasCost = gasEstimate * gasPrice
+    const gasCostFormatted = parseFloat(formatUnits(gasCost, 18)).toFixed(6)
+
+    return {
+      gasEstimate,
+      gasCost: gasCostFormatted
+    }
+  } catch (error) {
+    console.error("[Contract] Gas estimation failed:", error)
+    return {
+      gasEstimate: 0n,
+      gasCost: "0",
+      error: error instanceof Error ? error.message : "Gas estimation failed"
+    }
+  }
+}

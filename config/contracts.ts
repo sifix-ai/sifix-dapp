@@ -1,7 +1,7 @@
 // SIFIX Smart Contract Configuration
 
 // 0G Chain Testnet
-export const ZEROG_CHAIN_ID = 16600;
+export const ZEROG_CHAIN_ID = 16602;
 
 export const SUPPORTED_CHAIN_IDS = [ZEROG_CHAIN_ID] as const;
 

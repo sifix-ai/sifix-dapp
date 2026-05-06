@@ -1,26 +1,25 @@
 /**
  * Wagmi v3 Configuration
  *
- * Client-side wallet and contract interaction for Base / Base Sepolia.
- * Uses injected() for MetaMask and coinbaseWallet() for Coinbase Wallet.
+ * Client-side wallet and contract interaction for 0G Newton Testnet.
+ * Uses injected() for MetaMask and other wallet providers.
  */
 
 import { createConfig, http } from 'wagmi';
-import { base, baseSepolia } from 'wagmi/chains';
 import { injected } from 'wagmi';
+import { SIFIX_CHAIN } from '@/config/chains';
 
 export const wagmiConfig = createConfig({
-  chains: [base, baseSepolia],
+  chains: [SIFIX_CHAIN],
   connectors: [
     injected(),
   ],
   transports: {
-    [base.id]: http('https://mainnet.base.org'),
-    [baseSepolia.id]: http(
-      process.env.NEXT_PUBLIC_BASE_RPC_URL ?? 'https://sepolia.base.org'
+    [SIFIX_CHAIN.id]: http(
+      process.env.NEXT_PUBLIC_RPC_URL ?? 'https://evmrpc-testnet.0g.ai'
     ),
   },
   ssr: true,
 });
 
-export { base, baseSepolia };
+export { SIFIX_CHAIN };

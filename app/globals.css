@@ -1,15 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --background: #000000;
-  --foreground: #E5E7EB;
-  --accent: #3B82F6;
-  --accent-dark: #2563EB;
-  --glow: #22D3EE;
+  --background: #0a0a0f;
+  --foreground: #e5e5e5;
+  --accent: #ff6b6b;
+  --accent-dark: #e55a5a;
+  --glow: #ff6b6b;
   --muted: #9CA3AF;
-  --card: #0D0D0D;
-  --card-border: #1F1F1F;
-  --surface: #0A0A0A;
+  --card: #101111;
+  --card-border: #252829;
+  --surface: #07080a;
+  --primary: #ff6b6b;
+  --primary-dark: #e55a5a;
+  --teal: #4ecdc4;
 }
 
 @theme inline {
@@ -55,20 +58,25 @@ html {
   background: var(--muted);
 }
 
-/* Blue Neon gradient utility */
-.gradient-blue {
-  background: linear-gradient(to right, #3B82F6, #22D3EE);
+/* 0G gradient utility (coral → teal) */
+.gradient-0g {
+  background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
 }
 
-/* Gradient text (blue → cyan) */
+/* Gradient text (0G coral → teal) */
 .gradient-text {
-  background: linear-gradient(to right, #3B82F6, #22D3EE);
+  background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-/* Soft blue glow — use on buttons, active states */
+/* 0G coral glow — use on buttons, active states */
 .glow-accent {
-  box-shadow: 0 0 20px rgba(59, 130, 246, 0.25), 0 0 40px rgba(59, 130, 246, 0.1);
+  box-shadow: 0 0 20px rgba(255, 107, 107, 0.25), 0 0 40px rgba(255, 107, 107, 0.1);
+}
+
+/* Teal accent glow */
+.glow-teal {
+  box-shadow: 0 0 20px rgba(78, 205, 196, 0.25), 0 0 40px rgba(78, 205, 196, 0.1);
 }

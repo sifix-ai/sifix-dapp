@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { addressSchema, scanRequestSchema, reportThreatSchema } from '@/lib/validations'
 import type { ScanRequest, ReportThreat } from '@/lib/validations'
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
 // Scan address
 export function useScanAddress() {

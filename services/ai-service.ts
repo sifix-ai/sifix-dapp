@@ -2,9 +2,14 @@
 
 import OpenAI from 'openai';
 
+// Validate required environment variables
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY environment variable is required for AI service');
+}
+
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || 'sk-30219bc58d0c41ad-x8gv9t-83b19c4e',
-  baseURL: process.env.OPENAI_BASE_URL || 'http://43.156.177.86:20128/v1',
+  apiKey: process.env.OPENAI_API_KEY,
+  baseURL: process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1',
 });
 
 export interface AIAnalysisInput {
