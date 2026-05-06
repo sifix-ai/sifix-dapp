@@ -18,7 +18,7 @@ if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma;
 
 export default prisma;
 
-// Helper function to disconnect Prisma (useful in tests)
+// Helper function to disconnect Prisma
 export async function disconnectPrisma() {
   await prisma.$disconnect();
 }

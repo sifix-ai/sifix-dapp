@@ -8,7 +8,4 @@ export default defineConfig({
   datasource: {
     url: 'file:./dev.db',
   },
-  client: {
-    engineType: 'library', // Use library engine for SQLite
-  },
 });
