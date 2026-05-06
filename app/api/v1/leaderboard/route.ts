@@ -23,6 +23,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching leaderboard:', error);
-    return apiError('Internal server error', 500);
+    return apiError('Internal server error', '500');
   }
 }

@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching threats:', error);
-    return apiError('Internal server error', 500);
+    return apiError('Internal server error', '500');
   }
 }
 
@@ -59,15 +59,15 @@ export async function POST(request: NextRequest) {
 
     // Validation
     if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
-      return apiError('Invalid address format', 400);
+      return apiError('Invalid address format', '400');
     }
 
     if (!reporterAddress || !/^0x[a-fA-F0-9]{40}$/.test(reporterAddress)) {
-      return apiError('Invalid reporter address format', 400);
+      return apiError('Invalid reporter address format', '400');
     }
 
     if (!threatType || !severity || !evidenceHash || !explanation || !confidence) {
-      return apiError('Missing required fields', 400);
+      return apiError('Missing required fields', '400');
     }
 
     const report = await ReportService.create({
@@ -96,6 +96,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Error creating report:', error);
-    return apiError('Internal server error', 500);
+    return apiError('Internal server error', '500');
   }
 }

@@ -12,13 +12,13 @@ export async function GET(
     const { address } = await params;
 
     if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
-      return apiError('Invalid address format', 400);
+      return apiError('Invalid address format', '400');
     }
 
     const data = await AddressService.getDetails(address);
 
     if (!data) {
-      return apiError('Address not found', 404);
+      return apiError('Address not found', '404');
     }
 
     return apiSuccess({
@@ -43,6 +43,6 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error fetching address:', error);
-    return apiError('Internal server error', 500);
+    return apiError('Internal server error', '500');
   }
 }

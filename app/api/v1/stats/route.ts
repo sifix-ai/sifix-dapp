@@ -10,6 +10,6 @@ export async function GET(request: NextRequest) {
     return apiSuccess(stats);
   } catch (error) {
     console.error('Error fetching stats:', error);
-    return apiError('Internal server error', 500);
+    return apiError('Internal server error', '500');
   }
 }

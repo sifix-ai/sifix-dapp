@@ -16,6 +16,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Health check failed:', error);
-    return apiError('Service unhealthy', 503);
+    return apiError('Service unhealthy', '503');
   }
 }
