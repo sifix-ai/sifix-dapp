@@ -2,7 +2,7 @@
 
 import { useAccount } from 'wagmi'
 import { ConnectButton } from '@rainbow-me/rainbowkit'
-import { Shield, Sparkles, Lock, Zap } from 'lucide-react'
+import { Shield, Sparkles } from 'lucide-react'
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isConnected } = useAccount()
@@ -40,61 +40,16 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             </p>
           </div>
           
-          {/* Connect Button */}
+          {/* Connect Button - Simple RainbowKit Button */}
           <div className="flex justify-center mb-8">
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-r from-[#FF6363] to-[#55b3ff] rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#FF6363] to-[#55b3ff] rounded-xl blur opacity-50 group-hover:opacity-75 transition-opacity" />
               <div className="relative">
-                <ConnectButton.Custom>
-                  {({
-                    account,
-                    chain,
-                    openAccountModal,
-                    openChainModal,
-                    openConnectModal,
-                    authenticationStatus,
-                    mounted,
-                  }) => {
-                    const ready = mounted && authenticationStatus !== 'loading'
-                    const connected =
-                      ready &&
-                      account &&
-                      chain &&
-                      (!authenticationStatus ||
-                        authenticationStatus === 'authenticated')
-
-                    return (
-                      <div
-                        {...(!ready && {
-                          'aria-hidden': true,
-                          'style': {
-                            opacity: 0,
-                            pointerEvents: 'none',
-                            userSelect: 'none',
-                          },
-                        })}
-                      >
-                        {(() => {
-                          if (!connected) {
-                            return (
-                              <button
-                                onClick={openConnectModal}
-                                type="button"
-                                className="px-8 py-4 bg-gradient-to-r from-[#FF6363] to-[#FF6363]/80 hover:from-[#FF6363]/90 hover:to-[#FF6363]/70 text-white rounded-xl font-semibold text-lg transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg shadow-[#FF6363]/30 flex items-center gap-3"
-                              >
-                                <Lock className="w-5 h-5" />
-                                Connect Wallet
-                                <Zap className="w-5 h-5" />
-                              </button>
-                            )
-                          }
-
-                          return null
-                        })()}
-                      </div>
-                    )
-                  }}
-                </ConnectButton.Custom>
+                <ConnectButton 
+                  chainStatus="icon"
+                  showBalance={false}
+                  accountStatus="address"
+                />
               </div>
             </div>
           </div>
@@ -130,7 +85,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             </div>
           </div>
           
-          {/* Footer Note */}
+          {/* Footer */}
           <div className="mt-8 text-center">
             <p className="text-xs text-white/40">
               Supported wallets: MetaMask, WalletConnect, Coinbase Wallet, and more
