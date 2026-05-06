@@ -1,26 +1,44 @@
-/**
- * Wagmi v3 Configuration
- *
- * Client-side wallet and contract interaction for Base / Base Sepolia.
- * Uses injected() for MetaMask and coinbaseWallet() for Coinbase Wallet.
- */
+import { http, createConfig } from 'wagmi';
+import { mainnet, sepolia } from 'wagmi/chains';
+import { injected, metaMask, safe, walletConnect } from 'wagmi/connectors';
 
-import { createConfig, http } from 'wagmi';
-import { base, baseSepolia } from 'wagmi/chains';
-import { injected } from 'wagmi';
+// 0G Chain config
+export const zgChain = {
+  id: 16602,
+  name: '0G Newton Testnet',
+  network: '0g-newton',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'A0GI',
+    symbol: 'A0GI',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc-testnet.0g.ai'],
+    },
+    public: {
+      http: ['https://rpc-testnet.0g.ai'],
+    },
+  },
+  blockExplorers: {
+    default: {
+      name: '0G Explorer',
+      url: 'https://chainscan-newton.0g.ai',
+    },
+  },
+  testnet: true,
+} as const;
 
-export const wagmiConfig = createConfig({
-  chains: [base, baseSepolia],
+export const config = createConfig({
+  chains: [zgChain, mainnet, sepolia],
   connectors: [
     injected(),
+    metaMask(),
+    safe(),
   ],
   transports: {
-    [base.id]: http('https://mainnet.base.org'),
-    [baseSepolia.id]: http(
-      process.env.NEXT_PUBLIC_BASE_RPC_URL ?? 'https://sepolia.base.org'
-    ),
+    [zgChain.id]: http(),
+    [mainnet.id]: http(),
+    [sepolia.id]: http(),
   },
-  ssr: true,
 });
-
-export { base, baseSepolia };
