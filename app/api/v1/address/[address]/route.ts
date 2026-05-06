@@ -6,10 +6,10 @@ import { apiResponse, apiError } from '@/lib/api-response';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { address: string } }
+  { params }: { params: Promise<{ address: string }> }
 ) {
   try {
-    const { address } = params;
+    const { address } = await params;
 
     if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
       return apiError('Invalid address format', 400);
