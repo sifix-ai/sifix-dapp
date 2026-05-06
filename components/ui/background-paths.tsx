@@ -20,7 +20,7 @@ function FloatingPaths({ position }: { position: number }) {
     return (
         <div className="absolute inset-0 pointer-events-none">
             <svg
-                className="w-full h-full text-indigo-400"
+                className="w-full h-full text-violet-400"
                 viewBox="0 0 696 316"
                 fill="none"
             >
@@ -31,8 +31,8 @@ function FloatingPaths({ position }: { position: number }) {
                         d={path.d}
                         stroke="currentColor"
                         strokeWidth={path.width}
-                        strokeOpacity={0.1 + path.id * 0.02}
-                        initial={{ pathLength: 0.3, opacity: 0.4 }}
+                        strokeOpacity={0.08 + path.id * 0.015}
+                        initial={{ pathLength: 0.3, opacity: 0.3 }}
                         animate={{
                             pathLength: 1,
                             opacity: [0.2, 0.4, 0.2],
@@ -58,15 +58,15 @@ export function BackgroundPaths({
     const words = title.split(" ");
 
     return (
-        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#0a0118] via-[#1a1625] to-[#0a0118]">
             <div className="absolute inset-0">
                 <FloatingPaths position={1} />
                 <FloatingPaths position={-1} />
             </div>
             
-            {/* Gradient orbs */}
-            <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-gradient-to-br from-indigo-600/20 to-violet-600/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-gradient-to-br from-violet-600/20 to-rose-600/20 rounded-full blur-3xl" />
+            {/* Gradient orbs - purple/pink only */}
+            <div className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-violet-600/20 to-pink-600/15 rounded-full blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 w-[500px] h-[500px] bg-gradient-to-br from-pink-600/15 to-violet-600/20 rounded-full blur-3xl" />
             
             <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
                 <motion.div
@@ -95,7 +95,7 @@ export function BackgroundPaths({
                                             damping: 25,
                                         }}
                                         className="inline-block text-transparent bg-clip-text 
-                                        bg-gradient-to-r from-slate-100 to-slate-300"
+                                        bg-gradient-to-r from-violet-200 to-pink-200"
                                     >
                                         {letter}
                                     </motion.span>
@@ -104,22 +104,22 @@ export function BackgroundPaths({
                         ))}
                     </h1>
 
-                    <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto">
+                    <p className="text-xl text-violet-300/60 mb-12 max-w-2xl mx-auto">
                         Join thousands of users protecting their crypto assets with AI-powered security
                     </p>
 
                     <div
-                        className="inline-block group relative bg-gradient-to-b from-indigo-600/20 to-violet-600/20 
+                        className="inline-block group relative bg-gradient-to-b from-violet-600/20 to-pink-600/20 
                         p-px rounded-2xl backdrop-blur-lg overflow-hidden shadow-lg hover:shadow-xl 
-                        transition-shadow duration-300 border border-indigo-500/20"
+                        transition-shadow duration-300 border border-violet-500/20"
                     >
                         <Link href="/dashboard">
                             <Button
                                 variant="ghost"
                                 className="rounded-[1.15rem] px-8 py-6 text-lg font-semibold backdrop-blur-md 
-                                bg-slate-800/95 hover:bg-slate-800/100 text-slate-100 transition-all duration-300 
-                                group-hover:-translate-y-0.5 border border-slate-700/50
-                                hover:shadow-md hover:shadow-indigo-500/20"
+                                bg-[#1a1625]/95 hover:bg-[#1a1625]/100 text-violet-100 transition-all duration-300 
+                                group-hover:-translate-y-0.5 border border-violet-500/20
+                                hover:shadow-md hover:shadow-violet-500/20"
                             >
                                 <span className="opacity-90 group-hover:opacity-100 transition-opacity">
                                     Get Started Now

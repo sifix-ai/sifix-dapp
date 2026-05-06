@@ -12,39 +12,53 @@ export default {
         sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // Premium DARK Theme - Soft Dark (bukan pure black)
-        background: '#0f172a', // slate-900 - lebih soft dari #07080a
-        foreground: '#f1f5f9', // slate-100 - text terang
+        // Premium Dark Theme - Indigo/Purple/Pink palette (NO GREEN)
+        background: '#0a0118', // deep purple-black - lebih premium dari slate
+        foreground: '#f8f7ff', // soft white with purple tint
         
         primary: {
-          DEFAULT: '#6366f1', // indigo - premium accent
+          DEFAULT: '#8b5cf6', // violet-500 - main brand color
+          dark: '#7c3aed', // violet-600
+          light: '#a78bfa', // violet-400
+          foreground: '#ffffff',
+        },
+        
+        secondary: {
+          DEFAULT: '#1e1b2e', // deep purple-gray
+          foreground: '#f8f7ff',
+        },
+        
+        accent: {
+          DEFAULT: '#ec4899', // pink-500 - vibrant accent
+          foreground: '#ffffff',
+        },
+        
+        // Brand colors - Purple/Pink/Blue only (NO GREEN)
+        violet: {
+          DEFAULT: '#8b5cf6',
+          dark: '#7c3aed',
+          light: '#a78bfa',
+          foreground: '#ffffff',
+        },
+        
+        pink: {
+          DEFAULT: '#ec4899', // pink-500
+          dark: '#db2777',
+          light: '#f472b6',
+          foreground: '#ffffff',
+        },
+        
+        indigo: {
+          DEFAULT: '#6366f1', // indigo-500
           dark: '#4f46e5',
           light: '#818cf8',
           foreground: '#ffffff',
         },
         
-        secondary: {
-          DEFAULT: '#1e293b', // slate-800
-          foreground: '#f1f5f9', // slate-100
-        },
-        
-        accent: {
-          DEFAULT: '#8b5cf6', // violet - elegant
-          foreground: '#ffffff',
-        },
-        
-        // Brand colors - refined
-        coral: {
-          DEFAULT: '#f43f5e', // rose-500
-          dark: '#e11d48',
-          light: '#fb7185',
-          foreground: '#ffffff',
-        },
-        
-        teal: {
-          DEFAULT: '#14b8a6', // teal-500
-          dark: '#0d9488',
-          light: '#2dd4bf',
+        cyan: {
+          DEFAULT: '#06b6d4', // cyan-500 - untuk info/stats
+          dark: '#0891b2',
+          light: '#22d3ee',
           foreground: '#ffffff',
         },
         
@@ -54,12 +68,12 @@ export default {
         },
         
         // UI elements - dark theme
-        border: '#334155', // slate-700
-        input: '#1e293b', // slate-800
-        ring: '#6366f1',
-        muted: '#94a3b8', // slate-400
-        card: '#1e293b', // slate-800
-        surface: '#0f172a', // slate-900
+        border: '#2d1b4e', // purple-tinted border
+        input: '#1e1b2e',
+        ring: '#8b5cf6',
+        muted: '#a78bfa', // violet-400
+        card: '#1a1625', // slightly lighter than background
+        surface: '#0a0118',
       },
       borderRadius: {
         lg: '1rem',
@@ -71,6 +85,7 @@ export default {
         'shimmer': 'shimmer 2s linear infinite',
         'float': 'float 6s ease-in-out infinite',
         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+        'glow': 'glow 2s ease-in-out infinite',
       },
       keyframes: {
         gradient: {
@@ -99,14 +114,24 @@ export default {
             transform: 'translateY(-20px)',
           },
         },
+        glow: {
+          '0%, 100%': {
+            opacity: '1',
+          },
+          '50%': {
+            opacity: '0.5',
+          },
+        },
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
         'gradient-conic': 'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
       boxShadow: {
-        'premium': '0 0 0 1px rgba(99, 102, 241, 0.1), 0 2px 4px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.4)',
-        'premium-lg': '0 0 0 1px rgba(99, 102, 241, 0.15), 0 8px 16px rgba(0, 0, 0, 0.4), 0 24px 48px rgba(0, 0, 0, 0.5)',
+        'premium': '0 0 0 1px rgba(139, 92, 246, 0.1), 0 2px 4px rgba(0, 0, 0, 0.3), 0 12px 24px rgba(0, 0, 0, 0.4)',
+        'premium-lg': '0 0 0 1px rgba(139, 92, 246, 0.15), 0 8px 16px rgba(0, 0, 0, 0.4), 0 24px 48px rgba(139, 92, 246, 0.2)',
+        'glow-violet': '0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.2)',
+        'glow-pink': '0 0 20px rgba(236, 72, 153, 0.4), 0 0 40px rgba(236, 72, 153, 0.2)',
       },
     },
   },
