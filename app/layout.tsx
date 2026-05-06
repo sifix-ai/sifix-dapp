@@ -1,36 +1,30 @@
-import type { Metadata } from "next";
-import { Space_Grotesk, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Providers } from "./providers";
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import { Providers } from './providers';
 
-const spaceGrotesk = Space_Grotesk({
-  variable: "--font-space-grotesk",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: "Doman — Web3 Security & Decision Engine",
-  description:
-    "Scan addresses, contracts, and domains before you interact. Doman protects you from Web3 scams with real-time trust scores.",
+  title: 'SIFIX - AI-Powered Wallet Security',
+  description: 'Autonomous AI agent that protects Web3 users by intercepting wallet transactions, analyzing risks, and reporting threats on-chain.',
+  keywords: ['Web3', 'Security', 'AI', 'Blockchain', '0G Chain', 'Wallet Protection'],
+  authors: [{ name: 'SIFIX Team' }],
+  openGraph: {
+    title: 'SIFIX - AI-Powered Wallet Security',
+    description: 'Protect your Web3 transactions with AI-powered threat detection',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html
-      lang="en"
-      suppressHydrationWarning
-      className={`${spaceGrotesk.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body suppressHydrationWarning className="min-h-full flex flex-col">
+    <html lang="en">
+      <body className={inter.className}>
         <Providers>{children}</Providers>
       </body>
     </html>
