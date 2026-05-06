@@ -25,37 +25,27 @@ SIFIX adds an AI security layer between users and blockchain:
 
 ## 🏗️ Architecture
 
-```
-┌─────────────────┐
-│  Browser Wallet │
-│   (MetaMask)    │
-└────────┬────────┘
-         │
-    ┌────▼─────┐
-    │ SIFIX    │
-    │Extension │
-    └────┬─────┘
-         │
-    ┌────▼─────────┐
-    │ SIFIX Agent  │
-    │ (AI + Sim)   │
-    └────┬─────────┘
-         │
-    ┌────▼──────────┐
-    │ 0G Chain      │
-    │ (Reputation)  │
-    └───────────────┘
+```mermaid
+graph TD
+    A[Browser Wallet<br/>MetaMask] --> B[SIFIX Extension<br/>Transaction Interceptor]
+    B --> C[SIFIX Agent<br/>AI Analysis + Simulation]
+    C --> D[0G Chain<br/>Reputation Contract]
+    C --> E[0G Storage<br/>Threat Intelligence]
+    D --> F[On-Chain Reputation<br/>Decentralized Trust]
+    E --> F
 ```
 
 ## 📦 Tech Stack
 
-- **Frontend:** Next.js 14 + TailwindCSS
+- **Frontend:** Next.js 15 + React 19 + TailwindCSS
+- **Wallet:** RainbowKit + Wagmi + Viem
 - **Backend:** Next.js API Routes + Prisma
+- **Database:** PostgreSQL / SQLite
 - **Extension:** Plasmo + Manifest V3
 - **Agent:** TypeScript + OpenAI GPT-4 + Viem
 - **Contracts:** Solidity + Foundry
-- **Chain:** 0G Newton Testnet
-- **Storage:** 0G Storage (threat intelligence)
+- **Chain:** 0G Newton Testnet (Chain ID: 16602)
+- **Storage:** 0G Storage (decentralized threat intelligence)
 
 ## 🚀 Quick Start
 
@@ -75,14 +65,14 @@ cd sifix-dapp
 # Install dependencies
 pnpm install
 
-# Setup database
-cp .env.example .env
-# Edit .env with your credentials
+# Setup environment
+cp .env.example .env.local
+# Edit .env.local with your credentials
 
 # Run migrations
 pnpm prisma migrate dev
 
-# Seed database
+# Seed database (optional)
 pnpm prisma db seed
 
 # Start dev server
@@ -94,73 +84,70 @@ Open http://localhost:3000
 ## 🛡️ Features
 
 ### Dashboard
-- **Reputation Explorer** - Query address reputation
-- **Threat Monitor** - Real-time threat reports
-- **Analytics** - Statistics & charts
-- **Leaderboard** - Top reporters
+- **Search** - Query address reputation and scan for threats
+- **Threat Monitor** - Real-time threat reports from community
+- **Analytics** - Statistics, charts, and threat trends
+- **Leaderboard** - Top security reporters
 
-### API Endpoints
+### Browser Extension
+- **Transaction Interception** - Catches all wallet transactions
+- **Real-time Analysis** - AI-powered risk assessment
+- **Visual Warnings** - Clear threat indicators
+- **One-Click Block** - Stop malicious transactions
 
-```
-GET  /api/v1/address/:address        # Get address reputation
-GET  /api/v1/threats                 # List recent threats
-POST /api/v1/report                  # Submit threat report
-GET  /api/v1/stats                   # Platform statistics
-```
+### AI Agent
+- **Transaction Simulation** - Safe execution preview
+- **GPT-4 Analysis** - Natural language risk explanation
+- **Pattern Recognition** - Detect known attack vectors
+- **Continuous Learning** - Improves from community reports
 
-### Smart Contract
+### Smart Contracts
+- **Reputation System** - On-chain trust scores
+- **Threat Reporting** - Decentralized threat database
+- **Immutable Records** - Transparent security history
 
-**SifixReputation** - Deployed on 0G Newton Testnet
-- Address: `0x544a39149d5169E4e1bDf7F8492804224CB70152`
-- Chain ID: 16602
+## 🔗 Contract Addresses
 
-## 📊 Database Schema
+### 0G Newton Testnet
 
-```prisma
-model Address {
-  id          String   @id @default(cuid())
-  address     String   @unique
-  riskScore   Int      @default(0)
-  totalReports Int     @default(0)
-  reports     Report[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
+- **SifixReputation:** `0x544a39149d5169E4e1bDf7F8492804224CB70152`
+- **Flow Contract:** `0x22E03a6A89B950F1c82ec5e74F8eCa321a1a3F12`
+- **Network:** 0G Newton Testnet
+- **Chain ID:** 16602
+- **RPC:** https://evmrpc-testnet.0g.ai
+- **Explorer:** https://chainscan-newton.0g.ai
 
-model Report {
-  id           String   @id @default(cuid())
-  addressId    String
-  address      Address  @relation(fields: [addressId], references: [id])
-  reporter     String
-  threatType   String
-  severity     Int
-  evidenceHash String
-  explanation  String
-  createdAt    DateTime @default(now())
-}
-```
+## 📚 Documentation
 
-## 🔗 Related Repos
-
-- [sifix-agent](https://github.com/sifix-ai/sifix-agent) - Core AI security engine
-- [sifix-extension](https://github.com/sifix-ai/sifix-extension) - Browser extension
-- [sifix-contracts](https://github.com/sifix-ai/sifix-contracts) - Smart contracts
-- [sifix-docs](https://github.com/sifix-ai/sifix-docs) - Documentation
-
-## 📄 License
-
-MIT
+Full documentation available at: https://github.com/sifix-ai/sifix-docs
 
 ## 🤝 Contributing
 
-We welcome contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
-## 📧 Contact
+## 📄 License
 
-- Twitter: [@sifix_ai](https://twitter.com/sifix_ai)
-- Discord: [Join our community](https://discord.gg/sifix)
-- Email: team@sifix.ai
+MIT License - see [LICENSE](LICENSE) for details.
 
----
+## 🏆 Hackathon
 
-**Built with ❤️ for 0G Chain APAC Hackathon 2026**
+Built for **0G Chain APAC Hackathon 2026**
+
+**Team:** Butuh Uwang  
+**Deadline:** May 16, 2026
+
+## 🔗 Links
+
+- **GitHub Org:** https://github.com/sifix-ai
+- **dApp:** https://github.com/sifix-ai/sifix-dapp
+- **Extension:** https://github.com/sifix-ai/sifix-extension
+- **Contracts:** https://github.com/sifix-ai/sifix-contracts
+- **Agent:** https://github.com/sifix-ai/sifix-agent
+- **Docs:** https://github.com/sifix-ai/sifix-docs
+
+## 🙏 Acknowledgments
+
+- 0G Chain team for the amazing infrastructure
+- OpenAI for GPT-4 API
+- RainbowKit & Wagmi for wallet integration
+- Foundry for smart contract development
