@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Shield, TrendingUp, Users, AlertTriangle, Activity, BarChart3 } from 'lucide-react';
-import Link from 'link';
+import Link from 'next/link';
 
 export default function AnalyticsPage() {
   const [stats, setStats] = useState<any>(null);
