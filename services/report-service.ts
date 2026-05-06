@@ -1,13 +1,11 @@
 // Report Service - Threat report management
 
 import { prisma } from '@/lib/prisma';
-import type { ThreatType, RiskLevel, ReportStatus } from '@prisma/client';
-import { AddressService } from './address-service';
 
 export interface CreateReportInput {
   address: string;
   reporterAddress: string;
-  threatType: ThreatType;
+  threatType: string;
   severity: number;
   evidenceHash: string;
   explanation: string;
@@ -23,10 +21,18 @@ export class ReportService {
    */
   static async create(input: CreateReportInput) {
     // Get or create address
-    const address = await AddressService.getOrCreate(input.address);
+    let addressRecord = await prisma.address.findUnique({
+      where: { address: input.address }
+    });
+
+    if (!addressRecord) {
+      addressRecord = await prisma.address.create({
+        data: { address: input.address }
+      });
+    }
 
     // Determine risk level from severity
-    let riskLevel: RiskLevel = 'LOW';
+    let riskLevel = 'LOW';
     if (input.severity >= 80) riskLevel = 'CRITICAL';
     else if (input.severity >= 60) riskLevel = 'HIGH';
     else if (input.severity >= 40) riskLevel = 'MEDIUM';
@@ -34,7 +40,7 @@ export class ReportService {
     // Create report
     const report = await prisma.threatReport.create({
       data: {
-        addressId: address.id,
+        addressId: addressRecord.id,
         reporterAddress: input.reporterAddress.toLowerCase(),
         threatType: input.threatType,
         severity: input.severity,
@@ -53,10 +59,7 @@ export class ReportService {
     });
 
     // Update address risk score
-    await AddressService.updateRiskScore(address.id);
-
-    // Update reporter reputation
-    await this.updateReporterReputation(input.reporterAddress);
+    await this.updateAddressRiskScore(addressRecord.id);
 
     return report;
   }
@@ -76,93 +79,96 @@ export class ReportService {
   /**
    * List reports with filters
    */
-  static async list(filters: {
-    status?: ReportStatus;
-    threatType?: ThreatType;
-    riskLevel?: RiskLevel;
-    reporterAddress?: string;
+  static async list(filters?: {
+    status?: string;
+    threatType?: string;
+    riskLevel?: string;
     limit?: number;
     offset?: number;
   }) {
-    const { limit = 50, offset = 0, status, threatType, riskLevel, reporterAddress } = filters;
-
-    // Build where clause without null values
     const where: any = {};
-    if (status) where.status = status;
-    if (threatType) where.threatType = threatType;
-    if (riskLevel) where.riskLevel = riskLevel;
-    if (reporterAddress) where.reporterAddress = reporterAddress;
+    
+    if (filters?.status) where.status = filters.status;
+    if (filters?.threatType) where.threatType = filters.threatType;
+    if (filters?.riskLevel) where.riskLevel = filters.riskLevel;
 
-    return prisma.threatReport.findMany({
-      where,
-      include: {
-        address: true,
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
-      skip: offset,
-    });
+    const [reports, total] = await Promise.all([
+      prisma.threatReport.findMany({
+        where,
+        include: {
+          address: true,
+        },
+        orderBy: {
+          createdAt: 'desc',
+        },
+        take: filters?.limit || 50,
+        skip: filters?.offset || 0,
+      }),
+      prisma.threatReport.count({ where }),
+    ]);
+
+    return { reports, total };
   }
 
   /**
-   * Verify report (admin/community action)
+   * Update report status
    */
-  static async verify(id: string, verifiedBy: string) {
-    const report = await prisma.threatReport.update({
+  static async updateStatus(id: string, status: string, verifiedBy?: string) {
+    return prisma.threatReport.update({
       where: { id },
       data: {
-        status: 'VERIFIED',
-        verifiedBy: verifiedBy.toLowerCase(),
-        verifiedAt: new Date(),
-      },
-      include: {
-        address: true,
+        status,
+        verifiedBy,
+        verifiedAt: status === 'VERIFIED' ? new Date() : undefined,
       },
     });
-
-    // Update address risk score
-    await AddressService.updateRiskScore(report.addressId);
-
-    return report;
   }
 
   /**
-   * Update reporter reputation
+   * Get reports for address
    */
-  private static async updateReporterReputation(reporterAddress: string) {
-    const addr = await AddressService.getOrCreate(reporterAddress);
-
-    const stats = await prisma.threatReport.groupBy({
-      by: ['status'],
-      where: { reporterAddress: reporterAddress.toLowerCase() },
-      _count: true,
+  static async getByAddress(address: string) {
+    const addressRecord = await prisma.address.findUnique({
+      where: { address },
+      include: {
+        reports: {
+          orderBy: {
+            createdAt: 'desc',
+          },
+        },
+      },
     });
 
-    const submitted = stats.reduce((sum, s) => sum + s._count, 0);
-    const verified = stats.find((s) => s.status === 'VERIFIED')?._count || 0;
-    const rejected = stats.find((s) => s.status === 'REJECTED')?._count || 0;
+    return addressRecord?.reports || [];
+  }
 
-    const accuracyScore = submitted > 0 ? Math.round((verified / submitted) * 100) : 0;
-    const reporterScore = Math.min(100, verified * 5); // 5 points per verified report
+  /**
+   * Update address risk score based on reports
+   */
+  private static async updateAddressRiskScore(addressId: string) {
+    const reports = await prisma.threatReport.findMany({
+      where: { addressId },
+    });
 
-    await prisma.reputationScore.upsert({
-      where: { addressId: addr.id },
-      create: {
-        addressId: addr.id,
-        overallScore: accuracyScore,
-        reporterScore,
-        accuracyScore,
-        reportsSubmitted: submitted,
-        reportsVerified: verified,
-        reportsRejected: rejected,
-      },
-      update: {
-        overallScore: accuracyScore,
-        reporterScore,
-        accuracyScore,
-        reportsSubmitted: submitted,
-        reportsVerified: verified,
-        reportsRejected: rejected,
+    if (reports.length === 0) return;
+
+    // Calculate average severity
+    const avgSeverity = reports.reduce((sum, r) => sum + r.severity, 0) / reports.length;
+    
+    // Determine risk level
+    let riskLevel = 'LOW';
+    if (avgSeverity >= 80) riskLevel = 'CRITICAL';
+    else if (avgSeverity >= 60) riskLevel = 'HIGH';
+    else if (avgSeverity >= 40) riskLevel = 'MEDIUM';
+
+    // Update address
+    await prisma.address.update({
+      where: { id: addressId },
+      data: {
+        riskScore: Math.round(avgSeverity),
+        riskLevel,
+        totalReports: reports.length,
+        lastSeenAt: new Date(),
       },
     });
   }

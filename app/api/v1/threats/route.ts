@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const reports = await ReportService.list(filters);
 
     return apiResponse({
-      reports: reports.map((r) => ({
+      reports: reports.reports.map((r) => ({
         id: r.id,
         address: r.address.address,
         reporterAddress: r.reporterAddress,
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
         confidence: r.confidence,
         createdAt: r.createdAt,
       })),
-      total: reports.length,
+      total: reports.total,
     });
   } catch (error) {
     console.error('Error fetching threats:', error);

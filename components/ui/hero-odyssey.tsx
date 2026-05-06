@@ -343,17 +343,17 @@ export const HeroSection: React.FC = () => {
     }
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        duration: 0.5,
-        ease: "easeOut"
-      }
+const itemVariants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      duration: 0.6,
+      ease: [0.22, 1, 0.36, 1] as any
     }
-  };
+  }
+}
 return (
     <div className="relative w-full bg-black text-white overflow-hidden">
       {/* Main container with space for content */}

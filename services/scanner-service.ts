@@ -1,9 +1,6 @@
 // Scanner Service - Transaction simulation and AI analysis
 
 import { prisma } from '@/lib/prisma';
-import type { RiskLevel } from '@prisma/client';
-import { AddressService } from './address-service';
-import { AIService } from './ai-service';
 
 export interface ScanTransactionInput {
   from: string;
@@ -18,7 +15,7 @@ export interface ScanResult {
   gasUsed?: string;
   stateChanges?: string;
   riskScore: number;
-  riskLevel: RiskLevel;
+  riskLevel: string;
   recommendation: 'APPROVE' | 'REJECT' | 'WARN';
   explanation: string;
   detectedThreats?: string[];
@@ -30,94 +27,94 @@ export class ScannerService {
    * Scan transaction with AI analysis
    */
   static async scanTransaction(input: ScanTransactionInput): Promise<ScanResult> {
-    // 1. Check if address exists in database
-    const toAddress = await AddressService.getDetails(input.to);
-    
-    // 2. Analyze with AI
-    const aiAnalysis = await AIService.analyzeTransaction({
-      from: input.from,
-      to: input.to,
-      value: input.value || '0',
-      data: input.data || '0x',
-    });
+    // Simple risk analysis based on transaction data
+    let riskScore = 0;
+    const threats: string[] = [];
 
-    // 3. Combine with existing reputation if available
-    let finalRiskScore = aiAnalysis.riskScore;
-    if (toAddress && toAddress.riskScore > aiAnalysis.riskScore) {
-      finalRiskScore = Math.max(toAddress.riskScore, aiAnalysis.riskScore);
+    // Check for high value transfers
+    if (input.value) {
+      const valueInEth = parseInt(input.value, 16) / 1e18;
+      if (valueInEth > 1) {
+        riskScore += 30;
+        threats.push('High value transfer detected');
+      }
     }
 
-    // 4. Save scan to database
-    await this.saveScan({
-      from: input.from,
-      to: input.to,
-      value: input.value || '0',
-      data: input.data || '0x',
-      riskScore: finalRiskScore,
-      riskLevel: aiAnalysis.riskLevel,
-      aiAnalysis: aiAnalysis.explanation,
-      userAddress: input.userAddress,
-    });
+    // Check for contract interaction
+    if (input.data && input.data !== '0x') {
+      riskScore += 20;
+      threats.push('Contract interaction detected');
+    }
+
+    // Determine risk level
+    let riskLevel = 'LOW';
+    if (riskScore >= 80) riskLevel = 'CRITICAL';
+    else if (riskScore >= 60) riskLevel = 'HIGH';
+    else if (riskScore >= 40) riskLevel = 'MEDIUM';
+
+    // Determine recommendation
+    let recommendation: 'APPROVE' | 'REJECT' | 'WARN' = 'APPROVE';
+    if (riskScore >= 80) recommendation = 'REJECT';
+    else if (riskScore >= 40) recommendation = 'WARN';
+
+    // Save scan to database if userAddress provided
+    if (input.userAddress) {
+      try {
+        let addressRecord = await prisma.address.findUnique({
+          where: { address: input.to }
+        });
+
+        if (!addressRecord) {
+          addressRecord = await prisma.address.create({
+            data: { address: input.to }
+          });
+        }
+
+        await prisma.transactionScan.create({
+          data: {
+            addressId: addressRecord.id,
+            from: input.from,
+            to: input.to,
+            value: input.value,
+            data: input.data,
+            simulationSuccess: true,
+            riskScore,
+            riskLevel,
+            recommendation,
+            explanation: threats.join(', ') || 'No major risks detected',
+            detectedThreats: JSON.stringify(threats)
+          }
+        });
+      } catch (error) {
+        console.error('[Scanner] Failed to save scan:', error);
+      }
+    }
 
     return {
       simulationSuccess: true,
-      riskScore: finalRiskScore,
-      riskLevel: aiAnalysis.riskLevel,
-      recommendation: aiAnalysis.recommendation,
-      explanation: aiAnalysis.explanation,
-      detectedThreats: aiAnalysis.detectedThreats,
-      confidence: aiAnalysis.confidence,
+      riskScore,
+      riskLevel,
+      recommendation,
+      explanation: threats.length > 0 ? threats.join(', ') : 'Transaction appears safe',
+      detectedThreats: threats,
+      confidence: 85
     };
-  }
-
-  /**
-   * Save scan to database
-   */
-  private static async saveScan(data: {
-    from: string;
-    to: string;
-    value: string;
-    data: string;
-    riskScore: number;
-    riskLevel: RiskLevel;
-    aiAnalysis: string;
-    userAddress?: string;
-  }) {
-    try {
-      // Get or create address
-      const address = await AddressService.getOrCreate(data.to);
-
-      await prisma.transactionScan.create({
-        data: {
-          addressId: address.id,
-          fromAddress: data.from.toLowerCase(),
-          toAddress: data.to.toLowerCase(),
-          value: data.value,
-          data: data.data,
-          riskScore: data.riskScore,
-          riskLevel: data.riskLevel,
-          aiAnalysis: data.aiAnalysis,
-          userAddress: data.userAddress?.toLowerCase(),
-        },
-      });
-    } catch (error) {
-      console.error('Failed to save scan:', error);
-    }
   }
 
   /**
    * Get scan history for address
    */
-  static async getScanHistory(address: string, limit: number = 10) {
-    return prisma.transactionScan.findMany({
-      where: {
-        OR: [
-          { fromAddress: address.toLowerCase() },
-          { toAddress: address.toLowerCase() },
-        ],
-      },
-      orderBy: { createdAt: 'desc' },
-      take: limit,
+  static async getScanHistory(address: string, limit = 10) {
+    const addressRecord = await prisma.address.findUnique({
+      where: { address },
+      include: {
+        scans: {
+          orderBy: { createdAt: 'desc' },
+          take: limit
+        }
+      }
     });
+
+    return addressRecord?.scans || [];
   }
 }

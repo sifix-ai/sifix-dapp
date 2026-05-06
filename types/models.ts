@@ -1,41 +1,9 @@
-// SIFIX Type Definitions
+// Type definitions for SIFIX models
 
-import type {
-  Address,
-  ThreatReport,
-  TransactionScan,
-  ReputationScore,
-  UserProfile,
-  SearchHistory,
-  SyncLog,
-  ThreatType,
-  RiskLevel,
-  ReportStatus,
-  AddressType,
-} from '@prisma/client';
+export * from '@prisma/client';
 
-// Re-export Prisma types
-export type {
-  Address,
-  ThreatReport,
-  TransactionScan,
-  ReputationScore,
-  UserProfile,
-  SearchHistory,
-  SyncLog,
-  ThreatType,
-  RiskLevel,
-  ReportStatus,
-  AddressType,
-};
-
-// Extended types with relations
-export type AddressWithReports = Address & {
-  reports: ThreatReport[];
-  scans: TransactionScan[];
-  reputation: ReputationScore | null;
-};
-
-export type ThreatReportWithAddress = ThreatReport & {
-  address: Address;
-};
+// Custom types
+export type ThreatType = string;
+export type RiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
+export type ReportStatus = 'PENDING' | 'VERIFIED' | 'REJECTED' | 'DISPUTED';
+export type AddressType = 'EOA' | 'SMART_CONTRACT' | 'PROXY';

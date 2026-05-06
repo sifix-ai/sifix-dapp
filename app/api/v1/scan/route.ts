@@ -1,40 +1,67 @@
-// POST /api/v1/scan - Scan transaction
-
-import { NextRequest, NextResponse } from 'next/server';
-import { ScannerService } from '@/services/scanner-service';
-import { apiResponse, apiError } from '@/lib/api-response';
+import { NextRequest, NextResponse } from "next/server"
+import { getAddressReputation } from "@/lib/contract"
+import { prisma } from "@/lib/prisma"
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json()
+    const { address } = body
 
-    const { from, to, value, data, userAddress } = body;
-
-    // Validation
-    if (!from || !/^0x[a-fA-F0-9]{40}$/.test(from)) {
-      return apiError('Invalid from address', 400);
+    if (!address || !address.startsWith("0x")) {
+      return NextResponse.json(
+        { error: "Invalid address" },
+        { status: 400 }
+      )
     }
 
-    if (!to || !/^0x[a-fA-F0-9]{40}$/.test(to)) {
-      return apiError('Invalid to address', 400);
+    // Get on-chain reputation
+    const reputation = await getAddressReputation(address as `0x${string}`)
+
+    // Get or create Address record
+    let addressRecord = await prisma.address.findUnique({
+      where: { address }
+    })
+
+    if (!addressRecord) {
+      addressRecord = await prisma.address.create({
+        data: {
+          address,
+          riskScore: reputation.score,
+          riskLevel: reputation.score >= 80 ? "CRITICAL" : reputation.score >= 60 ? "HIGH" : reputation.score >= 40 ? "MEDIUM" : "LOW"
+        }
+      })
     }
 
-    // Scan transaction (already saves internally)
-    const result = await ScannerService.scanTransaction({
-      from,
-      to,
-      value,
-      data,
-      userAddress,
-    });
+    // Get threat count from database
+    const threatCount = await prisma.threatReport.count({
+      where: { addressId: addressRecord.id }
+    })
 
-    return apiResponse({
-      from,
-      to,
-      ...result,
-    });
+    // Calculate risk level based on reputation score
+    let riskLevel: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+    const score = reputation.score
+
+    if (score >= 80) riskLevel = "CRITICAL"
+    else if (score >= 60) riskLevel = "HIGH"
+    else if (score >= 40) riskLevel = "MEDIUM"
+    else riskLevel = "LOW"
+
+    return NextResponse.json({
+      address,
+      riskLevel,
+      riskScore: score,
+      threatCount,
+      lastScan: new Date().toISOString(),
+      analysis: {
+        reasoning: `Address has ${reputation.reportCount} on-chain reports with reputation score ${score}/100`,
+        recommendation: score >= 60 ? "BLOCK" : score >= 40 ? "CAUTION" : "PROCEED"
+      }
+    })
   } catch (error) {
-    console.error('Error scanning transaction:', error);
-    return apiError('Internal server error', 500);
+    console.error("Scan address error:", error)
+    return NextResponse.json(
+      { error: "Failed to scan address" },
+      { status: 500 }
+    )
   }
 }
