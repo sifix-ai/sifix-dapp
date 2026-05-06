@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 const CardDecorator = () => (
   <div className="absolute inset-0 overflow-hidden rounded-2xl">
     <div
-      className="absolute inset-0 opacity-20"
+      className="absolute inset-0 opacity-[0.02]"
       style={{
         backgroundImage: `
-          linear-gradient(to right, rgba(255, 99, 99, 0.1) 1px, transparent 1px),
-          linear-gradient(to bottom, rgba(255, 99, 99, 0.1) 1px, transparent 1px)
+          linear-gradient(to right, rgba(99, 102, 241, 0.3) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(99, 102, 241, 0.3) 1px, transparent 1px)
         `,
         backgroundSize: "24px 24px",
       }}
@@ -25,24 +25,24 @@ export function Features() {
       title: "AI-Powered Analysis",
       description:
         "GPT-4 powered threat detection analyzes smart contracts and transaction patterns with 95%+ accuracy.",
-      color: "#FF6363",
-      gradient: "from-[#FF6363]/20 to-[#FF6363]/5"
+      color: "#6366f1",
+      gradient: "from-indigo-50/50 to-indigo-50/10"
     },
     {
       icon: Eye,
       title: "Real-Time Interception",
       description:
         "Intercepts transactions before execution, simulates outcomes, and provides instant risk assessment.",
-      color: "#4ecdc4",
-      gradient: "from-[#4ecdc4]/20 to-[#4ecdc4]/5"
+      color: "#14b8a6",
+      gradient: "from-teal-50/50 to-teal-50/10"
     },
     {
       icon: Shield,
       title: "On-Chain Reputation",
       description:
         "Decentralized threat intelligence stored on 0G Chain. Community-driven security that gets smarter over time.",
-      color: "#a855f7",
-      gradient: "from-purple-500/20 to-purple-500/5"
+      color: "#8b5cf6",
+      gradient: "from-violet-50/50 to-violet-50/10"
     },
     {
       icon: Lock,
@@ -50,7 +50,7 @@ export function Features() {
       description:
         "Every transaction is treated as potentially malicious until proven safe. No assumptions, complete protection.",
       color: "#f59e0b",
-      gradient: "from-amber-500/20 to-amber-500/5"
+      gradient: "from-amber-50/50 to-amber-50/10"
     },
     {
       icon: Zap,
@@ -58,7 +58,7 @@ export function Features() {
       description:
         "Sub-second analysis powered by 0G's high-performance infrastructure. Security without compromise.",
       color: "#10b981",
-      gradient: "from-green-500/20 to-green-500/5"
+      gradient: "from-emerald-50/50 to-emerald-50/10"
     },
     {
       icon: Sparkles,
@@ -66,28 +66,28 @@ export function Features() {
       description:
         "Report threats, climb the leaderboard, and earn reputation tokens. Get paid to make Web3 safer.",
       color: "#ec4899",
-      gradient: "from-pink-500/20 to-pink-500/5"
+      gradient: "from-pink-50/50 to-pink-50/10"
     },
   ]
 
   return (
-    <section id="features" className="py-32 relative">
+    <section id="features" className="py-32 relative bg-gradient-to-b from-white to-zinc-50">
       <div className="container mx-auto px-4">
         <div className="max-w-7xl mx-auto">
           {/* Section header */}
           <div className="text-center mb-20">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-[#FF6363]/10 border border-[#FF6363]/20 rounded-full mb-6">
-              <Sparkles className="w-4 h-4 text-[#FF6363]" />
-              <span className="text-sm font-semibold text-[#FF6363]">FEATURES</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-50 border border-indigo-100 rounded-full mb-6">
+              <Sparkles className="w-4 h-4 text-indigo-600" />
+              <span className="text-sm font-bold text-indigo-600 uppercase tracking-wide">FEATURES</span>
             </div>
-            <h2 className="text-5xl md:text-6xl font-black tracking-tight text-white mb-6">
+            <h2 className="text-5xl md:text-6xl font-black tracking-tight text-zinc-900 mb-6">
               Complete Protection
               <br />
-              <span className="bg-gradient-to-r from-[#FF6363] to-[#4ecdc4] bg-clip-text text-transparent">
+              <span className="bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
                 From Every Angle
               </span>
             </h2>
-            <p className="text-xl text-white/60 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-zinc-600 max-w-3xl mx-auto leading-relaxed">
               Multi-layered security powered by AI, blockchain, and community intelligence
             </p>
           </div>
@@ -97,7 +97,7 @@ export function Features() {
             {features.map((feature, i) => (
               <Card
                 key={i}
-                className="relative overflow-hidden border-white/[0.08] bg-white/[0.02] backdrop-blur-sm hover:border-white/[0.2] transition-all duration-300 group hover:scale-[1.02]"
+                className="relative overflow-hidden border-zinc-200 bg-white backdrop-blur-sm hover:border-zinc-300 transition-all duration-300 group card-hover shadow-premium"
               >
                 <CardDecorator />
                 
@@ -108,26 +108,27 @@ export function Features() {
                   {/* Icon with dynamic color */}
                   <div className="relative mb-6">
                     <div 
-                      className="absolute inset-0 blur-xl opacity-0 group-hover:opacity-50 transition-opacity duration-300"
+                      className="absolute inset-0 blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-300"
                       style={{ backgroundColor: feature.color }}
                     />
                     <div 
-                      className="relative w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110"
+                      className="relative w-14 h-14 rounded-xl flex items-center justify-center transition-all duration-300 group-hover:scale-110 shadow-sm"
                       style={{ backgroundColor: `${feature.color}15` }}
                     >
                       <feature.icon 
                         className="w-7 h-7 transition-colors" 
                         style={{ color: feature.color }}
+                        strokeWidth={2.5}
                       />
                     </div>
                   </div>
                   
-                  <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-white transition-colors">
+                  <h3 className="text-2xl font-bold text-zinc-900 mb-3 group-hover:text-zinc-900 transition-colors">
                     {feature.title}
                   </h3>
                 </CardHeader>
                 <CardContent className="relative z-10">
-                  <p className="text-white/60 leading-relaxed group-hover:text-white/70 transition-colors">
+                  <p className="text-zinc-600 leading-relaxed group-hover:text-zinc-700 transition-colors">
                     {feature.description}
                   </p>
                 </CardContent>
@@ -137,7 +138,7 @@ export function Features() {
 
           {/* Bottom CTA */}
           <div className="mt-16 text-center">
-            <p className="text-white/50 text-lg">
+            <p className="text-zinc-500 text-lg font-medium">
               All features included. No premium tiers. Just complete protection.
             </p>
           </div>

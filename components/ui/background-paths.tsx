@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 function FloatingPaths({ position }: { position: number }) {
     const paths = Array.from({ length: 36 }, (_, i) => ({
@@ -14,14 +14,13 @@ function FloatingPaths({ position }: { position: number }) {
         } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
             684 - i * 5 * position
         } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
-        opacity: 0.05 + i * 0.01,
-        width: 0.5 + i * 0.02,
+        width: 0.5 + i * 0.03,
     }));
 
     return (
         <div className="absolute inset-0 pointer-events-none">
             <svg
-                className="w-full h-full"
+                className="w-full h-full text-indigo-400"
                 viewBox="0 0 696 316"
                 fill="none"
             >
@@ -30,10 +29,10 @@ function FloatingPaths({ position }: { position: number }) {
                     <motion.path
                         key={path.id}
                         d={path.d}
-                        stroke="#FF6363"
+                        stroke="currentColor"
                         strokeWidth={path.width}
-                        strokeOpacity={path.opacity}
-                        initial={{ pathLength: 0.3, opacity: 0.3 }}
+                        strokeOpacity={0.1 + path.id * 0.02}
+                        initial={{ pathLength: 0.3, opacity: 0.4 }}
                         animate={{
                             pathLength: 1,
                             opacity: [0.2, 0.4, 0.2],
@@ -59,12 +58,16 @@ export function BackgroundPaths({
     const words = title.split(" ");
 
     return (
-        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-[#07080a]">
-            <div className="absolute inset-0 opacity-30">
+        <div className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+            <div className="absolute inset-0">
                 <FloatingPaths position={1} />
                 <FloatingPaths position={-1} />
             </div>
-
+            
+            {/* Gradient orbs */}
+            <div className="absolute top-1/4 left-1/4 w-[400px] h-[400px] bg-gradient-to-br from-indigo-600/20 to-violet-600/20 rounded-full blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-gradient-to-br from-violet-600/20 to-rose-600/20 rounded-full blur-3xl" />
+            
             <div className="relative z-10 container mx-auto px-4 md:px-6 text-center">
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -72,7 +75,7 @@ export function BackgroundPaths({
                     transition={{ duration: 2 }}
                     className="max-w-4xl mx-auto"
                 >
-                    <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-12 tracking-tighter">
+                    <h1 className="text-5xl sm:text-7xl md:text-8xl font-bold mb-8 tracking-tighter">
                         {words.map((word, wordIndex) => (
                             <span
                                 key={wordIndex}
@@ -91,7 +94,8 @@ export function BackgroundPaths({
                                             stiffness: 150,
                                             damping: 25,
                                         }}
-                                        className="inline-block text-white"
+                                        className="inline-block text-transparent bg-clip-text 
+                                        bg-gradient-to-r from-slate-100 to-slate-300"
                                     >
                                         {letter}
                                     </motion.span>
@@ -100,19 +104,35 @@ export function BackgroundPaths({
                         ))}
                     </h1>
 
-                    <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 1, duration: 0.8 }}
+                    <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto">
+                        Join thousands of users protecting their crypto assets with AI-powered security
+                    </p>
+
+                    <div
+                        className="inline-block group relative bg-gradient-to-b from-indigo-600/20 to-violet-600/20 
+                        p-px rounded-2xl backdrop-blur-lg overflow-hidden shadow-lg hover:shadow-xl 
+                        transition-shadow duration-300 border border-indigo-500/20"
                     >
-                        <Button
-                            size="lg"
-                            className="group relative bg-[#FF6363] hover:bg-[#FF6363]/90 text-white px-8 py-6 text-lg font-semibold rounded-xl shadow-lg hover:shadow-[0_0_30px_rgba(255,99,99,0.3)] transition-all duration-300"
-                        >
-                            Launch Dashboard
-                            <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </Button>
-                    </motion.div>
+                        <Link href="/dashboard">
+                            <Button
+                                variant="ghost"
+                                className="rounded-[1.15rem] px-8 py-6 text-lg font-semibold backdrop-blur-md 
+                                bg-slate-800/95 hover:bg-slate-800/100 text-slate-100 transition-all duration-300 
+                                group-hover:-translate-y-0.5 border border-slate-700/50
+                                hover:shadow-md hover:shadow-indigo-500/20"
+                            >
+                                <span className="opacity-90 group-hover:opacity-100 transition-opacity">
+                                    Get Started Now
+                                </span>
+                                <span
+                                    className="ml-3 opacity-70 group-hover:opacity-100 group-hover:translate-x-1.5 
+                                    transition-all duration-300"
+                                >
+                                    →
+                                </span>
+                            </Button>
+                        </Link>
+                    </div>
                 </motion.div>
             </div>
         </div>
