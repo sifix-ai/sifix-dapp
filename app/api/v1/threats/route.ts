@@ -82,17 +82,20 @@ export async function POST(request: NextRequest) {
       simulationData,
     });
 
-    return apiSuccess(
+    return NextResponse.json(
       {
-        id: report.id,
-        address: report.address.address,
-        threatType: report.threatType,
-        severity: report.severity,
-        riskLevel: report.riskLevel,
-        status: report.status,
-        createdAt: report.createdAt,
+        success: true,
+        data: {
+          id: report.id,
+          address: report.address.address,
+          threatType: report.threatType,
+          severity: report.severity,
+          riskLevel: report.riskLevel,
+          status: report.status,
+          createdAt: report.createdAt,
+        }
       },
-      201
+      { status: 201 }
     );
   } catch (error) {
     console.error('Error creating report:', error);
