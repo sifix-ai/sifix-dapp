@@ -81,7 +81,7 @@ export function ConnectButton() {
   return (
     <div className="relative">
       <Button
-        size="lg"
+        size="sm"
         onClick={handleConnect}
         disabled={isPending || connectors.length === 0}
         className="bg-[#FF6363] hover:bg-[#FF6363]/90 text-white border-0 px-10 py-7 text-lg font-bold shadow-[0_0_40px_rgba(255,99,99,0.4)] hover:shadow-[0_0_60px_rgba(255,99,99,0.6)] transition-all duration-300 hover:scale-105"
