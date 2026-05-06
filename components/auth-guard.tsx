@@ -40,16 +40,12 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             </p>
           </div>
           
-          {/* Connect Button - Simple RainbowKit Button */}
+          {/* Connect Button - Wrapped with custom styling */}
           <div className="flex justify-center mb-8">
-            <div className="relative group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-[#FF6363] to-[#55b3ff] rounded-xl blur opacity-50 group-hover:opacity-75 transition-opacity" />
-              <div className="relative">
-                <ConnectButton 
-                  chainStatus="icon"
-                  showBalance={false}
-                  accountStatus="address"
-                />
+            <div className="relative">
+              <div className="absolute -inset-1 bg-gradient-to-r from-[#FF6363] to-[#55b3ff] rounded-xl blur opacity-50" />
+              <div className="relative bg-[#07080a] rounded-xl p-1">
+                <ConnectButton />
               </div>
             </div>
           </div>
