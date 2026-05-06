@@ -14,10 +14,10 @@ export const zgChain = {
   },
   rpcUrls: {
     default: {
-      http: ['https://rpc-testnet.0g.ai'],
+      http: ['https://evmrpc-testnet.0g.ai'], // Official RPC
     },
     public: {
-      http: ['https://rpc-testnet.0g.ai'],
+      http: ['https://evmrpc-testnet.0g.ai'],
     },
   },
   blockExplorers: {

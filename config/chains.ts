@@ -11,10 +11,10 @@ export const SIFIX_CHAIN = {
   },
   rpcUrls: {
     default: {
-      http: ['https://rpc-testnet.0g.ai'],
+      http: ['https://evmrpc-testnet.0g.ai'], // Official RPC from docs.0g.ai
     },
     public: {
-      http: ['https://rpc-testnet.0g.ai'],
+      http: ['https://evmrpc-testnet.0g.ai'],
     },
   },
   blockExplorers: {
