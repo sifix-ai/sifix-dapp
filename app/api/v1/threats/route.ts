@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       offset: parseInt(searchParams.get('offset') || '0'),
     };
 
-    const reports = await ReportService.list(filters);
+    const reports = await ReportService.listReports(filters);
 
     return apiResponse({
       reports: reports.map((r) => ({
