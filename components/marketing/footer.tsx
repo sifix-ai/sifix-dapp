@@ -14,7 +14,7 @@ const footerLinks = {
     { label: "Contact", href: "#contact" },
   ],
   Resources: [
-    { label: "Documentation", href: "https://doman-docs.vercel.app" },
+    { label: "Documentation", href: "https://sifix-docs.vercel.app" },
     { label: "API Reference", href: "/api-reference" },
     { label: "Open Source", href: "#open-source" },
     { label: "Changelog", href: "#" },
@@ -46,10 +46,10 @@ export function Footer() {
             ))}
           </nav>
           <a
-            href="mailto:hello@doman.xyz"
+            href="mailto:hello@sifix.xyz"
             className="text-xs text-muted transition-colors hover:text-foreground"
           >
-            hello@doman.xyz
+            hello@sifix.xyz
           </a>
         </div>
 
@@ -114,10 +114,10 @@ export function Footer() {
               </li>
               <li>
                 <a
-                  href="mailto:hello@doman.xyz"
+                  href="mailto:hello@sifix.xyz"
                   className="text-sm text-zinc-400 transition-colors hover:text-foreground"
                 >
-                  hello@doman.xyz
+                  hello@sifix.xyz
                 </a>
               </li>
             </ul>
@@ -127,7 +127,7 @@ export function Footer() {
         {/* Copyright bar */}
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-card-border py-8 md:flex-row">
           <p className="text-xs text-muted">
-            © 2026 Doman. All rights reserved.
+            © 2026 SIFIX. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link href="#" className="text-xs text-muted hover:text-foreground">

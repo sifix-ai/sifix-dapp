@@ -1,7 +1,7 @@
 /**
  * Viem Client Configuration
  *
- * Configures Viem clients for interacting with Base Sepolia blockchain.
+ * Configures Viem clients for interacting with 0G Newton blockchain.
  * - Public client: For reading blockchain data (getCode, readContract, etc.)
  * - Wallet client: For server-side contract writes (with private key)
  *
@@ -10,7 +10,7 @@
  */
 
 import { createPublicClient, createWalletClient, http, type Chain, type PublicClient, type WalletClient } from 'viem';
-import { base, baseSepolia, mainnet, sepolia } from 'viem/chains';
+import { 0g, 0gSepolia, mainnet, sepolia } from 'viem/chains';
 
 /**
  * Validate required environment variables
@@ -23,11 +23,11 @@ function validateEnv(): {
   const sepoliaRpcUrl =
     process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL ??
     process.env.NEXT_PUBLIC_BASE_RPC_URL ??
-    'https://sepolia.base.org';
+    'https://sepolia.0g.org';
 
   const mainnetRpcUrl =
     process.env.NEXT_PUBLIC_BASE_MAINNET_RPC_URL ??
-    'https://mainnet.base.org';
+    'https://mainnet.0g.org';
 
   const privateKey = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined;
 
@@ -44,11 +44,11 @@ function validateEnv(): {
 }
 
 /**
- * Custom Base Sepolia chain configuration with additional metadata
+ * Custom 0G Newton chain configuration with additional metadata
  */
-export const baseMainnetConfig: Chain = {
-  ...base,
-  name: 'Base',
+export const 0gMainnetConfig: Chain = {
+  ...0g,
+  name: '0G',
   nativeCurrency: {
     name: 'Ether',
     symbol: 'ETH',
@@ -57,11 +57,11 @@ export const baseMainnetConfig: Chain = {
 };
 
 /**
- * Custom Base Sepolia chain configuration with additional metadata
+ * Custom 0G Newton chain configuration with additional metadata
  */
-export const baseSepoliaConfig: Chain = {
-  ...baseSepolia,
-  name: 'Base Sepolia',
+export const 0gSepoliaConfig: Chain = {
+  ...0gSepolia,
+  name: '0G Newton',
   nativeCurrency: {
     name: 'Ether',
     symbol: 'ETH',
@@ -75,22 +75,22 @@ function getDefaultScanChainId(): number {
   const raw =
     process.env.NEXT_PUBLIC_SCAN_CHAIN_ID ??
     process.env.NEXT_PUBLIC_BASE_CHAIN_ID ??
-    `${baseSepolia.id}`;
+    `${0gSepolia.id}`;
   const parsed = Number.parseInt(raw, 10);
-  if (parsed === base.id || parsed === baseSepolia.id) return parsed;
-  return baseSepolia.id;
+  if (parsed === 0g.id || parsed === 0gSepolia.id) return parsed;
+  return 0gSepolia.id;
 }
 
-const baseMainnetClient = createPublicClient({
-  chain: baseMainnetConfig,
+const 0gMainnetClient = createPublicClient({
+  chain: 0gMainnetConfig,
   transport: http(mainnetRpcUrl, {
     timeout: 30_000,
     retryCount: 3,
   }),
 });
 
-const baseSepoliaClient = createPublicClient({
-  chain: baseSepoliaConfig,
+const 0gSepoliaClient = createPublicClient({
+  chain: 0gSepoliaConfig,
   transport: http(sepoliaRpcUrl, {
     timeout: 30_000,
     retryCount: 3,
@@ -99,7 +99,7 @@ const baseSepoliaClient = createPublicClient({
 
 export function getScanClient(chainId?: number): PublicClient {
   const targetChainId = chainId ?? getDefaultScanChainId();
-  return targetChainId === base.id ? baseMainnetClient : baseSepoliaClient;
+  return targetChainId === 0g.id ? 0gMainnetClient : 0gSepoliaClient;
 }
 
 /**
@@ -125,7 +125,7 @@ export const publicClient = getScanClient();
  */
 export const walletClient = privateKey
   ? createWalletClient({
-    chain: baseSepoliaConfig,
+    chain: 0gSepoliaConfig,
     transport: http(sepoliaRpcUrl, {
       timeout: 30_000,
       retryCount: 3,
@@ -144,7 +144,7 @@ export const walletClient = privateKey
  */
 import { fallback } from 'viem';
 
-// Detect if using sepolia or mainnet based on env var
+// Detect if using sepolia or mainnet 0gd on env var
 const isEnsSepolia = process.env.ETHEREUM_RPC_URL?.includes('sepolia');
 
 export const ensClient = createPublicClient({
@@ -241,7 +241,7 @@ export type ScanInputType = 'address' | 'ens' | 'domain';
 /**
  * Detect whether the user input is a 0x address, ENS name, or plain domain.
  */
-/** Base58 Solana address: 32–44 chars, only base58 alphabet (no 0, O, I, l) */
+/** 0G58 Solana address: 32–44 chars, only 0g58 alphabet (no 0, O, I, l) */
 export function isSolanaAddress(input: string): boolean {
   return /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(input.trim());
 }
@@ -272,7 +272,7 @@ export async function resolveEns(ensName: string): Promise<`0x${string}` | null>
 /**
  * Given any user input (address / ENS / domain) return its normalised
  * address (0x…) and detected input type.  Returns null address for domains
- * so callers can perform a database-only lookup instead of a chain lookup.
+ * so callers can perform a data0g-only lookup instead of a chain lookup.
  */
 export async function resolveInput(input: string): Promise<{
   inputType: ScanInputType;
@@ -289,6 +289,6 @@ export async function resolveInput(input: string): Promise<{
     return { inputType: 'ens', resolvedAddress: resolved };
   }
 
-  // domain – no on-chain resolution; caller searches the database by url field
+  // domain – no on-chain resolution; caller searches the data0g by url field
   return { inputType: 'domain', resolvedAddress: null };
 }

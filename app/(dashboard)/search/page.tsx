@@ -1,182 +1,167 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { Search, Shield, TrendingUp, AlertTriangle, Activity } from 'lucide-react';
-import { ConnectButton } from '@/components/connect-button';
-import { useAccount } from 'wagmi';
-import Link from 'next/link';
+import { AuthGuard } from '@/components/auth-guard'
+import { useScanAddress, useAddressReputation } from '@/hooks/use-api'
+import { useAppStore } from '@/store/app-store'
+import { useState } from 'react'
+import { addressSchema } from '@/lib/validations'
+import { ConnectButton } from '@rainbow-me/rainbowkit'
 
 export default function SearchPage() {
-  const { isConnected } = useAccount();
-  const [address, setAddress] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
-  const [error, setError] = useState('');
+  const [address, setAddress] = useState('')
+  const [error, setError] = useState('')
+  const { addNotification } = useAppStore()
+  
+  const scanMutation = useScanAddress()
+  const { data: reputation, isLoading: reputationLoading } = useAddressReputation(
+    scanMutation.data?.address
+  )
 
-  const searchAddress = async () => {
-    if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
-      setError('Invalid Ethereum address');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
-    setResult(null);
-
+  const handleScan = async () => {
     try {
-      const res = await fetch(`/api/v1/address/${address}`);
-      const data = await res.json();
-
-      if (data.success) {
-        setResult(data.data);
-      } else {
-        setError(data.error || 'Failed to fetch address');
-      }
+      setError('')
+      addressSchema.parse(address)
+      await scanMutation.mutateAsync({ address })
+      addNotification({
+        type: 'success',
+        message: 'Address scanned successfully',
+      })
     } catch (err: any) {
-      setError(err.message || 'Network error');
-    } finally {
-      setLoading(false);
+      const errorMsg = err.message || 'Invalid address format'
+      setError(errorMsg)
+      addNotification({
+        type: 'error',
+        message: errorMsg,
+      })
     }
-  };
-
-  const getRiskBadge = (level: string) => {
-    const badges = {
-      CRITICAL: 'bg-red-500/10 text-red-400 border-red-500/20',
-      HIGH: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-      MEDIUM: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-      LOW: 'bg-green-500/10 text-green-400 border-green-500/20',
-    };
-    return badges[level as keyof typeof badges] || badges.LOW;
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-[#0A0A0A]">
-      {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-[#0A0A0A]/80 backdrop-blur-xl">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <Shield className="w-6 h-6 text-[#FF6363]" />
-            <span className="font-semibold text-white">SIFIX</span>
-          </Link>
-          
-          <nav className="hidden md:flex items-center gap-6">
-            <Link href="/search" className="text-sm text-white/60 hover:text-white transition-colors">
-              Search
-            </Link>
-            <Link href="/threats" className="text-sm text-white/60 hover:text-white transition-colors">
-              Threats
-            </Link>
-            <Link href="/analytics" className="text-sm text-white/60 hover:text-white transition-colors">
-              Analytics
-            </Link>
-          </nav>
-
-          <ConnectButton />
-        </div>
-      </header>
-
-      {/* Main */}
-      <main className="container mx-auto px-4 py-12 max-w-4xl">
-        {/* Search Box */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-white mb-2">Address Reputation</h1>
-          <p className="text-white/60 mb-6">Search any Ethereum address to check its security reputation</p>
-          
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
-            <input
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && searchAddress()}
-              placeholder="0x..."
-              className="w-full h-12 pl-12 pr-24 bg-white/[0.03] border border-white/[0.08] rounded-xl text-white placeholder:text-white/40 focus:outline-none focus:border-[#FF6363]/50 transition-colors"
-            />
-            <button
-              onClick={searchAddress}
-              disabled={loading || !isConnected}
-              className="absolute right-2 top-1/2 -translate-y-1/2 h-8 px-4 bg-[#FF6363] hover:bg-[#FF6363]/90 disabled:bg-white/10 disabled:text-white/40 text-white text-sm font-medium rounded-lg transition-colors"
-            >
-              {loading ? 'Searching...' : 'Search'}
-            </button>
+    <AuthGuard>
+      <div className="min-h-screen bg-black text-white p-8">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-3xl font-bold">Search Address</h1>
+            <ConnectButton />
           </div>
 
-          {!isConnected && (
-            <p className="mt-3 text-sm text-yellow-400/80">
-              ⚠️ Connect your wallet to search addresses
-            </p>
-          )}
-
-          {error && (
-            <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm">
-              {error}
+          {/* Search Form */}
+          <div className="bg-gray-900 rounded-lg p-6 mb-6">
+            <label className="block text-sm font-medium mb-2">
+              Ethereum Address
+            </label>
+            <div className="flex gap-4">
+              <input
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="0x..."
+                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:border-blue-500"
+              />
+              <button
+                onClick={handleScan}
+                disabled={scanMutation.isPending}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 rounded-lg font-medium transition"
+              >
+                {scanMutation.isPending ? 'Scanning...' : 'Scan'}
+              </button>
             </div>
-          )}
-        </div>
-
-        {/* Results */}
-        {result && (
-          <div className="space-y-4">
-            {/* Risk Card */}
-            <div className={`p-6 border rounded-xl ${getRiskBadge(result.riskLevel)}`}>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <div className="text-2xl font-bold mb-1">{result.riskLevel} RISK</div>
-                  <div className="text-sm opacity-80">Risk Score: {result.riskScore}/100</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-4xl font-bold">{result.riskScore}</div>
-                  <div className="text-xs opacity-80">{result.totalReports} reports</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Address Info */}
-            <div className="p-6 bg-white/[0.03] border border-white/[0.08] rounded-xl">
-              <h3 className="text-lg font-semibold text-white mb-4">Address Information</h3>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-white/60">Address</span>
-                  <span className="text-white font-mono">{result.address.slice(0, 10)}...{result.address.slice(-8)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/60">Chain</span>
-                  <span className="text-white">{result.chain}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-white/60">Type</span>
-                  <span className="text-white">{result.addressType}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Threat Reports */}
-            {result.reports && result.reports.length > 0 && (
-              <div className="p-6 bg-white/[0.03] border border-white/[0.08] rounded-xl">
-                <h3 className="text-lg font-semibold text-white mb-4">Threat Reports ({result.reports.length})</h3>
-                <div className="space-y-3">
-                  {result.reports.map((report: any) => (
-                    <div key={report.id} className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-lg">
-                      <div className="flex items-start justify-between mb-2">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-md ${getRiskBadge(report.riskLevel)}`}>
-                          {report.threatType}
-                        </span>
-                        <span className="text-xs text-white/40">
-                          {new Date(report.createdAt).toLocaleDateString()}
-                        </span>
-                      </div>
-                      <p className="text-sm text-white/80">{report.explanation}</p>
-                      <div className="mt-2 text-xs text-white/40">
-                        Severity: {report.severity}/100
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {error && (
+              <p className="text-red-500 text-sm mt-2">{error}</p>
             )}
           </div>
-        )}
-      </main>
-    </div>
-  );
+
+          {/* Scan Results */}
+          {scanMutation.data && (
+            <div className="bg-gray-900 rounded-lg p-6 mb-6">
+              <h2 className="text-xl font-bold mb-4">Scan Results</h2>
+              
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Risk Level</div>
+                  <div className={`text-2xl font-bold ${
+                    scanMutation.data.riskLevel === 'CRITICAL' ? 'text-red-500' :
+                    scanMutation.data.riskLevel === 'HIGH' ? 'text-orange-500' :
+                    scanMutation.data.riskLevel === 'MEDIUM' ? 'text-yellow-500' :
+                    'text-green-500'
+                  }`}>
+                    {scanMutation.data.riskLevel}
+                  </div>
+                </div>
+                
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Risk Score</div>
+                  <div className="text-2xl font-bold">{scanMutation.data.riskScore}/100</div>
+                </div>
+                
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Threat Count</div>
+                  <div className="text-2xl font-bold">{scanMutation.data.threatCount}</div>
+                </div>
+                
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Recommendation</div>
+                  <div className="text-lg font-bold">
+                    {scanMutation.data.analysis?.recommendation || 'N/A'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-800 rounded-lg p-4">
+                <div className="text-sm text-gray-400 mb-2">Analysis</div>
+                <p className="text-gray-300">
+                  {scanMutation.data.analysis?.reasoning || 'No analysis available'}
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Reputation Data */}
+          {reputation && (
+            <div className="bg-gray-900 rounded-lg p-6">
+              <h2 className="text-xl font-bold mb-4">On-Chain Reputation</h2>
+              
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Score</div>
+                  <div className="text-2xl font-bold">{reputation.score}/100</div>
+                </div>
+                
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Reports</div>
+                  <div className="text-2xl font-bold">{reputation.reportCount}</div>
+                </div>
+                
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-1">Last Update</div>
+                  <div className="text-sm">
+                    {reputation.lastUpdate ? new Date(reputation.lastUpdate).toLocaleDateString() : 'Never'}
+                  </div>
+                </div>
+              </div>
+
+              {reputation.reports && reputation.reports.length > 0 && (
+                <div>
+                  <h3 className="font-bold mb-2">Recent Reports</h3>
+                  <div className="space-y-2">
+                    {reputation.reports.map((report: any, i: number) => (
+                      <div key={i} className="bg-gray-800 rounded-lg p-3 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-gray-400">Severity: {report.severity}</span>
+                          <span className="text-gray-400">
+                            {new Date(report.timestamp).toLocaleDateString()}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </AuthGuard>
+  )
 }

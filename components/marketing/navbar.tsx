@@ -59,7 +59,7 @@ export function Navbar() {
         <Link href="/" className="flex items-center gap-2">
           <Image
             src="/logo2.png"
-            alt="Doman"
+            alt="SIFIX"
             width={120}
             height={32}
             priority

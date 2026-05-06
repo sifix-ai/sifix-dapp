@@ -1,12 +1,18 @@
-import { http, createConfig } from 'wagmi';
-import { mainnet, sepolia } from 'wagmi/chains';
-import { injected, metaMask, safe, walletConnect } from 'wagmi/connectors';
+/**
+ * Wagmi Configuration for SIFIX
+ * 
+ * Configured for 0G Newton Testnet
+ */
 
-// 0G Chain config
-export const zgChain = {
+import { createConfig, http } from 'wagmi';
+import { defineChain } from 'viem';
+import { injected, walletConnect } from 'wagmi/connectors';
+
+// 0G Newton Testnet
+export const zgNewton = defineChain({
   id: 16602,
   name: '0G Newton Testnet',
-  network: '0g-newton',
+  network: '0g-newton-testnet',
   nativeCurrency: {
     decimals: 18,
     name: 'A0GI',
@@ -14,7 +20,7 @@ export const zgChain = {
   },
   rpcUrls: {
     default: {
-      http: ['https://evmrpc-testnet.0g.ai'], // Official RPC
+      http: ['https://evmrpc-testnet.0g.ai'],
     },
     public: {
       http: ['https://evmrpc-testnet.0g.ai'],
@@ -27,18 +33,20 @@ export const zgChain = {
     },
   },
   testnet: true,
-} as const;
+});
 
-export const config = createConfig({
-  chains: [zgChain, mainnet, sepolia],
+export const wagmiConfig = createConfig({
+  chains: [zgNewton],
   connectors: [
     injected(),
-    metaMask(),
-    safe(),
+    walletConnect({
+      projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'YOUR_PROJECT_ID',
+    }),
   ],
   transports: {
-    [zgChain.id]: http(),
-    [mainnet.id]: http(),
-    [sepolia.id]: http(),
+    [zgNewton.id]: http(process.env.NEXT_PUBLIC_RPC_URL || 'https://evmrpc-testnet.0g.ai'),
   },
+  ssr: true,
 });
+
+export { zgNewton as defaultChain };
