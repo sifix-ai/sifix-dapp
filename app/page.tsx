@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Shield, Search, AlertTriangle, TrendingUp, ArrowRight, Github } from 'lucide-react';
+import { Shield, Search, AlertTriangle, TrendingUp, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export default function HomePage() {
@@ -29,7 +29,7 @@ export default function HomePage() {
               rel="noopener noreferrer"
               className="text-sm text-white/60 hover:text-white transition-colors"
             >
-              <Github className="w-5 h-5" />
+              GitHub
             </a>
           </nav>
 
