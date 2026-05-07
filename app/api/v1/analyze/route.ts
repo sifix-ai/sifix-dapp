@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { SecurityAgent } from "@/lib/agent"
+import { SecurityAgent } from "@sifix/agent"
 import type { Address, Hash } from "viem"
 
 // Initialize SecurityAgent
