@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server"
 import { SecurityAgent } from "@sifix/agent"
 import type { Address, Hash } from "viem"
 
-// Initialize SecurityAgent
+// Initialize SecurityAgent with custom AI provider
 const agent = new SecurityAgent({
   rpcUrl: process.env.NEXT_PUBLIC_ZG_RPC_URL || "https://evmrpc-testnet.0g.ai",
-  openaiApiKey: process.env.OPENAI_API_KEY || "",
+  aiProvider: {
+    apiKey: process.env.AI_API_KEY || "sk-30219bc58d0c41ad-x8gv9t-83b19c4e",
+    baseURL: process.env.AI_BASE_URL || "http://43.156.177.86:20128/v1",
+    model: process.env.AI_MODEL || "glm/glm-5.1"
+  },
   zeroGStorageUrl: process.env.ZG_STORAGE_URL || ""
 })
 
