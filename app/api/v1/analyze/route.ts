@@ -12,7 +12,8 @@ const agent = new SecurityAgent({
   },
   storage: {
     indexerUrl: process.env.ZG_INDEXER_URL || "https://indexer-storage-testnet-turbo.0g.ai",
-    privateKey: process.env.STORAGE_PRIVATE_KEY
+    privateKey: process.env.STORAGE_PRIVATE_KEY,
+    mockMode: process.env.STORAGE_MOCK_MODE === "true"
   }
 })
 
