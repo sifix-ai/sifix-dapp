@@ -56,3 +56,5 @@ docs/*
 *.db-*
 prisma/*.db
 prisma/*.db-*
+*.mjs
+test-*.mjs
