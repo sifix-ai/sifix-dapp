@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { SecurityAgent } from "@sifix/agent"
 import type { Address, Hash } from "viem"
 
-// Initialize SecurityAgent with custom AI provider
+// Initialize SecurityAgent with custom AI provider + 0G Storage
 const agent = new SecurityAgent({
   rpcUrl: process.env.NEXT_PUBLIC_ZG_RPC_URL || "https://evmrpc-testnet.0g.ai",
   aiProvider: {
@@ -10,7 +10,10 @@ const agent = new SecurityAgent({
     baseURL: process.env.AI_BASE_URL || "http://43.156.177.86:20128/v1",
     model: process.env.AI_MODEL || "glm/glm-5.1"
   },
-  zeroGStorageUrl: process.env.ZG_STORAGE_URL || ""
+  storage: {
+    indexerUrl: process.env.ZG_INDEXER_URL || "https://indexer-storage-testnet-turbo.0g.ai",
+    privateKey: process.env.STORAGE_PRIVATE_KEY
+  }
 })
 
 export async function POST(request: NextRequest) {
@@ -73,7 +76,12 @@ export async function POST(request: NextRequest) {
         revertReason: result.simulation.revertReason
       },
       threatIntel: result.threatIntel,
-      timestamp: result.timestamp
+      timestamp: result.timestamp,
+      // 0G Storage proof (for hackathon demo)
+      storageHash: result.storageRootHash || null,
+      storageExplorer: result.storageRootHash 
+        ? `https://explorer.0g.ai/storage/${result.storageRootHash}` 
+        : null
     })
   } catch (error) {
     console.error("[API] Transaction analysis error:", error)
