@@ -51,3 +51,8 @@ next-env.d.ts
 # docs (internal — exclude all except README)
 docs/*
 !docs/README.md
+# Database
+*.db
+*.db-*
+prisma/*.db
+prisma/*.db-*
