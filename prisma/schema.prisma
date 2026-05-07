@@ -199,3 +199,25 @@ model SyncLog {
   @@index([startedAt])
   @@map("sync_logs")
 }
+
+// ============================================
+// USER SETTINGS TABLES
+// ============================================
+
+model UserSettings {
+  id        String @id @default(cuid())
+  address   String @unique
+
+  // AI Provider settings
+  // aiProvider values: "default" | "openai" | "groq" | "0g-compute" | "ollama" | "custom"
+  aiProvider String  @default("default")
+  aiApiKey   String?
+  aiBaseUrl  String?
+  aiModel    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([address])
+  @@map("user_settings")
+}

@@ -1,14 +1,171 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAccount } from 'wagmi';
-import { Settings, Bell, Shield, Globe, Moon, HardDrive } from 'lucide-react';
+import {
+  Settings,
+  Bell,
+  Shield,
+  Globe,
+  BrainCircuit,
+  Key,
+  Server,
+  Cpu,
+  ChevronDown,
+  Eye,
+  EyeOff,
+  Loader2,
+  Check,
+  AlertCircle,
+  Wallet,
+  Sparkles,
+} from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
+// ─── AI Provider Types ───────────────────────────────────────────────────────
+
+type AIProvider = '0g_compute' | 'openai' | 'groq' | 'ollama' | 'custom';
+
+interface ProviderOption {
+  id: AIProvider;
+  label: string;
+  icon: string;
+  defaultBaseUrl: string;
+  defaultModel: string;
+  requiresApiKey: boolean;
+}
+
+const PROVIDERS: ProviderOption[] = [
+  {
+    id: '0g_compute',
+    label: '0G Compute',
+    icon: '0G',
+    defaultBaseUrl: 'https://compute.0g.ai/v1',
+    defaultModel: '0g-llama-3.3-70b',
+    requiresApiKey: true,
+  },
+  {
+    id: 'openai',
+    label: 'OpenAI',
+    icon: 'OA',
+    defaultBaseUrl: 'https://api.openai.com/v1',
+    defaultModel: 'gpt-4o',
+    requiresApiKey: true,
+  },
+  {
+    id: 'groq',
+    label: 'Groq',
+    icon: 'GQ',
+    defaultBaseUrl: 'https://api.groq.com/openai/v1',
+    defaultModel: 'llama-3.3-70b-versatile',
+    requiresApiKey: true,
+  },
+  {
+    id: 'ollama',
+    label: 'Ollama',
+    icon: 'OL',
+    defaultBaseUrl: 'http://localhost:11434/v1',
+    defaultModel: 'llama3.2',
+    requiresApiKey: false,
+  },
+  {
+    id: 'custom',
+    label: 'Custom',
+    icon: 'CU',
+    defaultBaseUrl: '',
+    defaultModel: '',
+    requiresApiKey: true,
+  },
+];
+
+// ─── Main Component ─────────────────────────────────────────────────────────
+
 export default function SettingsPage() {
-  const { address } = useAccount();
+  const { address, isConnected } = useAccount();
   const [notifications, setNotifications] = useState(true);
   const [autoReport, setAutoReport] = useState(false);
+
+  // BYOAI state
+  const [selectedProvider, setSelectedProvider] = useState<AIProvider>('0g_compute');
+  const [apiKey, setApiKey] = useState('');
+  const [baseUrl, setBaseUrl] = useState(PROVIDERS[0].defaultBaseUrl);
+  const [model, setModel] = useState(PROVIDERS[0].defaultModel);
+  const [showApiKey, setShowApiKey] = useState(false);
+  const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const [saveMessage, setSaveMessage] = useState('');
+  const [settingsLoaded, setSettingsLoaded] = useState(false);
+
+  // Load saved AI provider settings on mount
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/v1/settings/ai-provider');
+        if (res.ok) {
+          const data = await res.json();
+          if (data.provider) setSelectedProvider(data.provider);
+          if (data.apiKey) setApiKey(data.apiKey);
+          if (data.baseUrl) setBaseUrl(data.baseUrl);
+          if (data.model) setModel(data.model);
+        }
+      } catch {
+        // Settings not loaded — defaults remain
+      } finally {
+        setSettingsLoaded(true);
+      }
+    }
+    loadSettings();
+  }, []);
+
+  // Handle provider change — reset fields to provider defaults
+  const handleProviderChange = useCallback((provider: AIProvider) => {
+    const config = PROVIDERS.find((p) => p.id === provider)!;
+    setSelectedProvider(provider);
+    setBaseUrl(config.defaultBaseUrl);
+    setModel(config.defaultModel);
+    setProviderDropdownOpen(false);
+  }, []);
+
+  // Save AI provider settings
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    setSaveStatus('idle');
+    setSaveMessage('');
+
+    try {
+      const res = await fetch('/api/v1/settings/ai-provider', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          provider: selectedProvider,
+          apiKey,
+          baseUrl,
+          model,
+        }),
+      });
+
+      if (res.ok) {
+        setSaveStatus('success');
+        setSaveMessage('AI provider settings saved successfully');
+      } else {
+        const data = await res.json().catch(() => ({}));
+        setSaveStatus('error');
+        setSaveMessage(data.error || data.message || 'Failed to save settings');
+      }
+    } catch {
+      setSaveStatus('error');
+      setSaveMessage('Network error — please try again');
+    } finally {
+      setSaving(false);
+      setTimeout(() => {
+        setSaveStatus('idle');
+        setSaveMessage('');
+      }, 4000);
+    }
+  }, [selectedProvider, apiKey, baseUrl, model]);
+
+  const currentProviderConfig = PROVIDERS.find((p) => p.id === selectedProvider)!;
 
   return (
     <div className="space-y-8">
@@ -20,11 +177,11 @@ export default function SettingsPage() {
 
       {/* Profile */}
       <Card>
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 p-6 pb-0">
           <Settings className="w-5 h-5 text-white" />
           <h3 className="text-lg font-semibold text-white">Profile</h3>
         </div>
-        <div className="space-y-4">
+        <div className="space-y-4 p-6 pt-4">
           <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
             <div>
               <p className="text-sm text-white/80">Connected Wallet</p>
@@ -32,21 +189,331 @@ export default function SettingsPage() {
                 {address ? `${address.slice(0, 10)}...${address.slice(-8)}` : 'Not connected'}
               </p>
             </div>
-            <div className="flex items-center gap-2 px-2.5 py-1 bg-green-500/10 border border-green-500/20 rounded-lg">
-              <div className="w-1.5 h-1.5 bg-green-500 rounded-full" />
-              <span className="text-xs font-medium text-green-400">0G Newton</span>
+            <div
+              className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border ${
+                isConnected
+                  ? 'bg-green-500/10 border-green-500/20'
+                  : 'bg-red-500/10 border-red-500/20'
+              }`}
+            >
+              <div
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isConnected ? 'bg-green-500' : 'bg-red-500'
+                }`}
+              />
+              <span
+                className={`text-xs font-medium ${
+                  isConnected ? 'text-green-400' : 'text-red-400'
+                }`}
+              >
+                {isConnected ? '0G Newton' : 'Disconnected'}
+              </span>
             </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* ─── BYOAI Section ───────────────────────────────────────────────── */}
+      <Card>
+        <div className="p-6 pb-0">
+          {/* Section header */}
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF6363]/20 to-[#FF6363]/5 flex items-center justify-center border border-[#FF6363]/20">
+              <BrainCircuit className="w-4 h-4 text-[#FF6363]" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-white">BYOAI — Bring Your Own AI</h3>
+              <p className="text-xs text-white/40 mt-0.5">
+                Connect your own AI provider for threat analysis
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 pt-5 space-y-5">
+          {/* Wallet Connection Status */}
+          <div
+            className={`flex items-center gap-3 p-3 rounded-lg border ${
+              isConnected
+                ? 'bg-green-500/[0.04] border-green-500/10'
+                : 'bg-red-500/[0.04] border-red-500/10'
+            }`}
+          >
+            <div
+              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+                isConnected ? 'bg-green-500/10' : 'bg-red-500/10'
+              }`}
+            >
+              <Wallet
+                className={`w-4 h-4 ${isConnected ? 'text-green-400' : 'text-red-400'}`}
+              />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-white/80">
+                {isConnected ? 'Wallet Connected' : 'Wallet Not Connected'}
+              </p>
+              <p className="text-xs text-white/40 mt-0.5">
+                {isConnected
+                  ? `${address!.slice(0, 6)}...${address!.slice(-4)}`
+                  : 'Connect your wallet to save AI provider settings'}
+              </p>
+            </div>
+            <div
+              className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${
+                isConnected
+                  ? 'bg-green-500/10 text-green-400'
+                  : 'bg-red-500/10 text-red-400'
+              }`}
+            >
+              <div
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isConnected ? 'bg-green-400' : 'bg-red-400'
+                } ${isConnected ? 'animate-pulse' : ''}`}
+              />
+              {isConnected ? 'Active' : 'Required'}
+            </div>
+          </div>
+
+          {/* Provider Selector */}
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">
+              <div className="flex items-center gap-1.5">
+                <Cpu className="w-3.5 h-3.5" />
+                Provider
+              </div>
+            </label>
+            <div className="relative">
+              <button
+                onClick={() => setProviderDropdownOpen(!providerDropdownOpen)}
+                className="w-full flex items-center justify-between p-3 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.12] transition-all text-left group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-white/[0.08] to-white/[0.02] flex items-center justify-center border border-white/[0.06]">
+                    <span className="text-[10px] font-bold text-white/60">
+                      {currentProviderConfig.icon}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-sm text-white font-medium">
+                      {currentProviderConfig.label}
+                    </span>
+                    <p className="text-[11px] text-white/30 mt-0.5">
+                      {currentProviderConfig.defaultBaseUrl || 'Custom endpoint'}
+                    </p>
+                  </div>
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 text-white/40 transition-transform ${
+                    providerDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </button>
+
+              {/* Dropdown */}
+              {providerDropdownOpen && (
+                <>
+                  {/* Backdrop */}
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setProviderDropdownOpen(false)}
+                  />
+                  <div className="absolute top-full left-0 right-0 mt-1.5 z-50 rounded-xl border border-white/[0.08] bg-[#101111]/95 backdrop-blur-xl shadow-2xl shadow-black/40 overflow-hidden">
+                    {PROVIDERS.map((provider) => {
+                      const isSelected = provider.id === selectedProvider;
+                      return (
+                        <button
+                          key={provider.id}
+                          onClick={() => handleProviderChange(provider.id)}
+                          className={`w-full flex items-center justify-between p-3 hover:bg-white/[0.04] transition-colors ${
+                            isSelected ? 'bg-white/[0.04]' : ''
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center border ${
+                                isSelected
+                                  ? 'bg-[#FF6363]/10 border-[#FF6363]/30'
+                                  : 'bg-white/[0.04] border-white/[0.06]'
+                              }`}
+                            >
+                              <span
+                                className={`text-[10px] font-bold ${
+                                  isSelected ? 'text-[#FF6363]' : 'text-white/50'
+                                }`}
+                              >
+                                {provider.icon}
+                              </span>
+                            </div>
+                            <div className="text-left">
+                              <span
+                                className={`text-sm font-medium ${
+                                  isSelected ? 'text-white' : 'text-white/70'
+                                }`}
+                              >
+                                {provider.label}
+                              </span>
+                              <p className="text-[11px] text-white/30 mt-0.5">
+                                {provider.defaultBaseUrl || 'Configure your own endpoint'}
+                              </p>
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <Check className="w-4 h-4 text-[#FF6363]" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* API Key Input */}
+          {currentProviderConfig.requiresApiKey && (
+            <div>
+              <label className="block text-sm font-medium text-white/70 mb-2">
+                <div className="flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5" />
+                  API Key
+                </div>
+              </label>
+              <div className="relative">
+                <input
+                  type={showApiKey ? 'text' : 'password'}
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  placeholder={
+                    selectedProvider === 'openai'
+                      ? 'sk-...'
+                      : selectedProvider === 'groq'
+                        ? 'gsk_...'
+                        : 'Enter your API key'
+                  }
+                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 pr-10 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#FF6363]/40 focus:ring-1 focus:ring-[#FF6363]/20 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowApiKey(!showApiKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {showApiKey ? (
+                    <EyeOff className="w-4 h-4" />
+                  ) : (
+                    <Eye className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+              <p className="text-[11px] text-white/25 mt-1.5">
+                {selectedProvider === '0g_compute'
+                  ? 'Get your key from the 0G Compute dashboard'
+                  : selectedProvider === 'openai'
+                    ? 'Platform keys from platform.openai.com'
+                    : selectedProvider === 'groq'
+                      ? 'Console keys from console.groq.com'
+                      : 'Your provider API key'}
+              </p>
+            </div>
+          )}
+
+          {/* Base URL Input */}
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">
+              <div className="flex items-center gap-1.5">
+                <Server className="w-3.5 h-3.5" />
+                Base URL
+              </div>
+            </label>
+            <input
+              type="text"
+              value={baseUrl}
+              onChange={(e) => setBaseUrl(e.target.value)}
+              placeholder="https://api.example.com/v1"
+              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-sm text-white font-mono placeholder:text-white/20 outline-none focus:border-[#FF6363]/40 focus:ring-1 focus:ring-[#FF6363]/20 transition-all"
+            />
+            <p className="text-[11px] text-white/25 mt-1.5">
+              {selectedProvider === 'ollama'
+                ? 'Default: http://localhost:11434 — change if Ollama runs elsewhere'
+                : 'OpenAI-compatible API endpoint'}
+            </p>
+          </div>
+
+          {/* Model Input */}
+          <div>
+            <label className="block text-sm font-medium text-white/70 mb-2">
+              <div className="flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" />
+                Model
+              </div>
+            </label>
+            <input
+              type="text"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder="gpt-4o"
+              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-sm text-white font-mono placeholder:text-white/20 outline-none focus:border-[#FF6363]/40 focus:ring-1 focus:ring-[#FF6363]/20 transition-all"
+            />
+            <p className="text-[11px] text-white/25 mt-1.5">
+              {selectedProvider === 'openai'
+                ? 'Recommended: gpt-4o, gpt-4o-mini, gpt-4-turbo'
+                : selectedProvider === 'groq'
+                  ? 'Recommended: llama-3.3-70b-versatile, mixtral-8x7b-32768'
+                  : selectedProvider === 'ollama'
+                    ? 'Use any model pulled via `ollama pull`'
+                    : 'Model identifier used by your provider'}
+            </p>
+          </div>
+
+          {/* Save Button & Status */}
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              onClick={handleSave}
+              disabled={saving || !isConnected}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                saving || !isConnected
+                  ? 'bg-white/[0.04] text-white/30 cursor-not-allowed border border-white/[0.06]'
+                  : 'bg-gradient-to-r from-[#FF6363] to-[#ff4444] text-white hover:shadow-lg hover:shadow-[#FF6363]/20 hover:scale-[1.02] active:scale-[0.98]'
+              }`}
+            >
+              {saving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4" />
+                  Save Provider
+                </>
+              )}
+            </button>
+
+            {/* Inline status feedback */}
+            {saveStatus !== 'idle' && (
+              <div
+                className={`flex items-center gap-1.5 text-sm animate-in fade-in duration-300 ${
+                  saveStatus === 'success' ? 'text-green-400' : 'text-red-400'
+                }`}
+              >
+                {saveStatus === 'success' ? (
+                  <Check className="w-3.5 h-3.5" />
+                ) : (
+                  <AlertCircle className="w-3.5 h-3.5" />
+                )}
+                {saveMessage}
+              </div>
+            )}
           </div>
         </div>
       </Card>
 
       {/* Notifications */}
       <Card>
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 p-6 pb-0">
           <Bell className="w-5 h-5 text-white" />
           <h3 className="text-lg font-semibold text-white">Notifications</h3>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-3 p-6 pt-4">
           <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
             <div>
               <p className="text-sm text-white/80">Threat Alerts</p>
@@ -70,15 +537,17 @@ export default function SettingsPage() {
 
       {/* Security */}
       <Card>
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 p-6 pb-0">
           <Shield className="w-5 h-5 text-white" />
           <h3 className="text-lg font-semibold text-white">Security</h3>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-3 p-6 pt-4">
           <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
             <div>
               <p className="text-sm text-white/80">Auto-Report High/Critical Threats</p>
-              <p className="text-xs text-white/40 mt-0.5">Automatically submit reports for severe threats</p>
+              <p className="text-xs text-white/40 mt-0.5">
+                Automatically submit reports for severe threats
+              </p>
             </div>
             <button
               onClick={() => setAutoReport(!autoReport)}
@@ -98,11 +567,11 @@ export default function SettingsPage() {
 
       {/* Network */}
       <Card>
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex items-center gap-3 mb-6 p-6 pb-0">
           <Globe className="w-5 h-5 text-white" />
           <h3 className="text-lg font-semibold text-white">Network</h3>
         </div>
-        <div className="space-y-3">
+        <div className="space-y-3 p-6 pt-4">
           <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
             <div>
               <p className="text-sm text-white/80">Chain</p>
