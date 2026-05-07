@@ -81,7 +81,10 @@ export async function POST(request: NextRequest) {
       // 0G Storage proof (for hackathon demo)
       storageHash: result.storageRootHash || null,
       storageExplorer: result.storageRootHash 
-        ? `https://explorer.0g.ai/storage/${result.storageRootHash}` 
+        ? `https://chainscan-newton.0g.ai/tx/${result.storageRootHash}` 
+        : null,
+      storageDownload: result.storageRootHash 
+        ? `/api/v1/storage/${result.storageRootHash}/download` 
         : null
     })
   } catch (error) {
