@@ -15,22 +15,22 @@ datasource db {
 // ============================================
 
 model Address {
-  id          String      @id @default(cuid())
-  address     String      @unique
-  chain       String      @default("0g-newton")
-  addressType String      @default("EOA") // EOA, SMART_CONTRACT, PROXY
-  riskScore   Int         @default(0)
-  riskLevel   String      @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
-  totalReports Int        @default(0)
-  firstSeenAt DateTime    @default(now())
-  lastSeenAt  DateTime    @default(now())
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id           String   @id @default(cuid())
+  address      String   @unique
+  chain        String   @default("0g-newton")
+  addressType  String   @default("EOA") // EOA, SMART_CONTRACT, PROXY
+  riskScore    Int      @default(0)
+  riskLevel    String   @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL
+  totalReports Int      @default(0)
+  firstSeenAt  DateTime @default(now())
+  lastSeenAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   // Relations
-  reports     ThreatReport[]
-  scans       TransactionScan[]
-  reputation  ReputationScore?
+  reports    ThreatReport[]
+  scans      TransactionScan[]
+  reputation ReputationScore?
 
   @@index([riskScore])
   @@index([riskLevel])
@@ -39,36 +39,36 @@ model Address {
 }
 
 model ThreatReport {
-  id              String       @id @default(cuid())
-  addressId       String
-  address         Address      @relation(fields: [addressId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  addressId String
+  address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+
   reporterAddress String
-  threatType      String       // PHISHING, MALICIOUS_CONTRACT, etc
-  severity        Int          // 0-100
-  riskLevel       String       // LOW, MEDIUM, HIGH, CRITICAL
-  
+  threatType      String // PHISHING, MALICIOUS_CONTRACT, etc
+  severity        Int // 0-100
+  riskLevel       String // LOW, MEDIUM, HIGH, CRITICAL
+
   // Evidence
-  evidenceHash    String       // IPFS/0G Storage hash
-  explanation     String       // AI-generated explanation
-  transactionHash String?      // Related transaction
-  
+  evidenceHash    String // IPFS/0G Storage hash
+  explanation     String // AI-generated explanation
+  transactionHash String? // Related transaction
+
   // AI Analysis
-  aiModel         String       @default("gpt-4")
-  confidence      Int          // 0-100
-  simulationData  String?      // JSON simulation results
-  
+  aiModel        String @default("gpt-4")
+  confidence     Int // 0-100
+  simulationData Json? // JSON simulation results
+
   // Status
-  status          String       @default("PENDING") // PENDING, VERIFIED, REJECTED, DISPUTED
-  verifiedBy      String?
-  verifiedAt      DateTime?
-  
+  status     String    @default("PENDING") // PENDING, VERIFIED, REJECTED, DISPUTED
+  verifiedBy String?
+  verifiedAt DateTime?
+
   // On-chain
-  onchainTxHash   String?      // Transaction hash when reported on-chain
-  blockNumber     Int?
-  
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  onchainTxHash String? // Transaction hash when reported on-chain
+  blockNumber   Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([addressId])
   @@index([reporterAddress])
@@ -76,66 +76,71 @@ model ThreatReport {
   @@index([riskLevel])
   @@index([status])
   @@index([createdAt])
+  @@index([addressId, status])
+  @@index([riskLevel, status])
+  @@index([reporterAddress, createdAt])
   @@map("threat_reports")
 }
 
 model TransactionScan {
-  id              String    @id @default(cuid())
-  addressId       String
-  address         Address   @relation(fields: [addressId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  addressId String
+  address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+
   // Transaction details
-  from            String
-  to              String
-  value           String?   // BigInt as string
-  data            String?   // Hex data
-  
+  from  String
+  to    String
+  value BigInt? // Wei amount
+  data  String? // Hex data
+
   // Simulation results
   simulationSuccess Boolean
-  gasUsed         String?   // BigInt as string
-  stateChanges    String?   // JSON
-  
+  gasUsed           BigInt? // Gas units
+  stateChanges      Json? // JSON
+
   // AI Analysis
-  riskScore       Int       // 0-100
-  riskLevel       String    // LOW, MEDIUM, HIGH, CRITICAL
-  recommendation  String    // APPROVE, REJECT, WARN
+  riskScore       Int // 0-100
+  riskLevel       String // LOW, MEDIUM, HIGH, CRITICAL
+  recommendation  String // APPROVE, REJECT, WARN
   explanation     String
-  detectedThreats String?   // JSON array of threats
-  
+  detectedThreats Json? // JSON array of threats
+
   // Metadata
-  scanDuration    Int?      // milliseconds
-  agentVersion    String    @default("1.0.0")
-  
-  createdAt       DateTime  @default(now())
+  scanDuration Int? // milliseconds
+  agentVersion String @default("1.0.0")
+
+  createdAt DateTime @default(now())
 
   @@index([addressId])
   @@index([from])
   @@index([riskLevel])
   @@index([createdAt])
+  @@index([addressId, riskLevel])
+  @@index([from, createdAt])
   @@map("transaction_scans")
 }
 
 model ReputationScore {
-  id              String   @id @default(cuid())
-  addressId       String   @unique
-  address         Address  @relation(fields: [addressId], references: [id], onDelete: Cascade)
-  
+  id        String  @id @default(cuid())
+  addressId String  @unique
+  address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+
   // Scores
-  overallScore    Int      @default(0)  // 0-100
-  reporterScore   Int      @default(0)  // Quality of reports submitted
-  accuracyScore   Int      @default(0)  // Accuracy of past reports
-  
+  overallScore  Int @default(0) // 0-100
+  reporterScore Int @default(0) // Quality of reports submitted
+  accuracyScore Int @default(0) // Accuracy of past reports
+
   // Stats
-  reportsSubmitted Int     @default(0)
-  reportsVerified  Int     @default(0)
-  reportsRejected  Int     @default(0)
-  
+  reportsSubmitted Int @default(0)
+  reportsVerified  Int @default(0)
+  reportsRejected  Int @default(0)
+
   // On-chain data
-  onchainReputation Int?   // From SifixReputation contract
-  lastSyncedAt     DateTime?
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  onchainReputation Int? // From SifixReputation contract
+  lastSyncedAt      DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([overallScore])
   @@index([reporterScore])
@@ -147,33 +152,33 @@ model ReputationScore {
 // ============================================
 
 model UserProfile {
-  id              String   @id @default(cuid())
-  address         String   @unique
-  
+  id      String @id @default(cuid())
+  address String @unique
+
   // Stats
-  scansPerformed  Int      @default(0)
-  threatsDetected Int      @default(0)
-  reportsSubmitted Int     @default(0)
-  
+  scansPerformed   Int @default(0)
+  threatsDetected  Int @default(0)
+  reportsSubmitted Int @default(0)
+
   // Settings
-  autoReport      Boolean  @default(false)  // Auto-report HIGH/CRITICAL threats
-  notifyOnThreat  Boolean  @default(true)
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  autoReport     Boolean @default(false) // Auto-report HIGH/CRITICAL threats
+  notifyOnThreat Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("user_profiles")
 }
 
 model SearchHistory {
-  id             String   @id @default(cuid())
-  userAddress    String?
-  searchType     String   // "address" | "transaction"
-  query          String
-  riskScore      Int      @default(0)
-  riskLevel      String   @default("LOW")
-  result         String?  // JSON snapshot
-  createdAt      DateTime @default(now())
+  id          String   @id @default(cuid())
+  userAddress String?
+  searchType  String // "address" | "transaction"
+  query       String
+  riskScore   Int      @default(0)
+  riskLevel   String   @default("LOW")
+  result      Json? // JSON snapshot
+  createdAt   DateTime @default(now())
 
   @@index([userAddress])
   @@index([createdAt])
@@ -181,14 +186,14 @@ model SearchHistory {
 }
 
 model SyncLog {
-  id              String   @id @default(cuid())
-  source          String   // "0g-storage" | "contract"
-  status          String   // "success" | "failed"
-  recordsAdded    Int      @default(0)
-  recordsUpdated  Int      @default(0)
-  error           String?
-  startedAt       DateTime @default(now())
-  completedAt     DateTime?
+  id             String    @id @default(cuid())
+  source         String // "0g-storage" | "contract"
+  status         String // "success" | "failed"
+  recordsAdded   Int       @default(0)
+  recordsUpdated Int       @default(0)
+  error          String?
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
 
   @@index([source])
   @@index([startedAt])
