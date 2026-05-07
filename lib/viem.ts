@@ -20,17 +20,17 @@ function validateEnv(): {
   privateKey?: `0x${string}`;
 } {
   const rpcUrl =
-    process.env.NEXT_PUBLIC_RPC_URL ?? 'https://evmrpc-testnet.0g.ai';
+    process.env.NEXT_PUBLIC_ZG_RPC_URL ?? 'https://evmrpc-testnet.0g.ai';
 
-  const privateKey = process.env.WALLET_PRIVATE_KEY as `0x${string}` | undefined;
+  const privateKey = process.env.STORAGE_PRIVATE_KEY as `0x${string}` | undefined;
 
   // Validate private key format if provided
   if (privateKey && !privateKey.startsWith('0x')) {
-    throw new Error('WALLET_PRIVATE_KEY must start with 0x');
+    throw new Error('STORAGE_PRIVATE_KEY must start with 0x');
   }
 
   if (privateKey && privateKey.length !== 66) {
-    throw new Error('WALLET_PRIVATE_KEY must be 66 characters (0x + 64 hex chars)');
+    throw new Error('STORAGE_PRIVATE_KEY must be 66 characters (0x + 64 hex chars)');
   }
 
   return { rpcUrl, privateKey };

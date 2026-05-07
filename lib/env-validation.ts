@@ -15,15 +15,14 @@ export function validateEnv(): EnvValidationResult {
 
   // Required public variables
   const requiredPublic = {
-    NEXT_PUBLIC_CHAIN_ID: process.env.NEXT_PUBLIC_CHAIN_ID,
-    NEXT_PUBLIC_RPC_URL: process.env.NEXT_PUBLIC_RPC_URL,
-    NEXT_PUBLIC_CONTRACT_ADDRESS: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
+    NEXT_PUBLIC_ZG_CHAIN_ID: process.env.NEXT_PUBLIC_ZG_CHAIN_ID,
+    NEXT_PUBLIC_ZG_RPC_URL: process.env.NEXT_PUBLIC_ZG_RPC_URL,
   };
 
   // Required server variables
   const requiredServer = {
     DATABASE_URL: process.env.DATABASE_URL,
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    AI_API_KEY: process.env.AI_API_KEY,
   };
 
   // Check required public variables
@@ -41,29 +40,33 @@ export function validateEnv(): EnvValidationResult {
   });
 
   // Validate chain ID
-  const chainId = Number(process.env.NEXT_PUBLIC_CHAIN_ID);
-  if (process.env.NEXT_PUBLIC_CHAIN_ID && isNaN(chainId)) {
-    errors.push("NEXT_PUBLIC_CHAIN_ID must be a valid number");
+  const chainId = Number(process.env.NEXT_PUBLIC_ZG_CHAIN_ID);
+  if (process.env.NEXT_PUBLIC_ZG_CHAIN_ID && isNaN(chainId)) {
+    errors.push("NEXT_PUBLIC_ZG_CHAIN_ID must be a valid number");
   } else if (chainId !== 16602) {
     warnings.push(
-      `NEXT_PUBLIC_CHAIN_ID is ${chainId}, expected 16602 for 0G Newton Testnet`
+      `NEXT_PUBLIC_ZG_CHAIN_ID is ${chainId}, expected 16602 for 0G Newton Testnet`
     );
   }
 
-  // Validate contract address format
-  if (process.env.NEXT_PUBLIC_CONTRACT_ADDRESS) {
-    const address = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS;
-    if (!/^0x[a-fA-F0-9]{40}$/.test(address)) {
-      errors.push("NEXT_PUBLIC_CONTRACT_ADDRESS must be a valid Ethereum address");
+  // Validate contract addresses
+  const contractVars = [
+    "NEXT_PUBLIC_SIFIX_CONTRACT",
+    "NEXT_PUBLIC_FLOW_CONTRACT",
+  ] as const;
+  for (const varName of contractVars) {
+    const address = process.env[varName];
+    if (address && !/^0x[a-fA-F0-9]{40}$/.test(address)) {
+      errors.push(`${varName} must be a valid Ethereum address`);
     }
   }
 
   // Validate RPC URL format
-  if (process.env.NEXT_PUBLIC_RPC_URL) {
+  if (process.env.NEXT_PUBLIC_ZG_RPC_URL) {
     try {
-      new URL(process.env.NEXT_PUBLIC_RPC_URL);
+      new URL(process.env.NEXT_PUBLIC_ZG_RPC_URL);
     } catch {
-      errors.push("NEXT_PUBLIC_RPC_URL must be a valid URL");
+      errors.push("NEXT_PUBLIC_ZG_RPC_URL must be a valid URL");
     }
   }
 
@@ -71,8 +74,8 @@ export function validateEnv(): EnvValidationResult {
   const optionalWithDefaults = {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || "SIFIX",
-    OPENAI_MODEL: process.env.OPENAI_MODEL || "gpt-4-turbo-preview",
-    OPENAI_BASE_URL: process.env.OPENAI_BASE_URL || "https://api.openai.com/v1",
+    AI_MODEL: process.env.AI_MODEL || "glm/glm-5.1",
+    AI_BASE_URL: process.env.AI_BASE_URL || "http://43.156.177.86:20128/v1",
   };
 
   // Warn about sensitive data in public variables
@@ -83,8 +86,8 @@ export function validateEnv(): EnvValidationResult {
   }
 
   // Validate that we're not using example values
-  if (process.env.OPENAI_API_KEY?.includes("example") || process.env.OPENAI_API_KEY?.includes("your_")) {
-    warnings.push("OPENAI_API_KEY appears to be using example/placeholder value");
+  if (process.env.AI_API_KEY?.includes("example") || process.env.AI_API_KEY?.includes("your_")) {
+    warnings.push("AI_API_KEY appears to be using example/placeholder value");
   }
 
   const result: EnvValidationResult = {

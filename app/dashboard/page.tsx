@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Shield, Search, Activity, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Zap, Trophy } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -7,79 +8,75 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
 export default function DashboardPage() {
+  const [statsData, setStatsData] = useState<any>(null)
+  const [threats, setThreats] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  const fetchDashboardData = async () => {
+    try {
+      const [statsRes, threatsRes] = await Promise.all([
+        fetch('/api/v1/stats').catch(() => null),
+        fetch('/api/v1/threats?limit=5').catch(() => null),
+      ])
+
+      if (statsRes?.ok) {
+        const statsJson = await statsRes.json()
+        if (statsJson.success) setStatsData(statsJson.data)
+      }
+      if (threatsRes?.ok) {
+        const threatsJson = await threatsRes.json()
+        if (threatsJson.success) setThreats(threatsJson.data?.reports || threatsJson.data || [])
+      }
+    } catch (err) {
+      console.error('Failed to fetch dashboard data:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const stats = [
     {
       name: "Total Scans",
-      value: "1,234",
-      change: "+12.5%",
-      trend: "up",
+      value: statsData?.totalScans?.toLocaleString() ?? "0",
       icon: Search,
       color: "text-blue-400",
       bgColor: "bg-blue-500/10",
     },
     {
       name: "Threats Detected",
-      value: "89",
-      change: "+3.2%",
-      trend: "up",
+      value: statsData?.criticalThreats?.toLocaleString() ?? "0",
       icon: AlertTriangle,
       color: "text-red-400",
       bgColor: "bg-red-500/10",
     },
     {
       name: "Reports Submitted",
-      value: "45",
-      change: "+8.1%",
-      trend: "up",
+      value: statsData?.totalReports?.toLocaleString() ?? "0",
       icon: Shield,
       color: "text-green-400",
       bgColor: "bg-green-500/10",
     },
     {
-      name: "Your Reputation",
-      value: "95",
-      change: "+2.4%",
-      trend: "up",
+      name: "Addresses Tracked",
+      value: statsData?.totalAddresses?.toLocaleString() ?? "0",
       icon: TrendingUp,
       color: "text-[#4ecdc4]",
       bgColor: "bg-[#4ecdc4]/10",
     },
   ]
 
-  const recentActivity = [
-    {
-      id: 1,
-      type: "scan",
-      address: "0x1234...5678",
-      status: "safe",
-      time: "2 minutes ago",
-      risk: "Low",
-    },
-    {
-      id: 2,
-      type: "report",
-      address: "0x9876...4321",
-      status: "submitted",
-      time: "15 minutes ago",
-      risk: "High",
-    },
-    {
-      id: 3,
-      type: "scan",
-      address: "0x5555...6666",
-      status: "warning",
-      time: "1 hour ago",
-      risk: "Medium",
-    },
-    {
-      id: 4,
-      type: "scan",
-      address: "0xabcd...efgh",
-      status: "safe",
-      time: "2 hours ago",
-      risk: "Low",
-    },
-  ]
+  const recentActivity = threats.slice(0, 5).map((t: any, i: number) => ({
+    id: t.id || i,
+    type: "report" as const,
+    address: t.targetAddress ? `${t.targetAddress.slice(0, 6)}...${t.targetAddress.slice(-4)}` : "Unknown",
+    status: t.riskLevel === "critical" ? "danger" : t.riskLevel === "high" ? "warning" : "safe",
+    time: t.createdAt ? new Date(t.createdAt).toLocaleDateString() : "Recently",
+    risk: t.riskLevel ? t.riskLevel.charAt(0).toUpperCase() + t.riskLevel.slice(1) : "Low",
+  }))
 
   const quickActions = [
     {
@@ -118,7 +115,7 @@ export default function DashboardPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white mb-1">Welcome back! 👋</h2>
-          <p className="text-white/60">Here's what's happening with your security today.</p>
+          <p className="text-white/60">Here&apos;s what&apos;s happening with your security today.</p>
         </div>
         <Link href="/dashboard/search">
           <Button className="bg-gradient-0g text-white hover:shadow-glow-accent">
@@ -135,11 +132,13 @@ export default function DashboardPage() {
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <p className="text-sm text-white/60 mb-1">{stat.name}</p>
-                <p className="text-3xl font-bold text-white mb-2">{stat.value}</p>
-                <div className="flex items-center gap-1 text-xs">
-                  <span className="text-green-400">{stat.change}</span>
-                  <span className="text-white/40">vs last month</span>
-                </div>
+                <p className="text-3xl font-bold text-white mb-2">
+                  {loading ? (
+                    <span className="inline-block w-16 h-8 bg-white/5 animate-pulse rounded" />
+                  ) : (
+                    stat.value
+                  )}
+                </p>
               </div>
               <div className={`p-3 rounded-lg ${stat.bgColor}`}>
                 <stat.icon className={`w-5 h-5 ${stat.color}`} />
@@ -174,41 +173,53 @@ export default function DashboardPage() {
       <Card>
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
-          <Link href="/dashboard/search" className="text-sm text-[#4ecdc4] hover:underline">
+          <Link href="/dashboard/threats" className="text-sm text-[#4ecdc4] hover:underline">
             View all
           </Link>
         </div>
-        <div className="space-y-4">
-          {recentActivity.map((activity) => (
-            <div
-              key={activity.id}
-              className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
-            >
-              <div className={`p-2 rounded-lg ${
-                activity.status === "safe" ? "bg-green-500/10" :
-                activity.status === "warning" ? "bg-yellow-500/10" :
-                "bg-red-500/10"
-              }`}>
-                {activity.type === "scan" ? (
-                  <Search className={`w-4 h-4 ${
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Activity className="w-5 h-5 text-white/40 animate-spin" />
+          </div>
+        ) : recentActivity.length === 0 ? (
+          <div className="text-center py-8">
+            <Shield className="w-10 h-10 text-white/20 mx-auto mb-3" />
+            <p className="text-white/40 text-sm">No activity yet</p>
+            <Link href="/dashboard/search">
+              <Button variant="ghost" className="mt-3 text-[#4ecdc4] hover:text-[#4ecdc4]">
+                Start scanning
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {recentActivity.map((activity) => (
+              <div
+                key={activity.id}
+                className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
+              >
+                <div className={`p-2 rounded-lg ${
+                  activity.status === "safe" ? "bg-green-500/10" :
+                  activity.status === "warning" ? "bg-yellow-500/10" :
+                  "bg-red-500/10"
+                }`}>
+                  <Shield className={`w-4 h-4 ${
                     activity.status === "safe" ? "text-green-400" :
                     activity.status === "warning" ? "text-yellow-400" :
                     "text-red-400"
                   }`} />
-                ) : (
-                  <Shield className="w-4 h-4 text-blue-400" />
-                )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white/80 truncate">{activity.address}</p>
+                  <p className="text-xs text-white/40">{activity.time}</p>
+                </div>
+                <Badge variant={activity.risk === "Low" ? "safe" : activity.risk === "Medium" ? "warning" : "danger"}>
+                  {activity.risk}
+                </Badge>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-white/80 truncate">{activity.address}</p>
-                <p className="text-xs text-white/40">{activity.time}</p>
-              </div>
-              <Badge variant={activity.risk === "Low" ? "safe" : activity.risk === "Medium" ? "warning" : "danger"}>
-                {activity.risk}
-              </Badge>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </Card>
 
       {/* System Status */}

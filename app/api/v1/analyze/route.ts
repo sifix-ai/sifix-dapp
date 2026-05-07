@@ -6,7 +6,7 @@ import type { Address, Hash } from "viem"
 const agent = new SecurityAgent({
   rpcUrl: process.env.NEXT_PUBLIC_ZG_RPC_URL || "https://evmrpc-testnet.0g.ai",
   aiProvider: {
-    apiKey: process.env.AI_API_KEY || "sk-30219bc58d0c41ad-x8gv9t-83b19c4e",
+    apiKey: process.env.AI_API_KEY,
     baseURL: process.env.AI_BASE_URL || "http://43.156.177.86:20128/v1",
     model: process.env.AI_MODEL || "glm/glm-5.1"
   },

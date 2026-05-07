@@ -2,14 +2,13 @@
 
 import { useState } from 'react';
 import { useAccount, useConnect, useSwitchChain, useChainId } from 'wagmi';
-import { base, baseSepolia } from 'wagmi/chains';
 import { AlertTriangle, CheckCircle2, Loader2, ExternalLink, Wallet, RefreshCw } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { Steps } from '@/components/ui/steps';
 import { Button } from '@/components/ui/button';
 import { hashReasonData, type ReasonData } from '@/lib/hash';
 import { useReportScam } from '@/hooks/use-report-scam';
-import { SUPPORTED_CHAIN_IDS, CONTRACT_ADDRESSES } from '@/config/contracts';
+import { SUPPORTED_CHAIN_IDS, CONTRACT_ADDRESSES, ZEROG_CHAIN_ID } from '@/config/contracts';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -33,15 +32,13 @@ interface ReportScamModalProps {
 const STEPS = ['Details', 'Preview', 'Confirm'];
 
 const BLOCK_EXPLORER: Record<number, string> = {
-  [base.id]: 'https://basescan.org/tx/',
-  [baseSepolia.id]: 'https://sepolia.basescan.org/tx/',
+  [ZEROG_CHAIN_ID]: 'https://explorer.0g.ai/tx/',
 };
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 function NetworkBadge({ chainId }: { chainId: number }) {
-  const isBase = chainId === base.id;
-  const isBaseSepolia = chainId === baseSepolia.id;
+  const is0G = chainId === ZEROG_CHAIN_ID;
   const isSupported = (SUPPORTED_CHAIN_IDS as readonly number[]).includes(chainId);
 
   return (
@@ -55,7 +52,7 @@ function NetworkBadge({ chainId }: { chainId: number }) {
       <span
         className={`inline-block h-1.5 w-1.5 rounded-full ${isSupported ? 'bg-blue-400' : 'bg-red-400'}`}
       />
-      {isBase ? 'Base' : isBaseSepolia ? 'Base Sepolia' : `Chain ${chainId}`}
+      {is0G ? '0G Newton' : `Chain ${chainId}`}
     </span>
   );
 }
@@ -164,9 +161,9 @@ function Step2Preview({ targetAddress, selectedReasons, customText, chainId, isD
     customText,
   };
   const hash = hashReasonData(reasonData);
-  // On mainnet without a deployed contract, require switching to testnet first
-  const mainnetMissingContract = !isDomain && chainId === base.id && !(CONTRACT_ADDRESSES as any)[base.id];
-  const isSupported = isDomain || ((SUPPORTED_CHAIN_IDS as readonly number[]).includes(chainId) && !mainnetMissingContract);
+  // On an unsupported chain, show a prompt to switch
+  const needsChainSwitch = !isDomain && !(SUPPORTED_CHAIN_IDS as readonly number[]).includes(chainId);
+  const isSupported = isDomain || ((SUPPORTED_CHAIN_IDS as readonly number[]).includes(chainId));
 
   return (
     <div className="space-y-5">
@@ -218,22 +215,22 @@ function Step2Preview({ targetAddress, selectedReasons, customText, chainId, isD
               <span className="text-muted">Network</span>
               <NetworkBadge chainId={chainId} />
             </div>
-            {(!isSupported || mainnetMissingContract) && (
+            {(needsChainSwitch) && (
               <Button
-                onClick={() => switchChain({ chainId: baseSepolia.id })}
+                onClick={() => switchChain({ chainId: ZEROG_CHAIN_ID })}
                 disabled={isSwitching}
                 variant="secondary"
                 size="sm"
               >
-                {isSwitching ? <Loader2 size={12} className="animate-spin" /> : 'Switch to Base Sepolia'}
+                {isSwitching ? <Loader2 size={12} className="animate-spin" /> : 'Switch to 0G Newton'}
               </Button>
             )}
           </div>
-          {mainnetMissingContract && (
+          {needsChainSwitch && (
             <div className="flex items-start gap-2 rounded-xl border border-yellow-900 bg-yellow-950/20 px-4 py-3 text-xs text-yellow-400">
               <AlertTriangle size={13} className="mt-0.5 shrink-0" />
               <span>
-                Kontrak belum di-deploy ke mainnet. Gunakan <strong>Base Sepolia</strong> (testnet) untuk mencoba fitur ini terlebih dahulu.
+                Please switch to <strong>0G Newton Testnet</strong> to submit on-chain reports.
               </span>
             </div>
           )}
@@ -267,7 +264,7 @@ function Step3Confirm({ targetAddress, selectedReasons, customText, chainId, isD
   const { connect, connectors } = useConnect();
   const { step, txHash, error, isLoading, submit, reset } = useReportScam();
 
-  const txExplorerUrl = txHash ? `${BLOCK_EXPLORER[chainId] ?? 'https://sepolia.basescan.org/tx/'}${txHash}` : null;
+  const txExplorerUrl = txHash ? `${BLOCK_EXPLORER[chainId] ?? 'https://explorer.0g.ai/tx/'}${txHash}` : null;
 
   const handleSubmit = () => {
     if (!walletAddress) return;
@@ -302,7 +299,7 @@ function Step3Confirm({ targetAddress, selectedReasons, customText, chainId, isD
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-xs text-accent hover:underline"
           >
-            View on BaseScan <ExternalLink size={11} />
+            View on Explorer <ExternalLink size={11} />
           </a>
         )}
         <Button onClick={onClose} variant="secondary" size="sm">
@@ -415,7 +412,7 @@ function Step3Confirm({ targetAddress, selectedReasons, customText, chainId, isD
         <span>
           {isDomain
             ? 'Your report will be saved to our community database to help warn other users. No gas fee required.'
-            : 'Submitting requires a small gas fee on Base. If the contract is not yet deployed, you will be asked to approve a deploy transaction first (one-time). Only the hash of your report is stored on-chain — no personal data.'}
+            : 'Submitting requires a small gas fee on 0G Newton. If the contract is not yet deployed, you will be asked to approve a deploy transaction first (one-time). Only the hash of your report is stored on-chain — no personal data.'}
         </span>
       </div>
 

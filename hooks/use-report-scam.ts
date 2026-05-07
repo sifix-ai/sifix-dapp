@@ -16,7 +16,6 @@ import {
 import { wagmiConfig } from '@/lib/wagmi';
 import artifact from '@/ThreatReporter.json';
 import { isAddress, keccak256, pad, toBytes } from 'viem';
-import { base } from 'wagmi/chains';
 
 export type ReportStep =
   | 'idle'
@@ -152,8 +151,8 @@ export function useReportScam(): UseReportScamReturn {
         let contractAddress: `0x${string}` | '' = existingAddress;
 
         if (!contractAddress) {
-          if (chainId === base.id) {
-            throw new Error('Kontrak belum di-deploy ke Base mainnet. Silakan switch ke Base Sepolia (testnet) untuk mencoba.');
+          if (chainId === 16602) {
+            throw new Error('Contract not deployed to 0G Newton testnet. Please check contract configuration.');
           }
 
           // Deploy the contract — user approves in wallet

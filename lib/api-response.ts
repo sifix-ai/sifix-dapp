@@ -37,13 +37,41 @@ export function apiSuccess<T>(
 
 /**
  * Create an error response
+ *
+ * Supports two calling patterns:
+ * 1. Simple:  apiError(message, statusCode)  — used by route handlers
+ * 2. Full:    apiError(code, message, details, status) — used by error helpers
+ *
+ * Distinguishes by checking if the second argument is a numeric HTTP status string
+ * like '400', '404', '500', etc.
  */
 export function apiError(
-  code: string,
-  message: string,
-  details?: unknown,
-  status: number = HTTP_STATUS.BAD_REQUEST
+  first: string,
+  second: string,
+  third?: unknown,
+  fourth?: number
 ): NextResponse<ApiErrorResponse> {
+  // Detect simple pattern: apiError(message, statusCode)
+  // Numeric status strings are 3 digits like '400', '404', '500', '503'
+  const isSimpleCall = /^\d{3}$/.test(second);
+
+  let code: string;
+  let message: string;
+  let details: unknown;
+  let status: number;
+
+  if (isSimpleCall) {
+    code = second;                     // e.g. '400' used as error code
+    message = first;                   // human-readable message
+    details = undefined;
+    status = parseInt(second, 10);     // e.g. 400, 404, 500
+  } else {
+    code = first;                      // e.g. ERROR_CODES.INTERNAL_ERROR
+    message = second;
+    details = third;
+    status = fourth ?? HTTP_STATUS.BAD_REQUEST;
+  }
+
   const errorObj: {
     code: string;
     message: string;

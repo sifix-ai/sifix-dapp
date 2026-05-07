@@ -53,6 +53,18 @@ export const SIFIX_REPUTATION_ABI = [
   }
 ] as const;
 
+/**
+ * Domain contract ABI (placeholder — to be replaced with actual ABI when available)
+ * Used for .0g / custom domain resolution on-chain.
+ */
+export const DOMAIN_CONTRACT_ABI = [] as const;
+
+/**
+ * DOMAN_CONTRACT_ABI — legacy alias kept for backward-compatible imports.
+ * @deprecated Use DOMAIN_CONTRACT_ABI instead.
+ */
+export const DOMAN_CONTRACT_ABI = DOMAIN_CONTRACT_ABI;
+
 export const CONTRACTS = {
   SifixReputation: {
     address: SIFIX_REPUTATION_ADDRESS,
