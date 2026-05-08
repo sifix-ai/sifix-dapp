@@ -2,7 +2,7 @@
 CREATE TABLE "addresses" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "address" TEXT NOT NULL,
-    "chain" TEXT NOT NULL DEFAULT '0g-newton',
+    "chain" TEXT NOT NULL DEFAULT '0g-galileo',
     "addressType" TEXT NOT NULL DEFAULT 'EOA',
     "riskScore" INTEGER NOT NULL DEFAULT 0,
     "riskLevel" TEXT NOT NULL DEFAULT 'LOW',

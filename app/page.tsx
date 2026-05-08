@@ -59,7 +59,7 @@ export default function Home() {
                   GitHub
                 </a>
                 <a
-                  href="https://chainscan-newton.0g.ai/address/0x544a39149d5169E4e1bDf7F8492804224CB70152"
+                  href="https://chainscan-galileo.0g.ai/address/0x544a39149d5169E4e1bDf7F8492804224CB70152"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-violet-400/60 hover:text-violet-100 transition-colors"

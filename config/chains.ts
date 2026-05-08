@@ -3,7 +3,7 @@
 export const SIFIX_CHAIN = {
   id: 16602,
   name: '0G Newton Testnet',
-  network: '0g-newton',
+  network: '0g-galileo',
   nativeCurrency: {
     decimals: 18,
     name: 'A0GI',
@@ -20,7 +20,7 @@ export const SIFIX_CHAIN = {
   blockExplorers: {
     default: {
       name: '0G Chain Explorer',
-      url: 'https://chainscan-newton.0g.ai',
+      url: 'https://chainscan-galileo.0g.ai',
     },
   },
   testnet: true,

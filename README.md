@@ -96,7 +96,7 @@ DATABASE_URL="file:./dev.db"
 # 0G Chain Configuration (Official endpoints from docs.0g.ai)
 NEXT_PUBLIC_CHAIN_ID=16602
 NEXT_PUBLIC_RPC_URL=https://evmrpc-testnet.0g.ai
-NEXT_PUBLIC_EXPLORER_URL=https://chainscan-newton.0g.ai
+NEXT_PUBLIC_EXPLORER_URL=https://chainscan-galileo.0g.ai
 NEXT_PUBLIC_CONTRACT_ADDRESS=0x544a39149d5169E4e1bDf7F8492804224CB70152
 
 # 0G Storage Configuration (for threat evidence storage)
@@ -135,7 +135,7 @@ Before using the dapp, you'll need A0GI tokens for the 0G Newton Testnet:
 - **RPC URL:** https://evmrpc-testnet.0g.ai
 - **Chain ID:** 16602
 - **Currency Symbol:** A0GI
-- **Block Explorer:** https://chainscan-newton.0g.ai
+- **Block Explorer:** https://chainscan-galileo.0g.ai
 
 ## 🛡️ Features
 
@@ -180,7 +180,7 @@ Before using the dapp, you'll need A0GI tokens for the 0G Newton Testnet:
 - **Network:** 0G Newton Testnet
 - **Chain ID:** 16602
 - **RPC:** https://evmrpc-testnet.0g.ai
-- **Explorer:** https://chainscan-newton.0g.ai
+- **Explorer:** https://chainscan-galileo.0g.ai
 
 ## 🛠️ Development
 

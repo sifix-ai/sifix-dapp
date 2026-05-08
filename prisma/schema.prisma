@@ -17,7 +17,7 @@ datasource db {
 model Address {
   id           String   @id @default(cuid())
   address      String   @unique
-  chain        String   @default("0g-newton")
+  chain        String   @default("0g-galileo")
   addressType  String   @default("EOA") // EOA, SMART_CONTRACT, PROXY
   riskScore    Int      @default(0)
   riskLevel    String   @default("LOW") // LOW, MEDIUM, HIGH, CRITICAL

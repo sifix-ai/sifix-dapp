@@ -8,7 +8,7 @@ export class AddressService {
   /**
    * Get or create address
    */
-  static async getOrCreate(address: string, chain: string = '0g-newton') {
+  static async getOrCreate(address: string, chain: string = '0g-galileo') {
     let addr = await prisma.address.findUnique({
       where: { address: address.toLowerCase() },
       include: {

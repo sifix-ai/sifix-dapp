@@ -11,7 +11,7 @@ import { defineChain } from "viem"
 const zgChain = defineChain({
   id: 16602,
   name: "0G Newton Testnet",
-  network: "0g-newton-testnet",
+  network: "0g-galileo-testnet",
   nativeCurrency: {
     decimals: 18,
     name: "A0GI",
@@ -28,13 +28,13 @@ const zgChain = defineChain({
   blockExplorers: {
     default: {
       name: "0G Explorer",
-      url: "https://chainscan-newton.0g.ai"
+      url: "https://chainscan-galileo.0g.ai"
     }
   }
 })
 
 // Contract address
-const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_SIFIX_CONTRACT || 
+const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_SIFIX_CONTRACT ||
   "0x544a39149d5169E4e1bDf7F8492804224CB70152") as Address
 
 // Contract ABI (simplified)

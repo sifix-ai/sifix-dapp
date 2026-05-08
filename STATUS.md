@@ -162,7 +162,7 @@ All critical improvements have been successfully implemented to bring the SIFIX 
 - Automatic connection to 0G Newton Testnet
 - Chain ID: 16602
 - Native token: A0GI
-- Explorer integration: https://chainscan-newton.0g.ai
+- Explorer integration: https://chainscan-galielo.0g.ai
 
 ### 2. **Advanced Wallet Features**
 - Network status indicator

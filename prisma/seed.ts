@@ -9,7 +9,7 @@ async function main() {
   const maliciousAddress = await prisma.address.create({
     data: {
       address: '0x1234567890123456789012345678901234567890',
-      chain: '0g-newton',
+      chain: '0g-galileo',
       addressType: 'SMART_CONTRACT',
       riskScore: 95,
       riskLevel: 'CRITICAL',
@@ -20,7 +20,7 @@ async function main() {
   const safeAddress = await prisma.address.create({
     data: {
       address: '0x0987654321098765432109876543210987654321',
-      chain: '0g-newton',
+      chain: '0g-galileo',
       addressType: 'EOA',
       riskScore: 10,
       riskLevel: 'LOW',

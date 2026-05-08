@@ -10,7 +10,7 @@ const SUPPORTED_NETWORKS = [
     name: "0G Newton Testnet",
     color: "bg-green-500",
     rpc: "https://evmrpc-testnet.0g.ai",
-    explorer: "https://chainscan-newton.0g.ai"
+    explorer: "https://chainscan-galileo.0g.ai"
   }
 ] as const;
 
@@ -36,11 +36,10 @@ export function NetworkSwitcher() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors ${
-          isCorrectNetwork
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-colors ${isCorrectNetwork
             ? "bg-green-500/10 border-green-500/20 text-green-400"
             : "bg-red-500/10 border-red-500/20 text-red-400"
-        }`}
+          }`}
       >
         <div className={`w-2 h-2 rounded-full ${isCorrectNetwork ? "bg-green-500" : "bg-red-500"} animate-pulse`} />
         <span className="text-xs font-medium">
@@ -67,11 +66,10 @@ export function NetworkSwitcher() {
                     key={network.id}
                     onClick={() => handleSwitch(network.id)}
                     disabled={isSwitching}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
-                      isCurrent
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${isCurrent
                         ? "bg-accent/20 text-accent"
                         : "text-muted hover:bg-surface hover:text-foreground"
-                    } ${isSwitching ? "opacity-50 cursor-not-allowed" : ""}`}
+                      } ${isSwitching ? "opacity-50 cursor-not-allowed" : ""}`}
                   >
                     <div className="flex items-center gap-2">
                       <div className={`w-2 h-2 rounded-full ${network.color}`} />
