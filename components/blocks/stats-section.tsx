@@ -14,7 +14,6 @@ function Counter({ end, duration = 2 }: { end: string; duration?: number }) {
     if (isInView) {
       let startTime: number
       const numericValue = parseInt(end.replace(/[^\d]/g, ""))
-      const suffix = end.replace(/[\d]/g, "")
 
       const animate = (currentTime: number) => {
         if (!startTime) startTime = currentTime
@@ -45,87 +44,68 @@ export function StatsSection() {
       value: "50K+",
       label: "Transactions Analyzed",
       icon: Activity,
-      color: "from-pink-500 to-rose-500",
-      bgColor: "from-pink-500/10 to-rose-500/10",
-      borderColor: "border-pink-500/20",
-      delay: 0,
     },
     {
       value: "1.2K+",
       label: "Threats Blocked",
       icon: Shield,
-      color: "from-red-500 to-orange-500",
-      bgColor: "from-red-500/10 to-orange-500/10",
-      borderColor: "border-red-500/20",
-      delay: 0.1,
     },
     {
       value: "10K+",
       label: "Protected Wallets",
       icon: Users,
-      color: "from-violet-500 to-purple-500",
-      bgColor: "from-violet-500/10 to-purple-500/10",
-      borderColor: "border-violet-500/20",
-      delay: 0.2,
     },
     {
       value: "99.9%",
       label: "Detection Accuracy",
       icon: Trophy,
-      color: "from-cyan-500 to-blue-500",
-      bgColor: "from-cyan-500/10 to-blue-500/10",
-      borderColor: "border-cyan-500/20",
-      delay: 0.3,
     },
   ]
 
   return (
-    <section className="py-20 relative overflow-hidden bg-gradient-to-b from-[#0f0a1f] to-[#160a25]">
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          {/* Section Header */}
+    <section className="py-32 relative bg-canvas">
+      {/* Atmospheric glow - green accent - subtle */}
+      <div className="absolute inset-0 overflow-visible pointer-events-none">
+        <div className="absolute top-1/2 -translate-y-1/2 right-0 w-[1000px] h-[1000px] bg-accent-green-glow rounded-full blur-3xl opacity-15" />
+      </div>
+
+      <div className="container mx-auto px-8 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          {/* Section Header - Resend Style */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-12"
+            className="mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-violet-50 mb-4">
-              Trusted by{" "}
-              <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-indigo-400 bg-clip-text text-transparent">
-                Thousands
-              </span>
+            <h2 className="font-display text-[76.8px] leading-[1.0] tracking-[-0.768px] text-ink mb-6 font-normal">
+              Trusted by thousands
             </h2>
-            <p className="text-base text-violet-300/60 max-w-xl mx-auto">
-              Join the community of Web3 users who trust SIFIX
+            <p className="text-lg text-body max-w-2xl">
+              Join the community of Web3 users who trust SIFIX to protect their assets
             </p>
           </motion.div>
 
-          {/* Stats Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-5">
+          {/* Stats Grid - Feature Card Style */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {stats.map((stat, i) => (
               <motion.div
                 key={i}
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: stat.delay }}
-                whileHover={{ scale: 1.03 }}
-                className="relative group"
+                transition={{ duration: 0.5, delay: i * 0.1 }}
+                className="feature-card"
               >
-                <div
-                  className={`relative bg-gradient-to-br ${stat.bgColor} ${stat.borderColor} border-2 rounded-xl p-5 backdrop-blur-sm text-center group-hover:border-violet-500/40 transition-all duration-300`}
-                >
-                  <div className={`w-12 h-12 bg-gradient-to-br ${stat.color} rounded-lg flex items-center justify-center mx-auto mb-3 shadow-lg`}>
-                    <stat.icon className="w-6 h-6 text-white" strokeWidth={2} />
-                  </div>
-
-                  <div className="text-3xl font-bold text-violet-50 mb-2">
+                <div className="flex flex-col items-start">
+                  <stat.icon className="w-6 h-6 text-ink mb-6" strokeWidth={1.5} />
+                  
+                  <div className="text-[56px] leading-[1.2] tracking-[-2.8px] font-normal text-ink mb-2">
                     <Counter end={stat.value} />
                   </div>
 
-                  <div className="text-xs text-violet-400/60 font-medium uppercase tracking-wide">
+                  <div className="text-sm text-charcoal font-medium">
                     {stat.label}
                   </div>
                 </div>

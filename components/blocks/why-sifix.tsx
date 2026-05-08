@@ -24,34 +24,32 @@ export function WhySifixSection() {
   ]
 
   return (
-    <section className="py-20 relative overflow-hidden bg-gradient-to-b from-[#150a20] to-[#1a0a25]">
-      {/* Background decoration */}
-      <div className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gradient-to-tl from-pink-600/5 to-violet-600/5 rounded-full blur-3xl" />
+    <section className="py-32 relative bg-canvas">
+      {/* Atmospheric glow - blue accent - very subtle */}
+      <div className="absolute inset-0 overflow-visible pointer-events-none">
+        <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-accent-blue-glow rounded-full blur-3xl opacity-10" />
+      </div>
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto">
-          {/* Section Header */}
+      <div className="container mx-auto px-8 relative z-10">
+        <div className="max-w-6xl mx-auto">
+          {/* Section Header - Resend Style */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center mb-12"
+            className="mb-16"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-gradient-to-r from-violet-500/10 to-pink-500/10 border border-violet-500/20 rounded-full mb-4">
-              <Shield className="w-3 h-3 text-violet-400" />
-              <span className="text-xs font-semibold text-violet-400">Why Choose SIFIX</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full mb-8">
+              <Shield className="w-4 h-4 text-body" />
+              <span className="text-xs font-medium text-body tracking-wide">WHY CHOOSE SIFIX</span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-violet-50 mb-3">
-              The Difference Between{" "}
-              <span className="bg-gradient-to-r from-red-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
-                Losing Everything
-              </span>{" "}
-              and{" "}
-              <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
-                Staying Safe
-              </span>
+            <h2 className="font-display text-[76.8px] leading-[1.0] tracking-[-0.768px] text-ink mb-6 font-normal max-w-4xl">
+              The difference
             </h2>
+            <p className="text-lg text-body max-w-2xl">
+              Between losing everything and staying safe
+            </p>
           </motion.div>
 
           {/* Comparison Grid */}
@@ -62,38 +60,36 @@ export function WhySifixSection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
-              className="relative"
+              className="feature-card"
             >
-              <div className="relative bg-gradient-to-br from-red-500/5 to-orange-500/5 border border-red-500/20 rounded-xl p-5 backdrop-blur-sm">
-                {/* Header */}
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 bg-gradient-to-br from-red-500 to-orange-500 rounded-lg flex items-center justify-center shadow-lg">
-                    <X className="w-5 h-5 text-white" strokeWidth={3} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-violet-50">Without SIFIX</h3>
-                    <p className="text-xs text-red-400">Vulnerable</p>
-                  </div>
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-hairline">
+                <div className="w-8 h-8 bg-surface-deep rounded-lg flex items-center justify-center">
+                  <X className="w-4 h-4 text-accent-red" strokeWidth={2} />
                 </div>
+                <div>
+                  <h3 className="text-base font-medium text-ink">Without SIFIX</h3>
+                  <p className="text-xs text-ash">Vulnerable</p>
+                </div>
+              </div>
 
-                {/* List */}
-                <div className="space-y-2">
-                  {comparisons.map((item, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.3, delay: i * 0.1 }}
-                      className="flex items-start gap-2 p-2 rounded-lg bg-red-500/5 border border-red-500/10"
-                    >
-                      <div className="flex-shrink-0 w-5 h-5 bg-red-500/20 rounded-full flex items-center justify-center mt-0.5">
-                        <X className="w-3 h-3 text-red-400" strokeWidth={2.5} />
-                      </div>
-                      <p className="text-sm text-violet-300/80 pt-0.5">{item.without}</p>
-                    </motion.div>
-                  ))}
-                </div>
+              {/* List */}
+              <div className="space-y-3">
+                {comparisons.map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: -10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.3, delay: i * 0.1 }}
+                    className="flex items-start gap-3"
+                  >
+                    <div className="flex-shrink-0 w-4 h-4 rounded-full border border-hairline-strong flex items-center justify-center mt-0.5">
+                      <X className="w-2.5 h-2.5 text-accent-red" strokeWidth={2} />
+                    </div>
+                    <p className="text-sm text-charcoal">{item.without}</p>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
 
@@ -103,38 +99,36 @@ export function WhySifixSection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="relative"
+              className="feature-card"
             >
-              <div className="relative bg-gradient-to-br from-violet-500/5 to-pink-500/5 border border-violet-500/20 rounded-xl p-5 backdrop-blur-sm">
-                {/* Header */}
-                <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 bg-gradient-to-br from-violet-500 to-pink-500 rounded-lg flex items-center justify-center shadow-lg shadow-violet-500/30">
-                    <Check className="w-5 h-5 text-white" strokeWidth={3} />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-bold text-violet-50">With SIFIX</h3>
-                    <p className="text-xs text-green-400">Fully protected</p>
-                  </div>
+              {/* Header */}
+              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-hairline">
+                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                  <Check className="w-4 h-4 text-primary-on" strokeWidth={2} />
                 </div>
+                <div>
+                  <h3 className="text-base font-medium text-ink">With SIFIX</h3>
+                  <p className="text-xs text-accent-green">Fully protected</p>
+                </div>
+              </div>
 
-                {/* List */}
-                <div className="space-y-2">
-                  {comparisons.map((item, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: 10 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.3, delay: i * 0.1 + 0.4 }}
-                      className="flex items-start gap-2 p-2 rounded-lg bg-violet-500/5 border border-violet-500/10"
-                    >
-                      <div className="flex-shrink-0 w-5 h-5 bg-green-500/20 rounded-full flex items-center justify-center mt-0.5">
-                        <Check className="w-3 h-3 text-green-400" strokeWidth={2.5} />
-                      </div>
-                      <p className="text-sm text-violet-300/80 pt-0.5">{item.with}</p>
-                    </motion.div>
-                  ))}
-                </div>
+              {/* List */}
+              <div className="space-y-3">
+                {comparisons.map((item, i) => (
+                  <motion.div
+                    key={i}
+                    initial={{ opacity: 0, x: 10 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.3, delay: i * 0.1 + 0.4 }}
+                    className="flex items-start gap-3"
+                  >
+                    <div className="flex-shrink-0 w-4 h-4 rounded-full bg-accent-green flex items-center justify-center mt-0.5">
+                      <Check className="w-2.5 h-2.5 text-primary-on" strokeWidth={2} />
+                    </div>
+                    <p className="text-sm text-body">{item.with}</p>
+                  </motion.div>
+                ))}
               </div>
             </motion.div>
           </div>

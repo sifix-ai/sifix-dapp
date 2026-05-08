@@ -58,3 +58,5 @@ prisma/*.db
 prisma/*.db-*
 *.mjs
 test-*.mjs
+
+.agents/*

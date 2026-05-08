@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { ArrowRight, Menu, X, Shield, Sparkles, Zap } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ArrowRight, Menu, X, Shield } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ConnectButton } from "@/components/connect-button";
 import { useAccount } from "wagmi";
 import { motion } from "framer-motion";
 
+// Animated background paths component
 function FloatingPaths({ position }: { position: number }) {
   const paths = Array.from({ length: 36 }, (_, i) => ({
     id: i,
@@ -18,13 +19,13 @@ function FloatingPaths({ position }: { position: number }) {
     } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
       684 - i * 5 * position
     } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
-    width: 0.5 + i * 0.03,
+    width: 0.8 + i * 0.05,
   }));
 
   return (
     <div className="absolute inset-0 pointer-events-none">
       <svg
-        className="w-full h-full text-violet-400"
+        className="w-full h-full text-ink"
         viewBox="0 0 696 316"
         fill="none"
       >
@@ -35,11 +36,19 @@ function FloatingPaths({ position }: { position: number }) {
             d={path.d}
             stroke="currentColor"
             strokeWidth={path.width}
-            strokeOpacity="0.1"
+            strokeOpacity={0.08 + path.id * 0.01}
             fill="none"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            transition={{ duration: 10, repeat: Infinity, ease: "linear", delay: path.id * 0.1 }}
+            initial={{ pathLength: 0.3, opacity: 0.3 }}
+            animate={{
+              pathLength: 1,
+              opacity: [0.15, 0.3, 0.15],
+              pathOffset: [0, 1, 0],
+            }}
+            transition={{
+              duration: 20 + Math.random() * 10,
+              repeat: Infinity,
+              ease: "linear",
+            }}
           />
         ))}
       </svg>
@@ -49,148 +58,180 @@ function FloatingPaths({ position }: { position: number }) {
 
 export function Hero2() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const { isConnected } = useAccount();
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-b from-[#0a0118] via-[#0a0118] to-[#0f0a1f]">
+    <div className="relative min-h-screen bg-canvas">
       {/* Animated Paths Background */}
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 overflow-hidden">
         <FloatingPaths position={1} />
         <FloatingPaths position={-1} />
       </div>
 
-      {/* Gradient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-[-20%] right-[-10%] w-[700px] h-[700px] bg-gradient-to-br from-violet-600/15 to-pink-600/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-gradient-to-tr from-indigo-600/10 to-violet-600/8 rounded-full blur-3xl" />
+      {/* Atmospheric glow - blue accent - subtle and clean */}
+      <div className="absolute inset-0 overflow-visible pointer-events-none">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[1200px] bg-accent-blue-glow rounded-full blur-3xl opacity-20" />
       </div>
-
-      {/* Subtle dot grid pattern */}
-      <div className="absolute inset-0 opacity-[0.04]" style={{
-        backgroundImage: `radial-gradient(circle, #8b5cf6 1px, transparent 1px)`,
-        backgroundSize: '60px 60px'
-      }} />
 
       {/* Content container */}
       <div className="relative z-10">
-        {/* Navigation */}
-        <nav className="container mx-auto flex items-center justify-between px-4 py-6 mt-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 shadow-lg shadow-violet-500/30">
-              <Shield className="w-5 h-5 text-white" strokeWidth={2.5} />
+        {/* Navigation - Glassmorphic and Sticky */}
+        <motion.nav
+          initial={{ y: -100 }}
+          animate={{ y: 0 }}
+          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+            scrolled
+              ? "bg-canvas/80 backdrop-blur-xl border-b border-hairline shadow-lg"
+              : "bg-transparent"
+          }`}
+        >
+          <div className="container mx-auto flex items-center justify-between px-8 py-6">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                <Shield className="w-4 h-4 text-primary-on" strokeWidth={2.5} />
+              </div>
+              <span className="text-base font-medium text-ink tracking-tight">SIFIX</span>
             </div>
-            <span className="text-xl font-bold text-violet-100 tracking-tight">SIFIX</span>
-          </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-6">
-            <a href="#features" className="text-sm font-medium text-violet-300/70 hover:text-violet-100 transition-colors">Features</a>
-            <a href="#how-it-works" className="text-sm font-medium text-violet-300/70 hover:text-violet-100 transition-colors">How It Works</a>
-            <a href="https://github.com/sifix-ai" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-violet-300/70 hover:text-violet-100 transition-colors">GitHub</a>
-            {isConnected ? (
-              <Link href="/dashboard">
-                <Button size="sm" className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-700 hover:to-pink-700 text-white shadow-lg shadow-violet-500/30 hover:shadow-xl hover:shadow-violet-500/40 transition-all">
-                  <Shield className="w-4 h-4 mr-2" />
-                  Launch Dashboard
-                </Button>
-              </Link>
-            ) : (
-              <ConnectButton />
-            )}
-          </div>
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-8">
+              <a href="#features" className="text-sm font-medium text-charcoal hover:text-ink transition-colors">Features</a>
+              <a href="#how-it-works" className="text-sm font-medium text-charcoal hover:text-ink transition-colors">How It Works</a>
+              <a href="https://github.com/sifix-ai" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-charcoal hover:text-ink transition-colors">GitHub</a>
+              {isConnected ? (
+                <Link href="/dashboard">
+                  <button className="btn-primary flex items-center gap-2">
+                    <Shield className="w-4 h-4" />
+                    Dashboard
+                  </button>
+                </Link>
+              ) : (
+                <ConnectButton />
+              )}
+            </div>
 
-          {/* Mobile menu button */}
-          <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            <span className="sr-only">Toggle menu</span>
-            {mobileMenuOpen ? <X className="h-6 w-6 text-violet-100" /> : <Menu className="h-6 w-6 text-violet-100" />}
-          </button>
-        </nav>
+            {/* Mobile menu button */}
+            <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+              <span className="sr-only">Toggle menu</span>
+              {mobileMenuOpen ? <X className="h-6 w-6 text-ink" /> : <Menu className="h-6 w-6 text-ink" />}
+            </button>
+          </div>
+        </motion.nav>
 
         {/* Mobile Navigation Menu */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 flex flex-col p-4 bg-[#0a0118]/95 backdrop-blur-xl md:hidden">
-            <div className="flex items-center justify-between">
+          <div className="fixed inset-0 z-50 flex flex-col p-8 bg-canvas/95 backdrop-blur-xl md:hidden">
+            <div className="flex items-center justify-between mb-12">
               <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 shadow-lg">
-                  <Shield className="w-5 h-5 text-white" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+                  <Shield className="w-4 h-4 text-primary-on" />
                 </div>
-                <span className="text-xl font-bold text-violet-100">SIFIX</span>
+                <span className="text-base font-medium text-ink">SIFIX</span>
               </div>
               <button onClick={() => setMobileMenuOpen(false)}>
-                <X className="h-6 w-6 text-violet-100" />
+                <X className="h-6 w-6 text-ink" />
               </button>
             </div>
-            <div className="mt-8 flex flex-col space-y-6">
-              <a href="#features" className="text-lg font-medium text-violet-100 py-2">Features</a>
-              <a href="#how-it-works" className="text-lg font-medium text-violet-100 py-2">How It Works</a>
-              <a href="https://github.com/sifix-ai" className="text-lg font-medium text-violet-100 py-2">GitHub</a>
+            <div className="flex flex-col space-y-6">
+              <a href="#features" className="text-lg font-medium text-ink py-2" onClick={() => setMobileMenuOpen(false)}>Features</a>
+              <a href="#how-it-works" className="text-lg font-medium text-ink py-2" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
+              <a href="https://github.com/sifix-ai" className="text-lg font-medium text-ink py-2" onClick={() => setMobileMenuOpen(false)}>GitHub</a>
             </div>
           </div>
         )}
 
-        {/* Badge */}
-        <div className="mx-auto mt-8 flex max-w-fit items-center justify-center space-x-2 rounded-full bg-violet-500/10 backdrop-blur-sm px-5 py-2 border border-violet-500/20">
-          <Sparkles className="h-4 w-4 text-violet-400" />
-          <span className="text-sm font-semibold text-violet-200">
-            AI-Powered Security on 0G Chain
-          </span>
-          <ArrowRight className="h-4 w-4 text-violet-400" />
-        </div>
-
-        {/* Hero Content */}
-        <div className="container mx-auto mt-20 px-4">
-          <div className="text-center max-w-6xl mx-auto">
-            <h1 className="text-6xl md:text-7xl lg:text-8xl font-black leading-[1.05] text-violet-50 tracking-tight">
-              Your Crypto&apos;s
-              <br />
-              <span className="relative inline-block mt-3">
-                <span className="relative z-10 bg-gradient-to-r from-violet-400 via-pink-400 to-violet-400 bg-clip-text text-transparent">
-                  Last Line of Defense
-                </span>
-                <div className="absolute -bottom-2 left-0 right-0 h-3 bg-gradient-to-r from-violet-500/40 via-pink-500/40 to-violet-500/40 blur-xl" />
+        {/* Hero Content - Resend Style with Playfair Display-inspired typography */}
+        <div className="container mx-auto px-8 pt-40 pb-32 min-h-screen flex items-center">
+          <div className="max-w-5xl mx-auto w-full">
+            {/* Badge pill */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full mb-12"
+            >
+              <div className="w-2 h-2 bg-accent-green rounded-full" />
+              <span className="text-xs font-medium text-body tracking-wide">
+                AI-POWERED SECURITY ON 0G CHAIN
               </span>
-            </h1>
-            <p className="mx-auto mt-10 max-w-3xl text-xl md:text-2xl text-violet-300/70 leading-relaxed font-medium">
-              AI-powered security that <span className="text-violet-100 font-bold">intercepts</span>, <span className="text-pink-300 font-bold">analyzes</span>, and <span className="text-violet-100 font-bold">blocks</span> malicious transactions before they drain your wallet.
-            </p>
-            
-            {/* CTA Buttons */}
-            <div className="mt-12 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            </motion.div>
+
+            {/* Display headline - Playfair Display at 96px */}
+            <motion.h1
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="font-display text-[72px] md:text-[96px] leading-[1.0] tracking-[-0.96px] text-ink mb-8 font-normal"
+              style={{ maxWidth: '900px' }}
+            >
+              Wallet security
+              <br />
+              for developers
+            </motion.h1>
+
+            {/* Subtitle - Inter body */}
+            <motion.p
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="text-lg leading-relaxed text-body max-w-2xl mb-12"
+            >
+              AI-powered transaction analysis that intercepts, analyzes, and blocks malicious transactions before they drain your wallet. Built on 0G Chain with GPT-4.
+            </motion.p>
+
+            {/* CTA Buttons - Resend Style */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="flex flex-col sm:flex-row items-start gap-4"
+            >
               {isConnected ? (
                 <Link href="/dashboard">
-                  <Button size="lg" className="bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-700 hover:to-pink-700 text-white px-10 py-7 text-lg font-bold shadow-xl shadow-violet-500/30 hover:shadow-2xl hover:shadow-violet-500/40 transition-all duration-300 hover:scale-105">
-                    <Shield className="mr-3 h-6 w-6" />
+                  <button className="btn-primary flex items-center gap-2 h-9 px-4">
                     Launch Dashboard
-                    <ArrowRight className="ml-3 h-6 w-6" />
-                  </Button>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
                 </Link>
               ) : (
-                <div className="transform hover:scale-105 transition-transform">
-                  <ConnectButton />
-                </div>
+                <ConnectButton />
               )}
               <a href="https://github.com/sifix-ai" target="_blank" rel="noopener noreferrer">
-                <Button size="lg" variant="outline" className="border-2 border-violet-500/30 text-violet-100 hover:bg-violet-500/10 hover:border-violet-500/50 px-10 py-7 text-lg font-bold backdrop-blur-sm transition-all">
+                <button className="btn-ghost flex items-center gap-2 h-9 px-4">
                   View on GitHub
-                </Button>
+                </button>
               </a>
-            </div>
+            </motion.div>
 
-            {/* Trust indicators */}
-            <div className="mt-16 flex flex-wrap items-center justify-center gap-8 text-sm text-violet-400">
+            {/* Trust indicators - subtle */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+              className="mt-16 flex flex-wrap items-center gap-6 text-xs text-charcoal"
+            >
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-pink-500 rounded-full animate-pulse" />
-                <span className="font-semibold">Live on 0G Newton</span>
+                <div className="w-1.5 h-1.5 bg-accent-green rounded-full" />
+                <span>Live on 0G Newton</span>
               </div>
               <div className="flex items-center gap-2">
-                <Shield className="w-4 h-4 text-violet-400" />
-                <span className="font-semibold">95%+ Detection Rate</span>
+                <div className="w-1.5 h-1.5 bg-accent-blue rounded-full" />
+                <span>95%+ Detection Rate</span>
               </div>
               <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-pink-400" />
-                <span className="font-semibold">Powered by GPT-4</span>
+                <div className="w-1.5 h-1.5 bg-accent-orange rounded-full" />
+                <span>Powered by GPT-4</span>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
       </div>
