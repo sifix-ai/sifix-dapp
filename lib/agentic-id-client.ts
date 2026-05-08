@@ -16,7 +16,7 @@ export function buildSifixAgentMetadataHash(params: {
     name: 'SIFIX Base Agent',
     model: params.model,
     provider: params.provider,
-    capabilities: [...params.capabilities].sort(),
+    capabilities: params.capabilities,
   })
   return keccak256(stringToHex(canonical))
 }
