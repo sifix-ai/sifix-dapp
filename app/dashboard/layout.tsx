@@ -57,6 +57,12 @@ const navigation = [
     icon: Trophy,
     current: false,
   },
+  {
+    name: "Agent ID",
+    href: "/dashboard/agent",
+    icon: Sparkles,
+    current: false,
+  },
 ]
 
 const secondaryNavigation = [

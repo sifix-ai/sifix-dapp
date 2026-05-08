@@ -71,3 +71,97 @@ export const CONTRACTS = {
     abi: SIFIX_REPUTATION_ABI,
   },
 } as const;
+
+// ============================================
+// 0G Agentic ID (ERC-7857)
+// ============================================
+
+/**
+ * Official Agentic ID contract used in 0G examples (Galileo testnet).
+ * Source: https://github.com/0gfoundation/agenticID-examples
+ */
+export const AGENTIC_ID_CONTRACT_ADDRESS =
+  (process.env.NEXT_PUBLIC_AGENTIC_ID_CONTRACT_ADDRESS ||
+    '0x2700F6A3e505402C9daB154C5c6ab9cAEC98EF1F') as `0x${string}`;
+
+/**
+ * Base SIFIX Agent token ID (minted once by project owner).
+ * Set this after minting, e.g. NEXT_PUBLIC_AGENTIC_ID_TOKEN_ID=1
+ */
+export const AGENTIC_ID_TOKEN_ID = process.env.NEXT_PUBLIC_AGENTIC_ID_TOKEN_ID;
+
+/**
+ * Minimal ABI needed for SIFIX integration
+ */
+export const AGENTIC_ID_ABI = [
+  {
+    type: 'function',
+    name: 'mintFee',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'iMint',
+    inputs: [
+      { name: 'to', type: 'address' },
+      {
+        name: 'datas',
+        type: 'tuple[]',
+        components: [
+          { name: 'dataDescription', type: 'string' },
+          { name: 'dataHash', type: 'bytes32' },
+        ],
+      },
+    ],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'payable',
+  },
+  {
+    type: 'function',
+    name: 'authorizeUsage',
+    inputs: [
+      { name: 'tokenId', type: 'uint256' },
+      { name: 'user', type: 'address' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'revokeAuthorization',
+    inputs: [
+      { name: 'tokenId', type: 'uint256' },
+      { name: 'user', type: 'address' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'isAuthorizedUser',
+    inputs: [
+      { name: 'tokenId', type: 'uint256' },
+      { name: 'user', type: 'address' },
+    ],
+    outputs: [{ name: '', type: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'ownerOf',
+    inputs: [{ name: 'tokenId', type: 'uint256' }],
+    outputs: [{ name: '', type: 'address' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'event',
+    name: 'UsageAuthorized',
+    inputs: [
+      { name: 'tokenId', type: 'uint256', indexed: false },
+      { name: 'user', type: 'address', indexed: false },
+    ],
+  },
+] as const;
+

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { headers } from "next/headers"
+import { isAuthorizedForSifixAgent } from "@/lib/agentic-id"
 
 /**
  * Verify extension auth token from Authorization header
@@ -8,6 +9,12 @@ import { headers } from "next/headers"
 export async function verifyExtensionAuth(): Promise<{
   authorized: boolean
   walletAddress?: string
+  agenticId?: {
+    enabled: boolean
+    authorized: boolean
+    tokenId?: string
+    reason?: string
+  }
   error?: string
 }> {
   try {
@@ -38,7 +45,21 @@ export async function verifyExtensionAuth(): Promise<{
       data: { lastUsedAt: new Date() },
     })
 
-    return { authorized: true, walletAddress: session.walletAddress }
+    // Optional Agentic ID authorization guard
+    const agenticId = await isAuthorizedForSifixAgent(
+      session.walletAddress as `0x${string}`
+    )
+
+    if (agenticId.enabled && !agenticId.authorized) {
+      return {
+        authorized: false,
+        walletAddress: session.walletAddress,
+        agenticId,
+        error: `Agentic ID authorization required (token #${agenticId.tokenId})`,
+      }
+    }
+
+    return { authorized: true, walletAddress: session.walletAddress, agenticId }
   } catch (error) {
     console.error("[Auth] Verification error:", error)
     return { authorized: false, error: "Auth verification failed" }
