@@ -6,7 +6,7 @@
  */
 
 import { createConfig, http } from 'wagmi';
-import { injected } from 'wagmi';
+import { injected } from 'wagmi/connectors';
 import { SIFIX_CHAIN } from '@/config/chains';
 
 export const wagmiConfig = createConfig({

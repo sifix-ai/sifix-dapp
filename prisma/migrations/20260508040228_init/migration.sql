@@ -43,10 +43,10 @@ CREATE TABLE "transaction_scans" (
     "addressId" TEXT NOT NULL,
     "from" TEXT NOT NULL,
     "to" TEXT NOT NULL,
-    "value" TEXT,
+    "value" BIGINT,
     "data" TEXT,
     "simulationSuccess" BOOLEAN NOT NULL,
-    "gasUsed" TEXT,
+    "gasUsed" BIGINT,
     "stateChanges" TEXT,
     "riskScore" INTEGER NOT NULL,
     "riskLevel" TEXT NOT NULL,
@@ -113,6 +113,30 @@ CREATE TABLE "sync_logs" (
     "completedAt" DATETIME
 );
 
+-- CreateTable
+CREATE TABLE "user_settings" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "address" TEXT NOT NULL,
+    "aiProvider" TEXT NOT NULL DEFAULT 'default',
+    "aiApiKey" TEXT,
+    "aiBaseUrl" TEXT,
+    "aiModel" TEXT,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
+);
+
+-- CreateTable
+CREATE TABLE "extension_sessions" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "walletAddress" TEXT NOT NULL,
+    "token" TEXT NOT NULL,
+    "userAgent" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "lastUsedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expiresAt" DATETIME NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "addresses_address_key" ON "addresses"("address");
 
@@ -144,6 +168,15 @@ CREATE INDEX "threat_reports_status_idx" ON "threat_reports"("status");
 CREATE INDEX "threat_reports_createdAt_idx" ON "threat_reports"("createdAt");
 
 -- CreateIndex
+CREATE INDEX "threat_reports_addressId_status_idx" ON "threat_reports"("addressId", "status");
+
+-- CreateIndex
+CREATE INDEX "threat_reports_riskLevel_status_idx" ON "threat_reports"("riskLevel", "status");
+
+-- CreateIndex
+CREATE INDEX "threat_reports_reporterAddress_createdAt_idx" ON "threat_reports"("reporterAddress", "createdAt");
+
+-- CreateIndex
 CREATE INDEX "transaction_scans_addressId_idx" ON "transaction_scans"("addressId");
 
 -- CreateIndex
@@ -154,6 +187,12 @@ CREATE INDEX "transaction_scans_riskLevel_idx" ON "transaction_scans"("riskLevel
 
 -- CreateIndex
 CREATE INDEX "transaction_scans_createdAt_idx" ON "transaction_scans"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "transaction_scans_addressId_riskLevel_idx" ON "transaction_scans"("addressId", "riskLevel");
+
+-- CreateIndex
+CREATE INDEX "transaction_scans_from_createdAt_idx" ON "transaction_scans"("from", "createdAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "reputation_scores_addressId_key" ON "reputation_scores"("addressId");
@@ -178,3 +217,21 @@ CREATE INDEX "sync_logs_source_idx" ON "sync_logs"("source");
 
 -- CreateIndex
 CREATE INDEX "sync_logs_startedAt_idx" ON "sync_logs"("startedAt");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "user_settings_address_key" ON "user_settings"("address");
+
+-- CreateIndex
+CREATE INDEX "user_settings_address_idx" ON "user_settings"("address");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "extension_sessions_token_key" ON "extension_sessions"("token");
+
+-- CreateIndex
+CREATE INDEX "extension_sessions_token_idx" ON "extension_sessions"("token");
+
+-- CreateIndex
+CREATE INDEX "extension_sessions_walletAddress_idx" ON "extension_sessions"("walletAddress");
+
+-- CreateIndex
+CREATE INDEX "extension_sessions_expiresAt_idx" ON "extension_sessions"("expiresAt");

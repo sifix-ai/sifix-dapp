@@ -117,7 +117,7 @@ export default function SettingsPage() {
     }
     loadSettings();
   }, []);
-
+  
   // Handle provider change — reset fields to provider defaults
   const handleProviderChange = useCallback((provider: AIProvider) => {
     const config = PROVIDERS.find((p) => p.id === provider)!;

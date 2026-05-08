@@ -5,7 +5,7 @@ import { useScanAddress, useAddressReputation } from '@/hooks/use-api'
 import { useAppStore } from '@/store/app-store'
 import { useState } from 'react'
 import { addressSchema } from '@/lib/validations'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { ConnectButton } from '@/components/connect-button'
 import { useAccount } from 'wagmi'
 import { Search, Shield, AlertTriangle, TrendingUp, Sparkles, Clock, CheckCircle2, XCircle } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -17,7 +17,7 @@ export default function SearchPage() {
   const [error, setError] = useState('')
   const { addNotification } = useAppStore()
   const { isConnected } = useAccount()
-  
+
   const scanMutation = useScanAddress()
   const { data: reputation, isLoading: reputationLoading } = useAddressReputation(
     (scanMutation.data as any)?.address
@@ -76,19 +76,19 @@ export default function SearchPage() {
           <div className="w-20 h-20 bg-gradient-to-br from-[#FF6363]/20 to-[#55b3ff]/20 border border-white/[0.08] rounded-3xl flex items-center justify-center mb-6 mx-auto backdrop-blur-xl">
             <Shield className="w-10 h-10 text-[#FF6363]" />
           </div>
-          
+
           <h1 className="text-3xl font-bold mb-4 bg-gradient-to-r from-white to-white/60 bg-clip-text text-transparent">
             Connect Your Wallet
           </h1>
-          
+
           <p className="text-white/60 mb-8 leading-relaxed">
             Connect your Web3 wallet to start scanning addresses and accessing threat intelligence.
           </p>
-          
+
           <div className="flex justify-center">
             <ConnectButton />
           </div>
-          
+
           <div className="mt-12 p-6 bg-white/[0.02] border border-white/[0.08] rounded-2xl backdrop-blur-sm">
             <div className="flex items-start gap-3 text-left">
               <Sparkles className="w-5 h-5 text-[#FF6363] flex-shrink-0 mt-0.5" />
@@ -129,12 +129,12 @@ export default function SearchPage() {
           <div className="mb-8">
             <div className="relative group">
               <div className="absolute inset-0 bg-gradient-to-r from-[#FF6363]/20 to-[#55b3ff]/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
+
               <div className="relative bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/[0.08] rounded-2xl p-6 backdrop-blur-xl">
                 <label className="block text-sm font-medium mb-3 text-white/80">
                   Ethereum Address or ENS Name
                 </label>
-                
+
                 <div className="flex gap-3">
                   <div className="flex-1 relative">
                     <input
@@ -153,7 +153,7 @@ export default function SearchPage() {
                       <XCircle className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-red-500" />
                     )}
                   </div>
-                  
+
                   <button
                     onClick={handleScan}
                     disabled={scanMutation.isPending || !address}
@@ -172,14 +172,14 @@ export default function SearchPage() {
                     )}
                   </button>
                 </div>
-                
+
                 {error && (
                   <div className="mt-3 flex items-start gap-2 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg p-3">
                     <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                     <span>{error}</span>
                   </div>
                 )}
-                
+
                 <div className="mt-4 flex items-center gap-4 text-xs text-white/40">
                   <div className="flex items-center gap-1.5">
                     <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
@@ -233,7 +233,7 @@ export default function SearchPage() {
               {/* Risk Overview */}
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-[#FF6363]/10 to-[#55b3ff]/10 rounded-2xl blur-xl opacity-50" />
-                
+
                 <div className="relative bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/[0.08] rounded-2xl p-6 backdrop-blur-xl">
                   <div className="flex items-center gap-3 mb-6">
                     <div className="w-10 h-10 bg-gradient-to-br from-[#FF6363]/20 to-[#55b3ff]/20 border border-white/[0.08] rounded-xl flex items-center justify-center">
@@ -241,33 +241,32 @@ export default function SearchPage() {
                     </div>
                     <h2 className="text-xl font-bold">Risk Analysis</h2>
                   </div>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Risk Level */}
                     <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                       <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Risk Level</div>
-                      <div className={`text-2xl font-bold ${
-                        (scanMutation.data as any).riskLevel === 'CRITICAL' ? 'text-red-500' :
-                        (scanMutation.data as any).riskLevel === 'HIGH' ? 'text-orange-500' :
-                        (scanMutation.data as any).riskLevel === 'MEDIUM' ? 'text-yellow-500' :
-                        'text-green-500'
-                      }`}>
+                      <div className={`text-2xl font-bold ${(scanMutation.data as any).riskLevel === 'CRITICAL' ? 'text-red-500' :
+                          (scanMutation.data as any).riskLevel === 'HIGH' ? 'text-orange-500' :
+                            (scanMutation.data as any).riskLevel === 'MEDIUM' ? 'text-yellow-500' :
+                              'text-green-500'
+                        }`}>
                         {(scanMutation.data as any).riskLevel || 'LOW'}
                       </div>
                     </div>
-                    
+
                     {/* Risk Score */}
                     <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                       <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Risk Score</div>
                       <div className="text-2xl font-bold">{(scanMutation.data as any).riskScore}<span className="text-white/40 text-lg">/100</span></div>
                     </div>
-                    
+
                     {/* Threat Count */}
                     <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                       <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Threats Detected</div>
                       <div className="text-2xl font-bold">{(scanMutation.data as any).threatCount}</div>
                     </div>
-                    
+
                     {/* Recommendation */}
                     <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                       <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Action</div>
@@ -283,9 +282,9 @@ export default function SearchPage() {
                       <Sparkles className="w-4 h-4 text-[#FF6363]" />
                       <div className="text-xs text-white/60 uppercase tracking-wider font-semibold">AI Analysis</div>
                     </div>
-                      <p className="text-white/80 leading-relaxed">
-                        {(scanMutation.data as any).analysis?.recommendation || 'N/A'}
-                      </p>
+                    <p className="text-white/80 leading-relaxed">
+                      {(scanMutation.data as any).analysis?.recommendation || 'N/A'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -308,7 +307,7 @@ export default function SearchPage() {
               {reputation && !reputationLoading && (
                 <div className="relative group">
                   <div className="absolute inset-0 bg-gradient-to-r from-[#55b3ff]/10 to-[#5fc992]/10 rounded-2xl blur-xl opacity-50" />
-                  
+
                   <div className="relative bg-gradient-to-b from-white/[0.08] to-white/[0.04] border border-white/[0.08] rounded-2xl p-6 backdrop-blur-xl">
                     <div className="flex items-center gap-3 mb-6">
                       <div className="w-10 h-10 bg-gradient-to-br from-[#55b3ff]/20 to-[#5fc992]/20 border border-white/[0.08] rounded-xl flex items-center justify-center">
@@ -316,18 +315,18 @@ export default function SearchPage() {
                       </div>
                       <h2 className="text-xl font-bold">On-Chain Reputation</h2>
                     </div>
-                    
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                       <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                         <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Reputation Score</div>
                         <div className="text-2xl font-bold">{(reputation as any).score}<span className="text-white/40 text-lg">/100</span></div>
                       </div>
-                      
+
                       <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                         <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Total Reports</div>
                         <div className="text-2xl font-bold">{(reputation as any).reportCount}</div>
                       </div>
-                      
+
                       <div className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                         <div className="text-xs text-white/40 mb-2 uppercase tracking-wider">Last Updated</div>
                         <div className="text-sm font-medium">
@@ -344,11 +343,10 @@ export default function SearchPage() {
                             <div key={i} className="bg-black/40 border border-white/[0.08] rounded-xl p-4 hover:border-white/[0.16] transition-colors">
                               <div className="flex justify-between items-center">
                                 <div className="flex items-center gap-3">
-                                  <div className={`w-2 h-2 rounded-full ${
-                                    report.severity > 80 ? 'bg-red-500' :
-                                    report.severity > 50 ? 'bg-orange-500' :
-                                    'bg-yellow-500'
-                                  }`} />
+                                  <div className={`w-2 h-2 rounded-full ${report.severity > 80 ? 'bg-red-500' :
+                                      report.severity > 50 ? 'bg-orange-500' :
+                                        'bg-yellow-500'
+                                    }`} />
                                   <span className="text-sm text-white/60">Severity: <span className="text-white font-medium">{report.severity}</span></span>
                                 </div>
                                 <span className="text-xs text-white/40">

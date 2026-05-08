@@ -7,6 +7,7 @@ Built for 0G Chain APAC Hackathon 2026.
 ## 🎯 Problem
 
 Web3 users face constant threats:
+
 - Phishing attacks
 - Malicious smart contracts
 - Rug pulls
@@ -38,7 +39,7 @@ graph TD
 ## 📦 Tech Stack
 
 - **Frontend:** Next.js 16 + React 19 + TailwindCSS 4
-- **Wallet:** RainbowKit + Wagmi v3 + Viem v2
+- **Wallet:** Wagmi v3 + Viem v2 (custom wallet connection UI)
 - **Backend:** Next.js API Routes + Prisma
 - **Database:** PostgreSQL / SQLite
 - **Extension:** Plasmo + Manifest V3
@@ -115,8 +116,8 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 NEXT_PUBLIC_APP_NAME=SIFIX
 NEXT_PUBLIC_API_URL=http://localhost:3000
 
-# WalletConnect (for RainbowKit)
-NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID= # Get from https://cloud.walletconnect.com
+# Optional RPC override
+NEXT_PUBLIC_RPC_URL=https://evmrpc-testnet.0g.ai
 ```
 
 ### Getting A0GI Tokens
@@ -129,6 +130,7 @@ Before using the dapp, you'll need A0GI tokens for the 0G Newton Testnet:
 4. **Add Network:** If prompted, add 0G Newton Testnet to your wallet:
 
 **Network Details:**
+
 - **Network Name:** 0G Newton Testnet
 - **RPC URL:** https://evmrpc-testnet.0g.ai
 - **Chain ID:** 16602
@@ -138,6 +140,7 @@ Before using the dapp, you'll need A0GI tokens for the 0G Newton Testnet:
 ## 🛡️ Features
 
 ### Dashboard
+
 - **Search** - Query address reputation and scan for threats
 - **Network Status** - Real-time 0G network connection indicator
 - **A0GI Balance** - Display your native 0G token balance
@@ -147,6 +150,7 @@ Before using the dapp, you'll need A0GI tokens for the 0G Newton Testnet:
 - **Leaderboard** - Top security reporters
 
 ### Wallet Integration
+
 - **Network Switcher** - One-click switch to 0G Newton Testnet
 - **Real-time Updates** - Live block number and network status
 - **Balance Display** - View A0GI token balance
@@ -154,12 +158,14 @@ Before using the dapp, you'll need A0GI tokens for the 0G Newton Testnet:
 - **Gas Optimization** - Efficient gas estimation for transactions
 
 ### AI-Powered Analysis
+
 - **Transaction Simulation** - Safe execution preview
 - **GPT-4 Analysis** - Natural language risk explanation
 - **Pattern Recognition** - Detect known attack vectors
 - **Continuous Learning** - Improves from community reports
 
 ### 0G Chain Integration
+
 - **On-Chain Reputation** - Immutable trust scores on 0G
 - **Decentralized Storage** - Threat evidence on 0G Storage
 - **Smart Contract Reports** - High-severity threats recorded on-chain
@@ -250,7 +256,7 @@ Built for **0G Chain APAC Hackathon 2026**
 
 - 0G Chain team for the amazing infrastructure
 - OpenAI for GPT-4 API
-- RainbowKit & Wagmi for wallet integration
+- Wagmi & Viem for wallet integration
 - Foundry for smart contract development
 
 ## 🆘 Troubleshooting
@@ -258,20 +264,25 @@ Built for **0G Chain APAC Hackathon 2026**
 ### Common Issues
 
 **Issue:** Wallet won't connect to 0G network
+
 - **Solution:** Use the network switcher in the header or manually add 0G Newton Testnet to your wallet
 
 **Issue:** Zero A0GI balance
+
 - **Solution:** Visit https://faucet.0g.ai to get testnet tokens
 
 **Issue:** API errors
+
 - **Solution:** Ensure all environment variables are set correctly and the dev server is running
 
 **Issue:** Database errors
+
 - **Solution:** Run `pnpm prisma migrate dev` to ensure database schema is up to date
 
 ### Support
 
 For issues and questions:
+
 - Open an issue on GitHub
 - Join our Discord community
 - Check the documentation

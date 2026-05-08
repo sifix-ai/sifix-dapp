@@ -2,7 +2,7 @@
 
 import { AuthGuard } from '@/components/auth-guard'
 import { useThreats } from '@/hooks/use-api'
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+import { ConnectButton } from '@/components/connect-button'
 import { useAccount } from 'wagmi'
 import { AlertTriangle, Shield, Clock, TrendingUp, Filter, Search } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -13,7 +13,7 @@ export default function ThreatsPage() {
   const { isConnected } = useAccount()
   const [searchQuery, setSearchQuery] = useState('')
   const [filterSeverity, setFilterSeverity] = useState<string>('all')
-  
+
   const { data, isLoading, error } = useThreats()
 
   // Filter threats
@@ -31,12 +31,12 @@ export default function ThreatsPage() {
           <div className="w-20 h-20 bg-gradient-to-br from-[#FF6363]/20 to-[#55b3ff]/20 border border-white/[0.08] rounded-3xl flex items-center justify-center mb-6 mx-auto backdrop-blur-xl">
             <Shield className="w-10 h-10 text-[#FF6363]" />
           </div>
-          
+
           <h1 className="text-3xl font-bold mb-4">Connect Your Wallet</h1>
           <p className="text-white/60 mb-8">
             Connect your wallet to view threat intelligence feed.
           </p>
-          
+
           <div className="flex justify-center">
             <ConnectButton />
           </div>
@@ -71,21 +71,21 @@ export default function ThreatsPage() {
               <div className="text-xs text-white/40 mb-1 uppercase tracking-wider">Total Threats</div>
               <div className="text-2xl font-bold">{data?.total || 0}</div>
             </div>
-            
+
             <div className="bg-gradient-to-b from-red-500/[0.08] to-red-500/[0.04] border border-red-500/[0.2] rounded-xl p-4 backdrop-blur-xl">
               <div className="text-xs text-red-400/60 mb-1 uppercase tracking-wider">Critical</div>
               <div className="text-2xl font-bold text-red-400">
                 {data?.reports?.filter((r: any) => r.riskLevel === 'CRITICAL').length || 0}
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-b from-orange-500/[0.08] to-orange-500/[0.04] border border-orange-500/[0.2] rounded-xl p-4 backdrop-blur-xl">
               <div className="text-xs text-orange-400/60 mb-1 uppercase tracking-wider">High</div>
               <div className="text-2xl font-bold text-orange-400">
                 {data?.reports?.filter((r: any) => r.riskLevel === 'HIGH').length || 0}
               </div>
             </div>
-            
+
             <div className="bg-gradient-to-b from-yellow-500/[0.08] to-yellow-500/[0.04] border border-yellow-500/[0.2] rounded-xl p-4 backdrop-blur-xl">
               <div className="text-xs text-yellow-400/60 mb-1 uppercase tracking-wider">Medium</div>
               <div className="text-2xl font-bold text-yellow-400">
@@ -179,17 +179,16 @@ export default function ThreatsPage() {
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <div className={`w-2 h-2 rounded-full ${
-                          threat.riskLevel === 'CRITICAL' ? 'bg-red-500' :
-                          threat.riskLevel === 'HIGH' ? 'bg-orange-500' :
-                          threat.riskLevel === 'MEDIUM' ? 'bg-yellow-500' :
-                          'bg-green-500'
-                        } animate-pulse`} />
+                        <div className={`w-2 h-2 rounded-full ${threat.riskLevel === 'CRITICAL' ? 'bg-red-500' :
+                            threat.riskLevel === 'HIGH' ? 'bg-orange-500' :
+                              threat.riskLevel === 'MEDIUM' ? 'bg-yellow-500' :
+                                'bg-green-500'
+                          } animate-pulse`} />
                         <h3 className="font-mono text-sm text-white/80 group-hover:text-white transition-colors">
                           {threat.address}
                         </h3>
                       </div>
-                      
+
                       <div className="flex items-center gap-4 text-xs text-white/40">
                         <div className="flex items-center gap-1.5">
                           <Clock className="w-3.5 h-3.5" />
@@ -202,12 +201,11 @@ export default function ThreatsPage() {
                       </div>
                     </div>
 
-                    <div className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider ${
-                      threat.riskLevel === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
-                      threat.riskLevel === 'HIGH' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
-                      threat.riskLevel === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
-                      'bg-green-500/20 text-green-400 border border-green-500/30'
-                    }`}>
+                    <div className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider ${threat.riskLevel === 'CRITICAL' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                        threat.riskLevel === 'HIGH' ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30' :
+                          threat.riskLevel === 'MEDIUM' ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                            'bg-green-500/20 text-green-400 border border-green-500/30'
+                      }`}>
                       {threat.riskLevel}
                     </div>
                   </div>
@@ -226,12 +224,11 @@ export default function ThreatsPage() {
                     <div className="flex items-center gap-2 text-xs text-white/40">
                       <span>Severity: <span className="text-white/80 font-medium">{threat.severity}/100</span></span>
                     </div>
-                    
-                    <div className={`px-2 py-1 rounded text-xs font-medium ${
-                      threat.status === 'VERIFIED' ? 'bg-green-500/20 text-green-400' :
-                      threat.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
-                      'bg-white/10 text-white/60'
-                    }`}>
+
+                    <div className={`px-2 py-1 rounded text-xs font-medium ${threat.status === 'VERIFIED' ? 'bg-green-500/20 text-green-400' :
+                        threat.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
+                          'bg-white/10 text-white/60'
+                      }`}>
                       {threat.status}
                     </div>
                   </div>
