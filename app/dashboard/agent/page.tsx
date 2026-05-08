@@ -51,6 +51,326 @@ export default function AgentIdPage() {
   const [authCheck, setAuthCheck] = useState<any>(null)
   const [error, setError] = useState('')
   const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [requestingAccess, setRequestingAccess] = useState(false)
+  const [requestMessage, setRequestMessage] = useState<string | null>(null)
+  const [requestError, setRequestError] = useState<string | null>(null)
+  const [claimingFaucet, setClaimingFaucet] = useState(false)
+  const [claimedFaucet, setClaimedFaucet] = useState(false)
+  const [faucetError, setFaucetError] = useState<string | null>(null)
+  const [faucetTxHash, setFaucetTxHash] = useState<string | null>(null)
+  const [faucetAddress, setFaucetAddress] = useState<string | null>(null)
+  const [faucetAmount, setFaucetAmount] = useState<string | null>(null)
+  const [faucetCooldown, setFaucetCooldown] = useState<string | null>(null)
+  const [showFaucetGuide, setShowFaucetGuide] = useState(false)
+
+  const chainId = Number(process.env.NEXT_PUBLIC_ZG_CHAIN_ID || 16602)
+  const rpcUrl = process.env.NEXT_PUBLIC_ZG_RPC_URL || 'https://evmrpc-testnet.0g.ai'
+  const faucetBase = chainId === 16600 ? 'https://faucet.0g.ai/mainnet' : 'https://faucet.0g.ai/testnet'
+  const faucetUrl = address ? `${faucetBase}?address=${address}` : faucetBase
+  const txExplorerBase = chainId === 16600 ? 'https://chainscan-newton.0g.ai/tx' : 'https://chainscan-galileo.0g.ai/tx' 
+  const addressExplorerBase = chainId === 16600 ? 'https://chainscan-newton.0g.ai/address' : 'https://chainscan-galileo.0g.ai/address' 
+  const isGalileo = chainId === 16602
+  const isMainnet = chainId === 16600
+  const chainLabel = isMainnet ? '0G Newton Mainnet' : '0G Galileo Testnet'
+  const normalizedRpc = rpcUrl.toLowerCase()
+
+  const detectEndpoint = () => {
+    if (normalizedRpc.includes('newton') || normalizedRpc.includes('mainnet')) return 'mainnet'
+    if (normalizedRpc.includes('galileo') || normalizedRpc.includes('testnet')) return 'testnet'
+    return 'unknown'
+  }
+
+  const endpoint = detectEndpoint()
+  const faucetHint = endpoint === 'mainnet'
+    ? 'Kamu pakai RPC mainnet. Faucet hanya kasih token testnet.'
+    : endpoint === 'unknown'
+      ? 'RPC kamu custom. Pastikan ini jaringan testnet sebelum claim faucet.'
+      : null
+
+  const hasMismatch = (isGalileo && endpoint === 'mainnet') || (isMainnet && endpoint === 'testnet')
+
+  const normalizeAddress = (value: string) => value?.trim()
+
+  const toAbsoluteUrl = (url: string) => {
+    if (!url) return ''
+    if (url.startsWith('http://') || url.startsWith('https://')) return url
+    if (url.startsWith('/')) return `https://faucet.0g.ai${url}`
+    return `https://faucet.0g.ai/${url}`
+  }
+
+  const extractStatus = (payload: any) => {
+    if (!payload || typeof payload !== 'object') return null
+    if (typeof payload.message === 'string') return payload.message
+    if (typeof payload.status === 'string') return payload.status
+    if (typeof payload.error === 'string') return payload.error
+    if (typeof payload.detail === 'string') return payload.detail
+    return null
+  }
+
+  const parseCooldown = (payload: any) => {
+    if (!payload || typeof payload !== 'object') return null
+    const candidates = [
+      payload.retryAfter,
+      payload.retry_after,
+      payload.cooldown,
+      payload.wait,
+      payload.nextClaimAt,
+      payload.next_claim_at,
+      payload.next_available_at,
+      payload.next_available,
+      payload.availableAt,
+      payload.available_at,
+    ]
+
+    for (const value of candidates) {
+      if (!value && value !== 0) continue
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        if (value > 1e12) return new Date(value).toLocaleString()
+        if (value > 1e9) return new Date(value * 1000).toLocaleString()
+        if (value >= 0) {
+          const mins = Math.round(value / 60)
+          return mins > 0 ? `${mins} menit` : `${Math.round(value)} detik`
+        }
+      }
+      if (typeof value === 'string' && value.trim()) {
+        const parsed = Date.parse(value)
+        if (!Number.isNaN(parsed)) return new Date(parsed).toLocaleString()
+        return value
+      }
+    }
+
+    const text = `${extractStatus(payload) || ''} ${JSON.stringify(payload)}`.toLowerCase()
+    const timeMatch = text.match(/(\d+)\s*(minute|minutes|min|mins|hour|hours|hr|hrs|second|seconds|sec|secs|day|days)/)
+    if (timeMatch) return `${timeMatch[1]} ${timeMatch[2]}`
+
+    return null
+  }
+
+  const parseFaucetTxHash = (payload: any): string | null => {
+    if (!payload || typeof payload !== 'object') return null
+
+    const directCandidates = [
+      payload.txHash,
+      payload.tx_hash,
+      payload.transactionHash,
+      payload.transaction_hash,
+      payload.hash,
+      payload.data?.txHash,
+      payload.data?.tx_hash,
+      payload.data?.transactionHash,
+      payload.data?.transaction_hash,
+      payload.result?.txHash,
+      payload.result?.transactionHash,
+      payload.meta?.txHash,
+      payload.meta?.transactionHash,
+      payload.receipt?.transactionHash,
+      payload.receipt?.hash,
+      payload.claim?.txHash,
+      payload.claim?.transactionHash,
+    ]
+
+    for (const candidate of directCandidates) {
+      if (typeof candidate === 'string' && candidate.startsWith('0x') && candidate.length >= 66) {
+        return candidate
+      }
+    }
+
+    const searchPool = [
+      payload,
+      payload.data,
+      payload.result,
+      payload.meta,
+      payload.receipt,
+      payload.claim,
+      payload.message,
+      payload.status,
+      payload.error,
+    ]
+      .filter(Boolean)
+      .map((value) => (typeof value === 'string' ? value : JSON.stringify(value)))
+      .join(' ')
+
+    const hashMatch = searchPool.match(/0x[a-fA-F0-9]{64}/)
+    return hashMatch ? hashMatch[0] : null
+  }
+
+  const resolveAmount = (payload: any): string | null => {
+    const value = payload?.amount ?? payload?.data?.amount ?? payload?.result?.amount ?? payload?.claim?.amount
+    if (typeof value === 'string' && value.trim()) return value
+    if (typeof value === 'number' && Number.isFinite(value)) return `${value}`
+    return null
+  }
+
+  const resolveAddress = (payload: any): string | null => {
+    const value = payload?.address ?? payload?.walletAddress ?? payload?.wallet ?? payload?.to ?? payload?.recipient ?? payload?.data?.address
+    if (typeof value === 'string' && value.startsWith('0x')) return value
+    return null
+  }
+
+  const isLikelySuccess = (payload: any) => {
+    if (!payload || typeof payload !== 'object') return false
+    if (payload.success === true || payload.ok === true) return true
+    const status = extractStatus(payload)?.toLowerCase() || ''
+    if (status.includes('success') || status.includes('sent') || status.includes('completed') || status.includes('queued')) return true
+    if (parseFaucetTxHash(payload)) return true
+    return false
+  }
+
+  const handleRequestAccess = async () => {
+    if (!address || requestingAccess) return
+    try {
+      setRequestingAccess(true)
+      setRequestError(null)
+      setRequestMessage(null)
+
+      const res = await fetch('/api/v1/agentic-id', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'authorize', user: address }),
+      })
+      const data = await res.json()
+
+      if (!res.ok || !data?.success) {
+        throw new Error(data?.error || data?.message || 'Failed to request access')
+      }
+
+      const txHash = data?.data?.txHash
+      setRequestMessage(txHash
+        ? `Access granted! Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
+        : 'Access granted!')
+
+      await checkAuth()
+      await loadConfig()
+    } catch (err: any) {
+      setRequestError(err?.message || 'Failed to request access')
+    } finally {
+      setRequestingAccess(false)
+    }
+  }
+
+  const handleClaimFaucet = async () => {
+    if (!address || claimingFaucet) return
+
+    setClaimingFaucet(true)
+    setFaucetError(null)
+    setFaucetTxHash(null)
+    setFaucetAddress(null)
+    setFaucetAmount(null)
+    setFaucetCooldown(null)
+
+    try {
+      const targetAddress = normalizeAddress(address)
+
+      const endpoints = [
+        {
+          url: 'https://faucet.0g.ai/api/faucet',
+          body: { address: targetAddress },
+        },
+        {
+          url: 'https://faucet.0g.ai/api/claim',
+          body: { address: targetAddress },
+        },
+        {
+          url: 'https://faucet.0g.ai/api/request',
+          body: { address: targetAddress },
+        },
+        {
+          url: 'https://faucet.0g.ai/api/faucet',
+          body: { walletAddress: targetAddress },
+        },
+      ]
+
+      let lastError: any = null
+      let payload: any = null
+      let success = false
+
+      for (const endpointConfig of endpoints) {
+        try {
+          const res = await fetch(endpointConfig.url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Accept: 'application/json',
+            },
+            body: JSON.stringify(endpointConfig.body),
+          })
+
+          const text = await res.text()
+          let parsed: any = null
+          try {
+            parsed = text ? JSON.parse(text) : {}
+          } catch {
+            parsed = { message: text }
+          }
+
+          parsed = {
+            ...parsed,
+            _httpStatus: res.status,
+            _ok: res.ok,
+            _endpoint: endpointConfig.url,
+            _requestBody: endpointConfig.body,
+          }
+
+          payload = parsed
+
+          if (res.ok && isLikelySuccess(parsed)) {
+            success = true
+            break
+          }
+
+          const statusText = extractStatus(parsed)?.toLowerCase() || ''
+          if (statusText.includes('already') || statusText.includes('wait') || statusText.includes('cooldown') || statusText.includes('too many')) {
+            break
+          }
+
+          lastError = parsed
+        } catch (endpointErr: any) {
+          lastError = endpointErr
+        }
+      }
+
+      if (!payload && lastError) {
+        throw lastError
+      }
+
+      const txHash = parseFaucetTxHash(payload)
+      const statusMessage = extractStatus(payload)
+      const amount = resolveAmount(payload)
+      const recipient = resolveAddress(payload) || targetAddress
+      const cooldown = parseCooldown(payload)
+
+      setFaucetAddress(recipient)
+      setFaucetAmount(amount)
+      setFaucetCooldown(cooldown)
+
+      if (success || txHash) {
+        setClaimedFaucet(true)
+        if (txHash) setFaucetTxHash(txHash)
+        if (!txHash && statusMessage && statusMessage.toLowerCase().includes('queued')) {
+          setFaucetError(`Faucet queued: ${statusMessage}`)
+        }
+        return
+      }
+
+      const lowerMessage = (statusMessage || '').toLowerCase()
+      if (cooldown || lowerMessage.includes('already') || lowerMessage.includes('wait') || lowerMessage.includes('cooldown') || lowerMessage.includes('too many')) {
+        setFaucetError(cooldown
+          ? `Faucet cooldown aktif. Coba lagi sekitar ${cooldown}.`
+          : statusMessage || 'Faucet cooldown aktif. Coba lagi nanti.')
+        setClaimedFaucet(false)
+        return
+      }
+
+      throw new Error(statusMessage || 'Faucet request failed')
+    } catch (err: any) {
+      const message = typeof err?.message === 'string' ? err.message : 'Gagal claim faucet otomatis.'
+      setFaucetError(message)
+      setClaimedFaucet(false)
+      setShowFaucetGuide(true)
+    } finally {
+      setClaimingFaucet(false)
+    }
+  }
 
   const profile: AgentProfile | null = config?.profile ?? null
 
@@ -361,12 +681,54 @@ export default function AgentIdPage() {
               </p>
             </div>
           </div>
+
+          {/* Not authorized — show Request Access button */}
           {!authCheck.authorized && authCheck.enabled && (
-            <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-              <p className="text-xs text-red-300">
-                Wallet not authorized. Ask SIFIX Agent owner to authorize via{' '}
-                <code className="text-red-200">authorizeUsage()</code>.
-              </p>
+            <div className="mt-3 space-y-3">
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                <p className="text-xs text-red-300">
+                  Wallet not authorized to use SIFIX Agent.
+                </p>
+              </div>
+
+              <button
+                onClick={handleRequestAccess}
+                disabled={requestingAccess}
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-accent-blue to-purple-500 text-white text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {requestingAccess ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Requesting Access...
+                  </>
+                ) : (
+                  <>
+                    <Shield className="w-4 h-4" />
+                    Request Access (Free)
+                  </>
+                )}
+              </button>
+
+              {requestMessage && (
+                <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <p className="text-xs text-green-300">{requestMessage}</p>
+                  </div>
+                </div>
+              )}
+              {requestError && (
+                <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                  <p className="text-xs text-red-300">{requestError}</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Authorized */}
+          {authCheck.authorized && (
+            <div className="mt-2 p-3 rounded-lg bg-accent-blue/10 border border-accent-blue/20">
+              <p className="text-xs text-accent-blue">You can use SIFIX Agent to scan transactions.</p>
             </div>
           )}
         </Card>
@@ -378,6 +740,150 @@ export default function AgentIdPage() {
           </div>
         </Card>
       )}
+
+      {/* ====== FAUCET ====== */}
+      <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-sm font-medium text-white/80">0G Faucet</h3>
+          <a
+            href={faucetUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-accent-blue hover:underline flex items-center gap-1"
+          >
+            Open Faucet
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        </div>
+
+        {/* Chain mismatch warning */}
+        {hasMismatch && (
+          <div className="mb-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-yellow-400 shrink-0" />
+              <p className="text-xs text-yellow-300">
+                Chain config ({chainLabel}) does not match RPC endpoint ({endpoint}). Check your .env settings.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* RPC hint */}
+        {faucetHint && !hasMismatch && (
+          <div className="mb-3 p-3 rounded-lg bg-white/[0.03] border border-white/[0.05]">
+            <p className="text-xs text-white/40">{faucetHint}</p>
+          </div>
+        )}
+
+        <button
+          onClick={handleClaimFaucet}
+          disabled={claimingFaucet}
+          className="w-full py-2.5 px-4 rounded-xl bg-white/[0.06] border border-white/[0.1] text-white text-sm font-medium hover:bg-white/[0.1] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {claimingFaucet ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Claiming...
+            </>
+          ) : claimedFaucet ? (
+            <>
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              Claimed!
+            </>
+          ) : (
+            <>
+              Claim Testnet Tokens
+            </>
+          )}
+        </button>
+
+        {/* Faucet result */}
+        {faucetTxHash && (
+          <div className="mt-3 p-3 rounded-lg bg-green-500/10 border border-green-500/20">
+            <div className="flex items-center gap-2 mb-1">
+              <CheckCircle className="w-4 h-4 text-green-400" />
+              <span className="text-xs text-green-300 font-medium">Tokens sent!</span>
+            </div>
+            <div className="mt-1 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-white/40">TX:</span>
+                <a
+                  href={`${txExplorerBase}/${faucetTxHash}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-mono text-accent-blue hover:underline"
+                >
+                  {faucetTxHash.slice(0, 14)}...{faucetTxHash.slice(-8)}
+                </a>
+              </div>
+              {faucetAddress && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-white/40">To:</span>
+                  <code className="text-xs font-mono text-white/60">{faucetAddress.slice(0, 10)}...{faucetAddress.slice(-6)}</code>
+                </div>
+              )}
+              {faucetAmount && (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-white/40">Amount:</span>
+                  <span className="text-xs text-white/60">{faucetAmount}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Faucet error */}
+        {faucetError && (
+          <div className="mt-3 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-yellow-400 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs text-yellow-300">{faucetError}</p>
+                {faucetCooldown && (
+                  <p className="text-xs text-yellow-400/60 mt-1">Cooldown: {faucetCooldown}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Faucet guide fallback */}
+        {showFaucetGuide && (
+          <div className="mt-3 p-4 rounded-lg bg-white/[0.03] border border-white/[0.05]">
+            <p className="text-xs text-white/60 mb-3">Auto-claim failed. Claim manually:</p>
+            <ol className="space-y-2">
+              <li className="flex items-start gap-2">
+                <span className="text-xs text-white/40 shrink-0">1.</span>
+                <span className="text-xs text-white/50">Open{' '}
+                  <a href={faucetUrl} target="_blank" rel="noopener noreferrer" className="text-accent-blue hover:underline">
+                    faucet.0g.ai
+                  </a>
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-xs text-white/40 shrink-0">2.</span>
+                <span className="text-xs text-white/50">Paste your wallet address</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-xs text-white/40 shrink-0">3.</span>
+                <span className="text-xs text-white/50">Complete captcha + Request Tokens</span>
+              </li>
+            </ol>
+            <div className="mt-3 p-2 rounded-lg bg-white/[0.03]">
+              <p className="text-xs text-white/30 mb-1">Your address:</p>
+              <div className="flex items-center gap-2">
+                <code className="text-xs font-mono text-white/60 break-all">{address}</code>
+                <button
+                  onClick={() => handleCopy(address!, 'faucetAddr')}
+                  className="text-white/30 hover:text-white/60 transition-colors shrink-0"
+                >
+                  {copiedField === 'faucetAddr' ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </Card>
 
       {/* ====== 0G STACK ====== */}
       <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
