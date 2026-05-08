@@ -117,9 +117,9 @@ export async function authorizeUserServerSide(params: {
   user: Address
 }): Promise<{ success: boolean; txHash?: string; error?: string }> {
   try {
-    const pk = process.env.PRIVATE_KEY as `0x${string}` | undefined
+    const pk = (process.env.PRIVATE_KEY || process.env.COMPUTE_PRIVATE_KEY) as `0x${string}` | undefined
     if (!pk) {
-      return { success: false, error: 'PRIVATE_KEY is not configured on server' }
+      return { success: false, error: 'PRIVATE_KEY or COMPUTE_PRIVATE_KEY is not configured on server' }
     }
 
     const account = privateKeyToAccount(pk)

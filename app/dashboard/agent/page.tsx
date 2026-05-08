@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { useAccount } from 'wagmi'
 import {
   Shield,
@@ -21,73 +21,17 @@ import {
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { AGENTIC_ID_CONTRACT_ADDRESS, AGENTIC_ID_TOKEN_ID } from '@/config/contracts'
-
-type Status = 'idle' | 'loading' | 'success' | 'error'
-
-interface AgentProfile {
-  tokenId: string
-  owner: string
-  creator: string
-  cloneSource: string
-  intelligentData: Array<{
-    dataDescription: string
-    dataHash: string
-  }>
-  authorizedUsers: string[]
-  metadata: {
-    name: string
-    model: string
-    provider: string
-    capabilities: string[]
-  }
-  knownHash: string
-  hashVerified: boolean
-}
+import { useAgenticIdConfig, useAgenticIdAuth, useRequestAccess } from '@/hooks/use-agentic-id'
 
 export default function AgentIdPage() {
   const { address, isConnected } = useAccount()
-  const [status, setStatus] = useState<Status>('idle')
-  const [config, setConfig] = useState<any>(null)
-  const [authCheck, setAuthCheck] = useState<any>(null)
   const [copiedField, setCopiedField] = useState<string | null>(null)
-  const [requestingAccess, setRequestingAccess] = useState(false)
-  const [requestMessage, setRequestMessage] = useState<string | null>(null)
-  const [requestError, setRequestError] = useState<string | null>(null)
 
-  const profile: AgentProfile | null = config?.profile ?? null
+  const { data: config, isLoading: configLoading } = useAgenticIdConfig()
+  const { data: authCheck, isLoading: authLoading } = useAgenticIdAuth(address)
+  const requestAccessMutation = useRequestAccess()
 
-  const loadConfig = useCallback(async () => {
-    try {
-      setStatus('loading')
-      const res = await fetch('/api/v1/agentic-id')
-      const data = await res.json()
-      setConfig(data.success ? data.data : data)
-      setStatus('success')
-    } catch {
-      setStatus('error')
-    }
-  }, [])
-
-  const checkAuth = useCallback(async () => {
-    if (!address) return
-    try {
-      const res = await fetch('/api/v1/agentic-id', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'check', user: address }),
-      })
-      const data = await res.json()
-      setAuthCheck(data.success ? data.data : data)
-    } catch {}
-  }, [address])
-
-  useEffect(() => {
-    loadConfig()
-  }, [loadConfig])
-
-  useEffect(() => {
-    if (isConnected && address) checkAuth()
-  }, [isConnected, address, checkAuth])
+  const profile = config?.profile ?? null
 
   const handleCopy = async (text: string, field: string) => {
     await navigator.clipboard.writeText(text)
@@ -95,45 +39,13 @@ export default function AgentIdPage() {
     setTimeout(() => setCopiedField(null), 2000)
   }
 
-  const handleRequestAccess = async () => {
-    if (!address || requestingAccess) return
-    try {
-      setRequestingAccess(true)
-      setRequestError(null)
-      setRequestMessage(null)
-
-      const res = await fetch('/api/v1/agentic-id', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'authorize', user: address }),
-      })
-      const data = await res.json()
-
-      if (!res.ok || !data?.success) {
-        throw new Error(data?.error || data?.message || 'Failed to request access')
-      }
-
-      const txHash = data?.data?.txHash
-      setRequestMessage(
-        txHash
-          ? `Access granted! Tx: ${txHash.slice(0, 10)}...${txHash.slice(-8)}`
-          : 'Access granted!'
-      )
-
-      await checkAuth()
-      await loadConfig()
-    } catch (err: any) {
-      setRequestError(err?.message || 'Failed to request access')
-    } finally {
-      setRequestingAccess(false)
-    }
-  }
-
   const explorerUrl = `https://chainscan-galileo.0g.ai/address/${AGENTIC_ID_CONTRACT_ADDRESS}`
   const tokenExplorerUrl = AGENTIC_ID_TOKEN_ID
-    ? `https://chainscan-galileo.0g.ai/token/${AGENTIC_ID_CONTRACT_ADDRESS}/instance/${AGENTIC_ID_TOKEN_ID}`
+    ? `https://chainscan-galileo.0g.ai/nft/${AGENTIC_ID_CONTRACT_ADDRESS}/${AGENTIC_ID_TOKEN_ID}`
     : null
   const faucetUrl = address ? `https://faucet.0g.ai/?address=${address}` : 'https://faucet.0g.ai'
+
+  const txHash = requestAccessMutation.data?.txHash
 
   if (!isConnected) {
     return (
@@ -167,6 +79,16 @@ export default function AgentIdPage() {
           On-chain identity for SIFIX Agent (ERC-7857). Verifiable agent credentials on 0G Chain.
         </p>
       </div>
+
+      {/* Agent Specification */}
+      {configLoading && (
+        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
+          <div className="flex items-center justify-center gap-2 py-8">
+            <Loader2 className="w-5 h-5 text-accent-blue animate-spin" />
+            <span className="text-sm text-white/40">Loading agent profile...</span>
+          </div>
+        </Card>
+      )}
 
       {profile && (
         <Card className="bg-white/[0.04] backdrop-blur-md border-white/15 overflow-hidden">
@@ -294,6 +216,7 @@ export default function AgentIdPage() {
         </Card>
       )}
 
+      {/* Contract Information */}
       <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
         <h3 className="text-sm font-medium text-white/60 mb-4">Contract Information</h3>
         <div className="space-y-3">
@@ -329,7 +252,15 @@ export default function AgentIdPage() {
         </div>
       </Card>
 
-      {authCheck ? (
+      {/* Authorization Status */}
+      {authLoading ? (
+        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
+          <div className="flex items-center justify-center gap-2 py-4">
+            <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
+            <span className="text-xs text-white/40">Checking authorization...</span>
+          </div>
+        </Card>
+      ) : authCheck ? (
         <Card className={`bg-white/[0.04] backdrop-blur-md ${authCheck.authorized ? 'border-accent-blue/20' : 'border-red-500/20'}`}>
           <div className="flex items-center gap-3 mb-3">
             {authCheck.authorized ? <CheckCircle className="w-6 h-6 text-accent-blue" /> : <XCircle className="w-6 h-6 text-red-400" />}
@@ -348,11 +279,11 @@ export default function AgentIdPage() {
               </div>
 
               <Button
-                onClick={handleRequestAccess}
-                disabled={requestingAccess}
+                onClick={() => requestAccessMutation.mutate(address!)}
+                disabled={requestAccessMutation.isPending}
                 className="w-full bg-accent-blue text-black hover:bg-accent-blue/90"
               >
-                {requestingAccess ? (
+                {requestAccessMutation.isPending ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                     Requesting Access...
@@ -365,14 +296,26 @@ export default function AgentIdPage() {
                 )}
               </Button>
 
-              {requestMessage && (
+              <Button asChild variant="outline" className="w-full border-accent-blue/40 text-accent-blue hover:bg-accent-blue/10 hover:text-accent-blue">
+                <a href={faucetUrl} target="_blank" rel="noopener noreferrer">
+                  Open Faucet
+                  <ExternalLink className="w-4 h-4 ml-2" />
+                </a>
+              </Button>
+
+              {requestAccessMutation.isSuccess && txHash && (
                 <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
-                  <p className="text-xs text-green-300">{requestMessage}</p>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <p className="text-xs text-green-300">
+                      Access granted! Tx: {txHash.slice(0, 10)}...{txHash.slice(-8)}
+                    </p>
+                  </div>
                 </div>
               )}
-              {requestError && (
+              {requestAccessMutation.isError && (
                 <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20">
-                  <p className="text-xs text-red-300">{requestError}</p>
+                  <p className="text-xs text-red-300">{requestAccessMutation.error?.message || 'Failed to request access'}</p>
                 </div>
               )}
             </div>
@@ -392,15 +335,9 @@ export default function AgentIdPage() {
             </div>
           )}
         </Card>
-      ) : (
-        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
-          <div className="flex items-center justify-center gap-2 py-4">
-            <Loader2 className="w-4 h-4 text-white/40 animate-spin" />
-            <span className="text-xs text-white/40">Checking authorization...</span>
-          </div>
-        </Card>
-      )}
+      ) : null}
 
+      {/* 0G Stack */}
       <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
         <h3 className="text-sm font-medium text-white/80 mb-4">0G Stack Integration</h3>
         <div className="grid grid-cols-2 gap-3">
