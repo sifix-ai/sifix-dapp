@@ -41,18 +41,18 @@ function Counter({ end, duration = 2 }: { end: string; duration?: number }) {
 export function StatsSection() {
   const stats = [
     {
-      value: "50K+",
+      value: "100K+",
       label: "Transactions Analyzed",
       icon: Activity,
     },
     {
-      value: "1.2K+",
+      value: "5K+",
       label: "Threats Blocked",
       icon: Shield,
     },
     {
-      value: "10K+",
-      label: "Protected Wallets",
+      value: "500+",
+      label: "Protected Users",
       icon: Users,
     },
     {
@@ -79,11 +79,11 @@ export function StatsSection() {
             transition={{ duration: 0.5 }}
             className="mb-16"
           >
-            <h2 className="font-display text-[76.8px] leading-[1.0] tracking-[-0.768px] text-ink mb-6 font-normal">
-              Trusted by thousands
+            <h2 className="font-display text-4xl md:text-5xl lg:text-[64px] leading-[1.1] tracking-tight text-ink mb-6 font-normal">
+              Trusted by the community
             </h2>
             <p className="text-lg text-body max-w-2xl">
-              Join the community of Web3 users who trust SIFIX to protect their assets
+              Join hundreds of Web3 users who trust SIFIX to protect their assets
             </p>
           </motion.div>
 
@@ -96,7 +96,7 @@ export function StatsSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="feature-card"
+                className="relative bg-white/[0.04] border border-white/10 rounded-2xl p-6 backdrop-blur-md hover:bg-white/[0.06] hover:border-white/20 transition-all duration-300"
               >
                 <div className="flex flex-col items-start">
                   <stat.icon className="w-6 h-6 text-ink mb-6" strokeWidth={1.5} />

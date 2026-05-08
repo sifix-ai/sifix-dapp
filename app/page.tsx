@@ -1,17 +1,27 @@
 "use client"
 
 import { Shield } from "lucide-react"
+import dynamic from "next/dynamic"
 import { Hero2 } from '@/components/ui/hero-2'
+import { GlassmorphicNavbar } from '@/components/ui/glassmorphic-navbar'
 import { ProblemSection } from '@/components/blocks/problem-section'
 import { SolutionSection } from '@/components/blocks/solution-section'
 import { PipelineSection } from '@/components/blocks/pipeline-flowchart'
-import FeaturesGrid from '@/components/blocks/features-grid'
 import { WhySifixSection } from '@/components/blocks/why-sifix'
 import { BackgroundPaths } from "@/components/ui/background-paths"
+
+// Dynamic import to avoid SSR hydration issues with motion hooks
+const FeaturesGrid = dynamic(
+  () => import('@/components/blocks/features-grid'),
+  { ssr: false }
+)
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-canvas">
+      {/* Glassmorphic Navigation - Global */}
+      <GlassmorphicNavbar />
+      
       {/* Hero Section with Integrated Stats */}
       <Hero2 />
 

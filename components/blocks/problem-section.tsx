@@ -89,9 +89,9 @@ export function ProblemSection() {
             transition={{ duration: 0.5 }}
             className="mb-16 text-center"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full mb-8">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/15 rounded-full mb-8 backdrop-blur-md">
               <AlertTriangle className="w-4 h-4 text-accent-red" />
-              <span className="text-xs font-medium text-body tracking-wide">THE PROBLEM</span>
+              <span className="text-xs font-medium text-white tracking-wide">THE PROBLEM</span>
             </div>
             <h2 className="font-display text-4xl md:text-5xl lg:text-[64px] leading-[1.1] tracking-tight text-ink mb-6 font-normal">
               Web3 is a <span className="text-accent-red">global minefield</span>
@@ -99,17 +99,6 @@ export function ProblemSection() {
             <p className="text-lg text-body mb-8 leading-relaxed max-w-3xl mx-auto">
               Every day, hackers steal millions through sophisticated attacks targeting users worldwide. Even experienced crypto users fall victim to these evolving threats.
             </p>
-            {/* <div className="flex flex-wrap justify-center gap-3">
-              <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
-                🌍 Global Threat
-              </div>
-              <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
-                💰 $2B+ Stolen in 2024
-              </div>
-              <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
-                ⚠️ 24/7 Risk
-              </div>
-            </div> */}
           </motion.div>
 
           {/* Threat Cards - Feature Card Style */}
@@ -121,7 +110,7 @@ export function ProblemSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="feature-card"
+                className="relative bg-white/[0.04] border border-white/10 rounded-2xl p-6 backdrop-blur-md hover:bg-white/[0.06] hover:border-white/20 transition-all duration-300"
               >
                 <threat.icon className="w-6 h-6 text-accent-red mb-6" strokeWidth={1.5} />
                 <h3 className="text-base font-medium text-ink mb-2">{threat.title}</h3>
@@ -136,14 +125,14 @@ export function ProblemSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.4 }}
-            className="code-window"
+            className="relative bg-white/[0.04] border border-white/10 rounded-2xl p-8 backdrop-blur-md"
           >
             <div className="flex items-center gap-4">
               <div className="flex-shrink-0">
                 <AlertTriangle className="w-8 h-8 text-accent-red" strokeWidth={1.5} />
               </div>
               <div className="flex-1">
-                <div className="text-xs font-medium text-ash uppercase tracking-wider mb-2">Reality Check</div>
+                <div className="text-xs font-medium text-charcoal uppercase tracking-wider mb-2">Reality Check</div>
                 <p className="text-2xl font-medium text-ink mb-1">
                   Over $2 Billion Stolen in 2024
                 </p>

@@ -64,9 +64,9 @@ export function BackgroundPaths({
         <FloatingPaths position={-1} />
       </div>
 
-      {/* Atmospheric glow - green accent - subtle finale */}
+      {/* Atmospheric glow - blue accent - subtle finale */}
       <div className="absolute inset-0 overflow-visible pointer-events-none">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-accent-green-glow rounded-full blur-3xl opacity-18" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-accent-blue-glow rounded-full blur-3xl opacity-18" />
       </div>
 
       <div className="relative z-10 container mx-auto px-8 text-center">

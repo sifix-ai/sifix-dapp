@@ -1,176 +1,50 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { ArrowRight, Menu, X, Shield } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { ConnectButton } from "@/components/connect-button";
 import { useAccount } from "wagmi";
 import { motion, useInView } from "framer-motion";
-
-// Animated background paths component
-function FloatingPaths({ position }: { position: number }) {
-  const paths = Array.from({ length: 36 }, (_, i) => ({
-    id: i,
-    d: `M-${380 - i * 5 * position} -${189 + i * 6}C-${
-      380 - i * 5 * position
-    } -${189 + i * 6} -${312 - i * 5 * position} ${216 - i * 6} ${
-      152 - i * 5 * position
-    } ${343 - i * 6}C${616 - i * 5 * position} ${470 - i * 6} ${
-      684 - i * 5 * position
-    } ${875 - i * 6} ${684 - i * 5 * position} ${875 - i * 6}`,
-    width: 0.8 + i * 0.05,
-  }));
-
-  return (
-    <div className="absolute inset-0 pointer-events-none">
-      <svg
-        className="w-full h-full text-ink"
-        viewBox="0 0 696 316"
-        fill="none"
-      >
-        <title>Background Paths</title>
-        {paths.map((path) => (
-          <motion.path
-            key={path.id}
-            d={path.d}
-            stroke="currentColor"
-            strokeWidth={path.width}
-            strokeOpacity={0.08 + path.id * 0.01}
-            fill="none"
-            initial={{ pathLength: 0.3, opacity: 0.3 }}
-            animate={{
-              pathLength: 1,
-              opacity: [0.15, 0.3, 0.15],
-              pathOffset: [0, 1, 0],
-            }}
-            transition={{
-              duration: 20 + Math.random() * 10,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-          />
-        ))}
-      </svg>
-    </div>
-  );
-}
+import { AuroraBackground } from "@/components/ui/aurora-background";
 
 export function Hero2() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const { isConnected } = useAccount();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   return (
-    <div className="relative min-h-screen bg-canvas">
-      {/* Animated Paths Background */}
-      <div className="absolute inset-0 overflow-hidden">
-        <FloatingPaths position={1} />
-        <FloatingPaths position={-1} />
-      </div>
-
-      {/* Atmospheric glow - blue accent - subtle and clean */}
-      <div className="absolute inset-0 overflow-visible pointer-events-none">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[1200px] bg-accent-blue-glow rounded-full blur-3xl opacity-20" />
-      </div>
-
-      {/* Content container */}
-      <div className="relative z-10">
-        {/* Navigation - Glassmorphic and Sticky */}
-        <motion.nav
-          initial={{ y: -100 }}
-          animate={{ y: 0 }}
-          className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-            scrolled
-              ? "bg-canvas/80 backdrop-blur-xl border-b border-hairline shadow-lg"
-              : "bg-transparent"
-          }`}
-        >
-          <div className="container mx-auto flex items-center justify-between px-8 py-6">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                <Shield className="w-4 h-4 text-primary-on" strokeWidth={2.5} />
-              </div>
-              <span className="text-base font-medium text-ink tracking-tight">SIFIX</span>
-            </div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center gap-8">
-              <a href="#features" className="text-sm font-medium text-charcoal hover:text-ink transition-colors">Features</a>
-              <a href="#how-it-works" className="text-sm font-medium text-charcoal hover:text-ink transition-colors">How It Works</a>
-              <a href="https://github.com/sifix-ai" target="_blank" rel="noopener noreferrer" className="text-sm font-medium text-charcoal hover:text-ink transition-colors">GitHub</a>
-              {isConnected ? (
-                <Link href="/dashboard">
-                  <button className="btn-primary flex items-center gap-2">
-                    <Shield className="w-4 h-4" />
-                    Dashboard
-                  </button>
-                </Link>
-              ) : (
-                <ConnectButton />
-              )}
-            </div>
-
-            {/* Mobile menu button */}
-            <button className="md:hidden" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              <span className="sr-only">Toggle menu</span>
-              {mobileMenuOpen ? <X className="h-6 w-6 text-ink" /> : <Menu className="h-6 w-6 text-ink" />}
-            </button>
-          </div>
-        </motion.nav>
-
-        {/* Mobile Navigation Menu */}
-        {mobileMenuOpen && (
-          <div className="fixed inset-0 z-50 flex flex-col p-8 bg-canvas/95 backdrop-blur-xl md:hidden">
-            <div className="flex items-center justify-between mb-12">
-              <div className="flex items-center gap-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                  <Shield className="w-4 h-4 text-primary-on" />
-                </div>
-                <span className="text-base font-medium text-ink">SIFIX</span>
-              </div>
-              <button onClick={() => setMobileMenuOpen(false)}>
-                <X className="h-6 w-6 text-ink" />
-              </button>
-            </div>
-            <div className="flex flex-col space-y-6">
-              <a href="#features" className="text-lg font-medium text-ink py-2" onClick={() => setMobileMenuOpen(false)}>Features</a>
-              <a href="#how-it-works" className="text-lg font-medium text-ink py-2" onClick={() => setMobileMenuOpen(false)}>How It Works</a>
-              <a href="https://github.com/sifix-ai" className="text-lg font-medium text-ink py-2" onClick={() => setMobileMenuOpen(false)}>GitHub</a>
-            </div>
-          </div>
-        )}
-
+    <AuroraBackground>
+      <div className="relative z-10 w-full h-full">
         {/* Hero Content - Resend Style with Playfair Display-inspired typography */}
         <div className="container mx-auto px-8 pt-40 pb-32 min-h-screen flex items-center">
-          <div className="max-w-5xl mx-auto w-full">
+          <motion.div
+            initial={{ opacity: 0.0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.3,
+              duration: 0.8,
+              ease: "easeInOut",
+            }}
+            className="max-w-5xl mx-auto w-full"
+          >
             {/* Badge pill */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full mb-12"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/15 rounded-full mb-12 backdrop-blur-md"
             >
-              <div className="w-2 h-2 bg-accent-green rounded-full" />
-              <span className="text-xs font-medium text-body tracking-wide">
+              <div className="w-2 h-2 bg-accent-green rounded-full shadow-[0_0_8px_rgba(17,255,153,0.6)]" />
+              <span className="text-xs font-medium text-white tracking-wide">
                 AI-POWERED SECURITY ON 0G CHAIN
               </span>
             </motion.div>
 
-            {/* Display headline - Playfair Display at 96px */}
+            {/* Display headline - Playfair Display */}
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-display text-[72px] md:text-[96px] leading-[1.0] tracking-[-0.96px] text-ink mb-8 font-normal"
+              className="font-display text-4xl md:text-5xl lg:text-[64px] leading-[1.1] tracking-tight text-ink mb-8 font-normal"
               style={{ maxWidth: '900px' }}
             >
               Wallet security
@@ -185,7 +59,7 @@ export function Hero2() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="text-lg leading-relaxed text-body max-w-2xl mb-12"
             >
-              AI-powered transaction analysis that intercepts, analyzes, and blocks malicious transactions before they drain your wallet. Built on 0G Chain with GPT-4.
+              AI-powered transaction analysis with verifiable Agentic ID that intercepts, analyzes, and blocks malicious transactions before they drain your wallet. Powered by 0G Compute with BYOAI flexibility.
             </motion.p>
 
             {/* CTA Buttons - Resend Style */}
@@ -195,18 +69,14 @@ export function Hero2() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row items-start gap-4"
             >
-              {isConnected ? (
-                <Link href="/dashboard">
-                  <button className="btn-primary flex items-center gap-2 h-9 px-4">
-                    Launch Dashboard
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </Link>
-              ) : (
-                <ConnectButton />
-              )}
+              <Link href="/dashboard">
+                <button className="group h-10 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:border-white/30 hover:bg-white/[0.08] flex items-center gap-2">
+                  Launch Dashboard
+                  <ArrowRight className="w-4 h-4" strokeWidth={2} />
+                </button>
+              </Link>
               <a href="https://github.com/sifix-ai" target="_blank" rel="noopener noreferrer">
-                <button className="btn-ghost flex items-center gap-2 h-9 px-4">
+                <button className="group h-10 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:border-white/30 hover:bg-white/[0.08] flex items-center gap-2">
                   View on GitHub
                 </button>
               </a>
@@ -217,19 +87,23 @@ export function Hero2() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="mt-16 flex flex-wrap items-center gap-6 text-xs text-charcoal"
+              className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs text-charcoal"
             >
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-accent-green rounded-full" />
+                <div className="w-1.5 h-1.5 bg-accent-green rounded-full shadow-[0_0_6px_rgba(17,255,153,0.5)]" />
                 <span>Live on 0G Newton</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-accent-blue rounded-full" />
-                <span>95%+ Detection Rate</span>
+                <div className="w-1.5 h-1.5 bg-accent-blue rounded-full shadow-[0_0_6px_rgba(59,158,255,0.5)]" />
+                <span>Verifiable Agentic ID</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-accent-orange rounded-full" />
-                <span>Powered by GPT-4</span>
+                <div className="w-1.5 h-1.5 bg-accent-orange rounded-full shadow-[0_0_6px_rgba(255,128,31,0.5)]" />
+                <span>0G Compute Powered</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-accent-yellow rounded-full shadow-[0_0_6px_rgba(255,197,61,0.5)]" />
+                <span>0G Storage Enabled</span>
               </div>
             </motion.div>
 
@@ -240,16 +114,20 @@ export function Hero2() {
               transition={{ duration: 0.5, delay: 0.5 }}
               className="mt-24 grid grid-cols-2 lg:grid-cols-4 gap-8"
             >
-              <StatsCard value="50K+" label="Transactions Analyzed" delay={0.6} />
-              <StatsCard value="1.2K+" label="Threats Blocked" delay={0.7} />
-              <StatsCard value="10K+" label="Protected Wallets" delay={0.8} />
+              <StatsCard value="100K+" label="Transactions Analyzed" delay={0.6} />
+              <StatsCard value="5K+" label="Threats Blocked" delay={0.7} />
+              <StatsCard value="500+" label="Protected Users" delay={0.8} />
               <StatsCard value="99.9%" label="Detection Accuracy" delay={0.9} />
             </motion.div>
-          </div>
+          </motion.div>
         </div>
+        
+        {/* Gradient blend to next section */}
+        <div className="absolute bottom-0 left-0 right-0 h-64 bg-gradient-to-b from-transparent via-canvas/50 to-canvas pointer-events-none z-20" />
       </div>
-    </div>
+    </AuroraBackground>
   );
+  
 }
 
 // Stats Card Component

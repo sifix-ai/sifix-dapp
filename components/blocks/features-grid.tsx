@@ -16,17 +16,17 @@ const coreFeatures = [
   {
     title: 'AI-Powered Analysis',
     icon: Brain,
-    description: 'GPT-4 evaluates transaction risks and explains potential threats in plain language.',
+    description: 'Verifiable AI agents with Agentic ID evaluate risks using BYOAI flexibility.',
   },
   {
     title: 'Transaction Simulation',
     icon: Zap,
-    description: 'Safe testing environment simulates transactions to reveal hidden risks before execution.',
+    description: 'Safe testing environment powered by 0G Compute to reveal hidden risks.',
   },
   {
     title: '0G Storage',
     icon: Database,
-    description: 'Decentralized threat intelligence stored permanently on 0G Chain for community access.',
+    description: 'Decentralized threat intelligence stored permanently on 0G Storage for community access.',
   },
   {
     title: 'Community-Driven',
@@ -36,7 +36,7 @@ const coreFeatures = [
   {
     title: 'On-chain Reputation',
     icon: Lock,
-    description: 'Transparent reputation system tracks malicious addresses and rewards security contributors.',
+    description: 'Transparent reputation system on 0G Newton tracks malicious addresses and rewards contributors.',
   },
 ];
 
@@ -51,14 +51,15 @@ export default function FeaturesGrid() {
       <div className="mx-auto w-full max-w-6xl space-y-16 px-4 md:px-8 relative z-10">
         {/* Header Section */}
         <AnimatedContainer className="mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full mb-8">
-            <span className="text-xs font-medium text-body tracking-wide">FEATURES</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/15 rounded-full mb-8 backdrop-blur-md">
+            <Shield className="w-4 h-4 text-primary" />
+            <span className="text-xs font-medium text-white tracking-wide">FEATURES</span>
           </div>
-          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight text-ink mb-6 font-normal">
+          <h2 className="font-display text-4xl md:text-5xl lg:text-[64px] leading-[1.1] tracking-tight text-ink mb-6 font-normal">
             Complete Protection
           </h2>
-          <p className="text-muted-foreground text-base md:text-lg tracking-wide text-balance">
-            Everything you need to stay safe in Web3, powered by AI and decentralized storage.
+          <p className="text-lg text-body text-balance max-w-2xl mx-auto">
+            Everything you need to stay safe in Web3, powered by 0G Compute, Storage, and Agentic ID.
           </p>
         </AnimatedContainer>
 
@@ -79,7 +80,7 @@ export default function FeaturesGrid() {
               <CardHeading
                 icon={Shield}
                 title="Real-time Protection"
-                description="Advanced AI analysis system that instantly detects threats before you sign."
+                description="Advanced AI analysis with verifiable Agentic ID that instantly detects threats."
               />
             </CardHeader>
             <div className="relative mb-6 border-t border-hairline sm:mb-0">
@@ -101,7 +102,7 @@ export default function FeaturesGrid() {
               <CardHeading
                 icon={Lock}
                 title="On-Chain Reputation"
-                description="Community-driven security scores stored permanently on 0G Chain."
+                description="Community-driven security scores stored permanently on 0G Newton and 0G Storage."
               />
             </CardHeader>
             <CardContent>
@@ -148,14 +149,14 @@ export default function FeaturesGrid() {
 
         {/* Bottom badges */}
         <AnimatedContainer delay={0.6} className="flex flex-wrap justify-center gap-3">
-          <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
-            Free to use
+          <div className="px-4 py-2 bg-white/[0.04] border border-white/15 rounded-full text-xs text-body backdrop-blur-md">
+            Built on 0G Chain
           </div>
-          <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
-            Open source
-          </div>
-          <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
+          <div className="px-4 py-2 bg-white/[0.04] border border-white/15 rounded-full text-xs text-body backdrop-blur-md">
             Privacy-first
+          </div>
+          <div className="px-4 py-2 bg-white/[0.04] border border-white/15 rounded-full text-xs text-body backdrop-blur-md">
+            Community-driven
           </div>
         </AnimatedContainer>
       </div>

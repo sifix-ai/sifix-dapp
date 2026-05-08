@@ -209,6 +209,21 @@ html {
   font-size: 14px;
 }
 
+/* Glassmorphic utilities */
+.glass {
+  background: rgba(10, 1, 24, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.glass-strong {
+  background: rgba(10, 1, 24, 0.85);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+}
+
 /* Typography utilities */
 .text-display-xxl {
   font-size: 96px;
@@ -253,6 +268,16 @@ html {
 :focus-visible {
   outline: 2px solid var(--hairline-strong);
   outline-offset: 2px;
+}
+
+/* Aurora animation */
+@keyframes aurora {
+  from {
+    background-position: 50% 50%;
+  }
+  to {
+    background-position: 350% 50%;
+  }
 }
 
 .dark {

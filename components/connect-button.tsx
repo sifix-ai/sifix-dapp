@@ -154,7 +154,7 @@ export function ConnectButton() {
           ) : (
             <Wallet className="mr-2 h-4 w-4" strokeWidth={2} />
           )}
-          Connect Wallet
+          Launch Dashboard
         </Button>
 
         {(localError || connectError) && (

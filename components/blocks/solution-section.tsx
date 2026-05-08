@@ -1,91 +1,91 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Shield, Zap, Brain, CheckCircle } from "lucide-react"
+import { Shield, Database, Brain, Lock } from "lucide-react"
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { ReactNode } from "react"
 
 export function SolutionSection() {
-  const steps = [
+  const features = [
     {
-      step: "01",
       icon: Shield,
-      title: "Intercept",
-      description: "Browser extension catches every transaction before signing",
+      title: "Verifiable Agentic ID",
+      description: "AI agents with decentralized identity that can be verified and audited across domains.",
     },
     {
-      step: "02",
-      icon: Zap,
-      title: "Simulate",
-      description: "Run transaction in sandbox environment to predict outcome",
-    },
-    {
-      step: "03",
       icon: Brain,
-      title: "Analyze",
-      description: "GPT-4 AI agent examines contract code, patterns, and risks",
+      title: "0G Compute Powered",
+      description: "Transaction simulation and AI analysis running on scalable 0G Compute infrastructure.",
     },
     {
-      step: "04",
-      icon: CheckCircle,
-      title: "Protect",
-      description: "Get clear risk assessment and block threats before execution",
+      icon: Database,
+      title: "0G Storage",
+      description: "Immutable threat intelligence stored permanently on decentralized 0G Storage network.",
+    },
+    {
+      icon: Lock,
+      title: "BYOAI Flexibility",
+      description: "Bring Your Own AI provider for customizable security analysis that fits your needs.",
     },
   ]
 
   return (
-    <section id="how-it-works" className="py-32 relative bg-canvas">
-      {/* Atmospheric glow - blue accent - subtle */}
-      <div className="absolute inset-0 overflow-visible pointer-events-none">
-        <div className="absolute top-1/2 -translate-y-1/2 right-0 w-[1000px] h-[1000px] bg-accent-blue-glow rounded-full blur-3xl opacity-12" />
-      </div>
-
-      <div className="container mx-auto px-8 relative z-10">
-        <div className="max-w-6xl mx-auto">
-          {/* Section Header - Resend Style */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mb-16"
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full mb-8">
-              <Shield className="w-4 h-4 text-accent-blue" />
-              <span className="text-xs font-medium text-body tracking-wide">THE SOLUTION</span>
-            </div>
-            <h2 className="font-display text-[76.8px] leading-[1.0] tracking-[-0.768px] text-ink mb-6 font-normal">
-              How SIFIX protects you
-            </h2>
-            <p className="text-lg text-body max-w-2xl">
-              Four-layer defense system powered by AI and decentralized infrastructure
-            </p>
-          </motion.div>
-
-          {/* Steps Grid - Feature Card Style with Step Numbers */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {steps.map((step, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                className="relative"
-              >
-                {/* Step number badge */}
-                <div className="absolute -top-3 -left-3 w-8 h-8 bg-primary text-primary-on rounded-lg flex items-center justify-center text-xs font-medium shadow-lg z-10">
-                  {step.step}
-                </div>
-
-                <div className="feature-card pt-8">
-                  <step.icon className="w-6 h-6 text-ink mb-6" strokeWidth={1.5} />
-                  <h3 className="text-base font-medium text-ink mb-2">{step.title}</h3>
-                  <p className="text-sm text-charcoal leading-relaxed">{step.description}</p>
-                </div>
-              </motion.div>
-            ))}
+    <section id="how-it-works" className="bg-canvas py-16 md:py-32">
+      <div className="@container mx-auto max-w-6xl px-6 md:px-8">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center mb-12 md:mb-16"
+        >
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/15 rounded-full mb-8 backdrop-blur-md">
+            <Shield className="w-4 h-4 text-accent-blue" />
+            <span className="text-xs font-medium text-white tracking-wide">THE SOLUTION</span>
           </div>
+          <h2 className="text-balance font-display text-4xl md:text-5xl lg:text-[64px] leading-[1.1] tracking-tight font-normal text-ink mb-4">
+            Built on 0G Infrastructure
+          </h2>
+          <p className="mt-4 text-lg text-body max-w-2xl mx-auto">
+            Four-layer defense system powered by 0G Compute, Storage, and Agentic ID
+          </p>
+        </motion.div>
+
+        {/* Features Grid */}
+        <div className="@min-4xl:max-w-full @min-4xl:grid-cols-4 mx-auto grid max-w-sm gap-6 *:text-center md:grid-cols-2 lg:grid-cols-4">
+          {features.map((feature, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+            >
+              <Card className="group shadow-none border-white/15 bg-white/[0.04] backdrop-blur-md hover:bg-white/[0.08] transition-all duration-300">
+                <CardHeader className="pb-3">
+                  <CardDecorator>
+                    <feature.icon className="size-6 text-accent-blue" aria-hidden />
+                  </CardDecorator>
+                  <h3 className="mt-6 font-medium text-ink">{feature.title}</h3>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-charcoal leading-relaxed">{feature.description}</p>
+                </CardContent>
+              </Card>
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>
   )
 }
+
+const CardDecorator = ({ children }: { children: ReactNode }) => (
+  <div aria-hidden className="relative mx-auto size-36 [mask-image:radial-gradient(ellipse_50%_50%_at_50%_50%,#000_70%,transparent_100%)]">
+    <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:24px_24px] opacity-30" />
+    <div className="absolute inset-0 m-auto flex size-12 items-center justify-center border-t border-l border-white/20 bg-surface-card rounded-lg backdrop-blur-sm">
+      {children}
+    </div>
+  </div>
+)
