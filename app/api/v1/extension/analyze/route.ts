@@ -71,9 +71,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { from, to, data, value } = body
 
-    if (!from || !to) {
-      return NextResponse.json({ error: "Missing required fields: from, to" }, { status: 400 })
+    if (!from) {
+      return NextResponse.json({ error: "Missing required field: from" }, { status: 400 })
     }
+
+    // Allow requests without 'to' (e.g. contract deployment, signature requests)
+    const toAddress = to || "0x0000000000000000000000000000000000000000"
 
     // Determine which agent to use based on user settings
     let agent: SecurityAgent
@@ -126,11 +129,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`[Extension API] Analyzing: ${from} -> ${to} (wallet: ${walletAddress}, provider: ${provider})`)
+    console.log(`[Extension API] Analyzing: ${from} -> ${toAddress} (wallet: ${walletAddress}, provider: ${provider})`)
 
     const result = await agent.analyzeTransaction({
       from: from as Address,
-      to: to as Address,
+      to: toAddress as Address,
       data: data as Hash | undefined,
       value: value ? BigInt(value) : undefined,
     })
