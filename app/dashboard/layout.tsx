@@ -18,13 +18,16 @@ import {
   Menu,
   X,
   Sparkles,
-  History
+  History,
+  ExternalLink
 } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { cn } from "@/lib/utils"
 import { useBalance } from "@/hooks/use-balance"
 import { ConnectButton } from "@/components/connect-button"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+
 
 const navigation = [
   {
@@ -85,6 +88,8 @@ export default function DashboardLayout({
   const { formattedBalance } = useBalance()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+
+  const faucetUrl = address ? `https://faucet.0g.ai/?address=${address}` : 'https://faucet.0g.ai'
 
   const truncatedAddress = address
     ? `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -186,6 +191,20 @@ export default function DashboardLayout({
               </div>
             </div>
           </div>
+          {/* Faucet Button */}
+          {isConnected && (
+            <div className="px-4 pb-4">
+              <a 
+                href={faucetUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-accent-blue/80 to-accent-blue text-white text-sm font-medium hover:shadow-lg hover:shadow-accent-blue/20 transition-all duration-200 group"
+              >
+                <ExternalLink className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                <span>Claim Faucet</span>
+              </a>
+            </div>
+          )}
 
           {/* Wallet Connection */}
           <div className="p-4 border-t border-white/15">

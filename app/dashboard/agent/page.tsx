@@ -365,13 +365,6 @@ export default function AgentIdPage() {
                 )}
               </Button>
 
-              <Button asChild variant="outline" className="w-full border-accent-blue/40 text-accent-blue hover:bg-accent-blue/10 hover:text-accent-blue">
-                <a href={faucetUrl} target="_blank" rel="noopener noreferrer">
-                  Open Faucet
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                </a>
-              </Button>
-
               {requestMessage && (
                 <div className="p-3 rounded-lg bg-green-500/10 border border-green-500/20">
                   <p className="text-xs text-green-300">{requestMessage}</p>

@@ -38,7 +38,7 @@
   --accent-pink-glow: rgba(59, 158, 255, 0.34);
   --link: #3b9eff;
   --surface-light: #f1f7fe;
-  
+
   /* Legacy compatibility */
   --background: #000000;
   --foreground: #fcfdff;
@@ -102,6 +102,24 @@
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-full: 9999px;
+  --animate-marquee: marquee var(--duration) infinite linear;
+  --animate-marquee-vertical: marquee-vertical var(--duration) linear infinite;
+  @keyframes marquee {
+  from {
+    transform: translateX(0);
+    }
+  to {
+    transform: translateX(calc(-100% - var(--gap)));
+    }
+  }
+  @keyframes marquee-vertical {
+  from {
+    transform: translateY(0);
+    }
+  to {
+    transform: translateY(calc(-100% - var(--gap)));
+    }
+  }
 }
 
 body {
@@ -259,7 +277,7 @@ html {
     font-size: 56px;
     letter-spacing: -0.56px;
   }
-  
+
   .text-display-xl {
     font-size: 44px;
     letter-spacing: -0.44px;

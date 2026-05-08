@@ -3,10 +3,12 @@
 import { useEffect, useRef, useState } from "react";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { ConnectButton } from "@/components/connect-button";
 import { useAccount } from "wagmi";
 import { motion, useInView } from "framer-motion";
 import { AuroraBackground } from "@/components/ui/aurora-background";
+import { Marquee } from "@/components/ui/marquee";
 
 export function Hero2() {
   const { isConnected } = useAccount();
@@ -107,17 +109,45 @@ export function Hero2() {
               </div>
             </motion.div>
 
-            {/* Stats Grid - Integrated */}
+            {/* Partner Logos - Marquee */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.5 }}
-              className="mt-24 grid grid-cols-2 lg:grid-cols-4 gap-8"
+              className="mt-24"
             >
-              <StatsCard value="100K+" label="Transactions Analyzed" delay={0.6} />
-              <StatsCard value="5K+" label="Threats Blocked" delay={0.7} />
-              <StatsCard value="500+" label="Protected Users" delay={0.8} />
-              <StatsCard value="99.9%" label="Detection Accuracy" delay={0.9} />
+              <div className="text-center mb-8">
+                <span className="text-xs text-white/40 uppercase tracking-wider">Powered by</span>
+              </div>
+              <div className="relative">
+                <Marquee pauseOnHover className="[--duration:30s]">
+                  {[
+                    { name: '0G Chain', logo: '/0g-brandkit/0G-Logo-Purple_Hero.svg', width: 100, height: 48 },
+                    { name: 'Ethereum', logo: 'https://cdn.simpleicons.org/ethereum/white', width: 48, height: 48 },
+                    { name: 'Solidity', logo: 'https://cdn.simpleicons.org/solidity/white', width: 48, height: 48 },
+                    { name: 'OpenZeppelin', logo: 'https://cdn.simpleicons.org/openzeppelin/white', width: 48, height: 48 },
+                  ].map((partner, idx) => (
+                    <div
+                      key={idx}
+                      className="mx-8 flex items-center justify-center group"
+                    >
+                      <div className="relative flex items-center justify-center opacity-40 group-hover:opacity-100 transition-opacity duration-300">
+                        <Image
+                          src={partner.logo}
+                          alt={partner.name}
+                          width={partner.width}
+                          height={partner.height}
+                          className="object-contain filter brightness-0 invert"
+                          unoptimized={partner.logo.startsWith('http')}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </Marquee>
+                {/* Gradient overlays */}
+                <div className="pointer-events-none absolute inset-y-0 left-0 w-1/4 bg-gradient-to-r from-canvas to-transparent" />
+                <div className="pointer-events-none absolute inset-y-0 right-0 w-1/4 bg-gradient-to-l from-canvas to-transparent" />
+              </div>
             </motion.div>
           </motion.div>
         </div>
@@ -128,50 +158,4 @@ export function Hero2() {
     </AuroraBackground>
   );
   
-}
-
-// Stats Card Component
-function StatsCard({ value, label, delay }: { value: string; label: string; delay: number }) {
-  const [count, setCount] = useState(0);
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true });
-
-  useEffect(() => {
-    if (isInView) {
-      let startTime: number;
-      const numericValue = parseInt(value.replace(/[^\d]/g, ""));
-      const duration = 2000;
-
-      const animate = (currentTime: number) => {
-        if (!startTime) startTime = currentTime;
-        const progress = Math.min((currentTime - startTime) / duration, 1);
-
-        setCount(Math.floor(progress * numericValue));
-
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        }
-      };
-
-      requestAnimationFrame(animate);
-    }
-  }, [isInView, value]);
-
-  return (
-    <motion.div
-      ref={ref}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-      className="text-left"
-    >
-      <div className="text-4xl md:text-5xl font-normal text-ink mb-2 tracking-tight">
-        {count}
-        {value.replace(/[\d]/g, "")}
-      </div>
-      <div className="text-sm text-charcoal">
-        {label}
-      </div>
-    </motion.div>
-  );
 }
