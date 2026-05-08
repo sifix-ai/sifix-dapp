@@ -81,6 +81,17 @@ export default function ExtensionSetupPage() {
       setToken(verifyData.token)
       setExpiresAt(verifyData.expiresAt)
       setStep("done")
+
+      // Auto-send token to extension via postMessage
+      // Content script (auth-bridge.ts) picks this up and saves to chrome.storage
+      if (typeof window !== "undefined") {
+        window.postMessage({
+          type: "SIFIX_EXTENSION_TOKEN",
+          token: verifyData.token,
+          walletAddress: verifyData.walletAddress,
+        }, "*")
+        console.log("[SIFIX] Token sent to extension via postMessage")
+      }
     } catch (err: any) {
       setError(err.message || "Koneksi gagal")
       setStep("connect")
@@ -164,7 +175,7 @@ export default function ExtensionSetupPage() {
           <div className="space-y-4">
             {/* Success */}
             <Card className="p-6 border-green-500/30">
-              <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-3 mb-2">
                 <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
                   <Check className="w-5 h-5 text-green-400" />
                 </div>
@@ -174,6 +185,11 @@ export default function ExtensionSetupPage() {
                     Wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
                   </p>
                 </div>
+              </div>
+              <div className="mt-3 p-3 rounded-lg bg-[#4ecdc4]/10 border border-[#4ecdc4]/20">
+                <p className="text-xs text-[#4ecdc4]">
+                  ✅ Token otomatis dikirim ke SIFIX Extension! Buka popup extension sekarang.
+                </p>
               </div>
             </Card>
 
