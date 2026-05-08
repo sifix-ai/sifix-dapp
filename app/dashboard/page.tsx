@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Shield, Search, Activity, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Zap, Trophy } from "lucide-react"
+import { Shield, Search, Activity, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Zap, Trophy, Puzzle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -106,6 +106,13 @@ export default function DashboardPage() {
       href: "/dashboard/leaderboard",
       icon: Trophy,
       color: "from-purple-500 to-pink-500",
+    },
+    {
+      name: "Extension Setup",
+      description: "Connect browser extension",
+      href: "/dashboard/extension",
+      icon: Puzzle,
+      color: "from-cyan-500 to-teal-500",
     },
   ]
 
