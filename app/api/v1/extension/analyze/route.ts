@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { SecurityAgent } from "@sifix/agent"
 import type { Address, Hash } from "viem"
 import { prisma } from "@/lib/prisma"
+import { verifyExtensionAuth } from "@/lib/extension-auth"
 
 // Singleton agent instances (reused across requests)
 let defaultAgent: SecurityAgent | null = null
@@ -46,7 +47,6 @@ async function getComputeAgent(): Promise<SecurityAgent> {
         mockMode: process.env.STORAGE_MOCK_MODE === "true",
       },
     })
-    // Initialize broker (acknowledge provider, fetch model)
     await computeAgent.init()
   }
   return computeAgent
@@ -54,80 +54,70 @@ async function getComputeAgent(): Promise<SecurityAgent> {
 
 /**
  * POST /api/v1/extension/analyze
- * Extension-facing analyze endpoint
+ * Protected: Requires Bearer token from extension auth
  * 
- * AI provider priority:
- * 1. User BYOAI → 0g-compute → user wallet pays
- * 2. User BYOAI → openai/groq/custom → user API key
- * 3. Server default (0G Compute if configured, else AI_API_KEY)
- * 
- * Body: { from, to, data, value, walletAddress }
+ * Body: { from, to, data, value }
  */
 export async function POST(request: NextRequest) {
+  // Auth check
+  const auth = await verifyExtensionAuth()
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error }, { status: 401 })
+  }
+
+  const walletAddress = auth.walletAddress!
+
   try {
     const body = await request.json()
-    const { from, to, data, value, walletAddress } = body
+    const { from, to, data, value } = body
 
     if (!from || !to) {
       return NextResponse.json({ error: "Missing required fields: from, to" }, { status: 400 })
     }
 
-    // Determine which agent to use
+    // Determine which agent to use based on user settings
     let agent: SecurityAgent
     let provider: string = "default"
 
-    if (walletAddress) {
-      const userSettings = await prisma.userSettings.findUnique({
-        where: { address: walletAddress.toLowerCase() },
-      })
+    const userSettings = await prisma.userSettings.findUnique({
+      where: { address: walletAddress.toLowerCase() },
+    })
 
-      if (userSettings && userSettings.aiProvider !== "default") {
-        provider = userSettings.aiProvider
+    if (userSettings && userSettings.aiProvider !== "default") {
+      provider = userSettings.aiProvider
 
-        if (userSettings.aiProvider === "0g-compute") {
-          // User wants 0G Compute — use server's compute agent
-          agent = await getComputeAgent()
-        } else if (userSettings.aiProvider === "ollama") {
-          agent = new SecurityAgent({
-            rpcUrl: process.env.NEXT_PUBLIC_ZG_RPC_URL || "https://evmrpc-testnet.0g.ai",
-            aiProvider: {
-              apiKey: "ollama",
-              baseURL: userSettings.aiBaseUrl || "http://localhost:11434/v1",
-              model: userSettings.aiModel || "llama3.2",
-            },
-            storage: {
-              indexerUrl: process.env.ZG_INDEXER_URL || "https://indexer-storage-testnet-turbo.0g.ai",
-              privateKey: process.env.STORAGE_PRIVATE_KEY,
-              mockMode: process.env.STORAGE_MOCK_MODE === "true",
-            },
-          })
-        } else {
-          // OpenAI, Groq, Custom
-          agent = new SecurityAgent({
-            rpcUrl: process.env.NEXT_PUBLIC_ZG_RPC_URL || "https://evmrpc-testnet.0g.ai",
-            aiProvider: {
-              apiKey: userSettings.aiApiKey || "",
-              baseURL: userSettings.aiBaseUrl,
-              model: userSettings.aiModel,
-            },
-            storage: {
-              indexerUrl: process.env.ZG_INDEXER_URL || "https://indexer-storage-testnet-turbo.0g.ai",
-              privateKey: process.env.STORAGE_PRIVATE_KEY,
-              mockMode: process.env.STORAGE_MOCK_MODE === "true",
-            },
-          })
-        }
+      if (userSettings.aiProvider === "0g-compute") {
+        agent = await getComputeAgent()
+      } else if (userSettings.aiProvider === "ollama") {
+        agent = new SecurityAgent({
+          rpcUrl: process.env.NEXT_PUBLIC_ZG_RPC_URL || "https://evmrpc-testnet.0g.ai",
+          aiProvider: {
+            apiKey: "ollama",
+            baseURL: userSettings.aiBaseUrl || "http://localhost:11434/v1",
+            model: userSettings.aiModel || "llama3.2",
+          },
+          storage: {
+            indexerUrl: process.env.ZG_INDEXER_URL || "https://indexer-storage-testnet-turbo.0g.ai",
+            privateKey: process.env.STORAGE_PRIVATE_KEY,
+            mockMode: process.env.STORAGE_MOCK_MODE === "true",
+          },
+        })
       } else {
-        // User has default — use server's 0G Compute if configured, else fallback
-        if (process.env.COMPUTE_PROVIDER_ADDRESS) {
-          agent = await getComputeAgent()
-          provider = "0g-compute"
-        } else {
-          agent = getDefaultAgent()
-        }
+        agent = new SecurityAgent({
+          rpcUrl: process.env.NEXT_PUBLIC_ZG_RPC_URL || "https://evmrpc-testnet.0g.ai",
+          aiProvider: {
+            apiKey: userSettings.aiApiKey || "",
+            baseURL: userSettings.aiBaseUrl,
+            model: userSettings.aiModel,
+          },
+          storage: {
+            indexerUrl: process.env.ZG_INDEXER_URL || "https://indexer-storage-testnet-turbo.0g.ai",
+            privateKey: process.env.STORAGE_PRIVATE_KEY,
+            mockMode: process.env.STORAGE_MOCK_MODE === "true",
+          },
+        })
       }
     } else {
-      // No wallet — use server default
       if (process.env.COMPUTE_PROVIDER_ADDRESS) {
         agent = await getComputeAgent()
         provider = "0g-compute"
@@ -136,7 +126,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`[Extension API] Analyzing: ${from} -> ${to} (provider: ${provider})`)
+    console.log(`[Extension API] Analyzing: ${from} -> ${to} (wallet: ${walletAddress}, provider: ${provider})`)
 
     const result = await agent.analyzeTransaction({
       from: from as Address,
@@ -162,7 +152,6 @@ export async function POST(request: NextRequest) {
       explanation: result.analysis.reasoning,
       detectedThreats: result.analysis.threats || [],
       provider: result.computeProvider || provider,
-      // 0G Storage proof
       storageHash: result.storageRootHash || null,
       storageUrl: result.storageExplorer || null,
     })

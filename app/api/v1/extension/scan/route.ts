@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAddressReputation } from "@/lib/contract"
 import { prisma } from "@/lib/prisma"
+import { verifyExtensionAuth } from "@/lib/extension-auth"
 
 /**
  * POST /api/v1/extension/scan
- * Extension-facing scan endpoint
- * Body: { address: string, walletAddress: string }
+ * Protected: Requires Bearer token from extension auth
+ * Body: { address: string }
  */
 export async function POST(request: NextRequest) {
+  // Auth check
+  const auth = await verifyExtensionAuth()
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
-    const { address, walletAddress } = body
+    const { address } = body
 
     if (!address || !address.startsWith("0x")) {
       return NextResponse.json({ error: "Invalid address" }, { status: 400 })

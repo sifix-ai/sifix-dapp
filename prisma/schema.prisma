@@ -221,3 +221,19 @@ model UserSettings {
   @@index([address])
   @@map("user_settings")
 }
+
+model ExtensionSession {
+  id            String   @id @default(cuid())
+  walletAddress String
+  token         String   @unique
+  userAgent     String?
+  isActive      Boolean  @default(true)
+  lastUsedAt    DateTime @default(now())
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+
+  @@index([token])
+  @@index([walletAddress])
+  @@index([expiresAt])
+  @@map("extension_sessions")
+}
