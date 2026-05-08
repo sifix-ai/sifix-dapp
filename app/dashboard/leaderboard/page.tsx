@@ -66,15 +66,18 @@ export default function LeaderboardPage() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-white mb-2">Security Leaderboard 🏆</h2>
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <Trophy className="w-6 h-6 text-accent-blue" />
+          Security Leaderboard
+        </h2>
         <p className="text-white/60">Top contributors protecting the 0G ecosystem</p>
       </div>
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card>
+        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-yellow-500 to-orange-500 rounded-xl">
+            <div className="p-3 bg-gradient-to-br from-accent-blue/80 to-accent-blue rounded-xl">
               <Trophy className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -83,9 +86,9 @@ export default function LeaderboardPage() {
             </div>
           </div>
         </Card>
-        <Card>
+        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl">
+            <div className="p-3 bg-gradient-to-br from-accent-blue/70 to-accent-blue/90 rounded-xl">
               <Shield className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -94,9 +97,9 @@ export default function LeaderboardPage() {
             </div>
           </div>
         </Card>
-        <Card>
+        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl">
+            <div className="p-3 bg-gradient-to-br from-accent-blue to-accent-blue/80 rounded-xl">
               <TrendingUp className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -108,11 +111,11 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Leaderboard Table */}
-      <Card>
+      <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/[0.08]">
+              <tr className="border-b border-white/15">
                 <th className="text-left py-4 px-4 text-sm font-semibold text-white/60">Rank</th>
                 <th className="text-left py-4 px-4 text-sm font-semibold text-white/60">Reporter</th>
                 <th className="text-left py-4 px-4 text-sm font-semibold text-white/60">Reports</th>
@@ -131,7 +134,7 @@ export default function LeaderboardPage() {
                   </td>
                   <td className="py-4 px-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-0g rounded-full flex items-center justify-center">
+                      <div className="w-10 h-10 bg-gradient-to-br from-accent-blue/80 to-accent-blue rounded-full flex items-center justify-center">
                         <Shield className="w-5 h-5 text-white" />
                       </div>
                       <div>
@@ -152,7 +155,7 @@ export default function LeaderboardPage() {
                     <div className="flex items-center gap-2">
                       <div className="w-16 bg-white/[0.1] rounded-full h-2">
                         <div
-                          className="bg-gradient-0g h-2 rounded-full"
+                          className="bg-gradient-to-r from-accent-blue/70 to-accent-blue h-2 rounded-full"
                           style={{ width: `${reporter.reputation}%` }}
                         />
                       </div>
@@ -160,7 +163,7 @@ export default function LeaderboardPage() {
                     </div>
                   </td>
                   <td className="py-4 px-4">
-                    <p className="text-[#4ecdc4] font-medium">{reporter.rewards}</p>
+                    <p className="text-accent-blue font-medium">{reporter.rewards}</p>
                   </td>
                 </tr>
               ))}
@@ -170,7 +173,7 @@ export default function LeaderboardPage() {
       </Card>
 
       {/* Your Stats */}
-      <Card className="bg-gradient-to-br from-[#ff6b6b]/10 to-[#4ecdc4]/10 border-[#ff6b6b]/20">
+      <Card className="bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border-accent-blue/20 backdrop-blur-md">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-lg font-semibold text-white mb-1">Your Position</h3>
@@ -178,7 +181,7 @@ export default function LeaderboardPage() {
           </div>
           <div className="text-right">
             <p className="text-3xl font-bold text-white">#42</p>
-            <p className="text-sm text-[#4ecdc4]">Top 4% of reporters</p>
+            <p className="text-sm text-accent-blue">Top 4% of reporters</p>
           </div>
         </div>
       </Card>

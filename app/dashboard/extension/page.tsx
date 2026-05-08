@@ -105,7 +105,7 @@ export default function ExtensionSetupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-canvas text-white">
       <div className="max-w-xl mx-auto px-4 py-12">
         {/* Header */}
         <div className="flex items-center gap-3 mb-8">
@@ -118,7 +118,7 @@ export default function ExtensionSetupPage() {
         </div>
 
         <div className="text-center mb-8">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-[#ff6b6b] to-[#4ecdc4] flex items-center justify-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-accent-blue via-accent-purple to-accent-pink flex items-center justify-center">
             <Shield className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold mb-2">Extension Setup</h1>
@@ -129,7 +129,7 @@ export default function ExtensionSetupPage() {
 
         {/* Step: Connect */}
         {step === "connect" && (
-          <Card className="p-8 text-center">
+          <Card className="p-8 text-center bg-white/[0.04] backdrop-blur-md border-white/15">
             <div className="mb-6">
               <div className="text-4xl mb-3">🔗</div>
               <h3 className="text-lg font-semibold mb-2">Step 1: Connect Wallet</h3>
@@ -140,7 +140,7 @@ export default function ExtensionSetupPage() {
 
             <Button
               onClick={handleConnect}
-              className="bg-gradient-to-r from-[#ff6b6b] to-[#4ecdc4] text-white hover:shadow-lg hover:shadow-[#ff6b6b]/20 px-8 py-6 text-base"
+              className="bg-gradient-to-r from-accent-blue via-accent-purple to-accent-pink text-white hover:shadow-lg hover:shadow-accent-blue/20 px-8 py-6 text-base"
               size="lg"
             >
               Connect Wallet
@@ -156,8 +156,8 @@ export default function ExtensionSetupPage() {
 
         {/* Step: Signing */}
         {step === "signing" && (
-          <Card className="p-8 text-center">
-            <Loader2 className="w-10 h-10 text-[#4ecdc4] mx-auto mb-4 animate-spin" />
+          <Card className="p-8 text-center bg-white/[0.04] backdrop-blur-md border-white/15">
+            <Loader2 className="w-10 h-10 text-accent-blue mx-auto mb-4 animate-spin" />
             <h3 className="text-lg font-semibold mb-2">Signing...</h3>
             <p className="text-white/50 text-sm">
               Confirm signature di wallet kamu. Tidak ada gas fee.
@@ -174,47 +174,47 @@ export default function ExtensionSetupPage() {
         {step === "done" && (
           <div className="space-y-4">
             {/* Success */}
-            <Card className="p-6 border-green-500/30">
+            <Card className="p-6 border-accent-blue/30 bg-white/[0.04] backdrop-blur-md">
               <div className="flex items-center gap-3 mb-2">
-                <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                  <Check className="w-5 h-5 text-green-400" />
+                <div className="w-10 h-10 rounded-full bg-accent-blue/20 flex items-center justify-center">
+                  <Check className="w-5 h-5 text-accent-blue" />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-green-400">Token Generated!</h3>
+                  <h3 className="font-semibold text-accent-blue">Token Generated!</h3>
                   <p className="text-white/50 text-xs">
                     Wallet: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
                   </p>
                 </div>
               </div>
-              <div className="mt-3 p-3 rounded-lg bg-[#4ecdc4]/10 border border-[#4ecdc4]/20">
-                <p className="text-xs text-[#4ecdc4]">
+              <div className="mt-3 p-3 rounded-lg bg-accent-blue/10 border border-accent-blue/20">
+                <p className="text-xs text-accent-blue">
                   ✅ Token otomatis dikirim ke SIFIX Extension! Buka popup extension sekarang.
                 </p>
               </div>
             </Card>
 
             {/* Token Display */}
-            <Card className="p-6">
+            <Card className="p-6 bg-white/[0.04] backdrop-blur-md border-white/15">
               <h4 className="text-sm font-medium text-white/60 mb-3">
                 API Token
               </h4>
               <div className="relative">
-                <div className="bg-[#111] rounded-lg p-4 pr-24 font-mono text-xs break-all text-[#4ecdc4] border border-white/5">
+                <div className="bg-[#111] rounded-lg p-4 pr-24 font-mono text-xs break-all text-accent-blue border border-white/5">
                   {token}
                 </div>
                 <button
                   onClick={handleCopy}
-                  className="absolute top-2 right-2 px-3 py-2 rounded-lg bg-[#4ecdc4]/20 hover:bg-[#4ecdc4]/30 transition-colors flex items-center gap-1.5"
+                  className="absolute top-2 right-2 px-3 py-2 rounded-lg bg-accent-blue/20 hover:bg-accent-blue/30 transition-colors flex items-center gap-1.5"
                 >
                   {copied ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-green-400" />
-                      <span className="text-xs text-green-400">Copied!</span>
+                      <Check className="w-3.5 h-3.5 text-accent-blue" />
+                      <span className="text-xs text-accent-blue">Copied!</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5 text-[#4ecdc4]" />
-                      <span className="text-xs text-[#4ecdc4]">Copy</span>
+                      <Copy className="w-3.5 h-3.5 text-accent-blue" />
+                      <span className="text-xs text-accent-blue">Copy</span>
                     </>
                   )}
                 </button>
@@ -228,25 +228,25 @@ export default function ExtensionSetupPage() {
             </Card>
 
             {/* Instructions */}
-            <Card className="p-6">
+            <Card className="p-6 bg-white/[0.04] backdrop-blur-md border-white/15">
               <h4 className="text-sm font-medium text-white/80 mb-4">
                 Cara pakai di Extension:
               </h4>
               <ol className="space-y-3 text-sm text-white/60">
                 <li className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[#4ecdc4]/20 flex items-center justify-center text-[#4ecdc4] text-xs font-bold shrink-0">1</span>
+                  <span className="w-6 h-6 rounded-full bg-accent-blue/20 flex items-center justify-center text-accent-blue text-xs font-bold shrink-0">1</span>
                   <span>Buka SIFIX Extension di browser</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[#4ecdc4]/20 flex items-center justify-center text-[#4ecdc4] text-xs font-bold shrink-0">2</span>
+                  <span className="w-6 h-6 rounded-full bg-accent-blue/20 flex items-center justify-center text-accent-blue text-xs font-bold shrink-0">2</span>
                   <span>Klik <strong className="text-white/80">&quot;Sudah punya token? Paste di sini&quot;</strong></span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[#4ecdc4]/20 flex items-center justify-center text-[#4ecdc4] text-xs font-bold shrink-0">3</span>
+                  <span className="w-6 h-6 rounded-full bg-accent-blue/20 flex items-center justify-center text-accent-blue text-xs font-bold shrink-0">3</span>
                   <span>Paste token di atas, klik <strong className="text-white/80">Connect</strong></span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="w-6 h-6 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 text-xs font-bold shrink-0">✓</span>
+                  <span className="w-6 h-6 rounded-full bg-accent-blue/20 flex items-center justify-center text-accent-blue text-xs font-bold shrink-0">✓</span>
                   <span>Extension siap digunakan!</span>
                 </li>
               </ol>
@@ -262,7 +262,7 @@ export default function ExtensionSetupPage() {
                 Regenerate Token
               </Button>
               <Link href="/dashboard" className="flex-1">
-                <Button className="w-full bg-gradient-to-r from-[#ff6b6b] to-[#4ecdc4] text-white">
+                <Button className="w-full bg-gradient-to-r from-accent-blue via-accent-purple to-accent-pink text-white">
                   Back to Dashboard
                 </Button>
               </Link>

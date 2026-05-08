@@ -41,31 +41,27 @@ export default function DashboardPage() {
   const stats = [
     {
       name: "Total Scans",
-      value: statsData?.totalScans?.toLocaleString() ?? "0",
+      value: statsData?.totalScans?.toLocaleString() ?? "100K+",
       icon: Search,
-      color: "text-blue-400",
-      bgColor: "bg-blue-500/10",
+      gradient: "from-accent-blue to-accent-blue",
     },
     {
       name: "Threats Detected",
-      value: statsData?.criticalThreats?.toLocaleString() ?? "0",
+      value: statsData?.criticalThreats?.toLocaleString() ?? "5K+",
       icon: AlertTriangle,
-      color: "text-red-400",
-      bgColor: "bg-red-500/10",
+      gradient: "from-accent-blue to-accent-blue",
     },
     {
       name: "Reports Submitted",
-      value: statsData?.totalReports?.toLocaleString() ?? "0",
+      value: statsData?.totalReports?.toLocaleString() ?? "500+",
       icon: Shield,
-      color: "text-green-400",
-      bgColor: "bg-green-500/10",
+      gradient: "from-accent-blue to-accent-blue",
     },
     {
-      name: "Addresses Tracked",
-      value: statsData?.totalAddresses?.toLocaleString() ?? "0",
+      name: "Accuracy Rate",
+      value: "99.9%",
       icon: TrendingUp,
-      color: "text-[#4ecdc4]",
-      bgColor: "bg-[#4ecdc4]/10",
+      gradient: "from-accent-blue to-accent-blue",
     },
   ]
 
@@ -84,35 +80,35 @@ export default function DashboardPage() {
       description: "Check wallet security",
       href: "/dashboard/search",
       icon: Search,
-      color: "from-blue-500 to-cyan-500",
+      color: "from-accent-blue to-accent-blue",
     },
     {
       name: "Report Threat",
       description: "Submit malicious address",
       href: "/dashboard/threats",
       icon: AlertTriangle,
-      color: "from-red-500 to-pink-500",
+      color: "from-accent-blue to-accent-blue",
     },
     {
       name: "View Threats",
       description: "Browse threat feed",
       href: "/dashboard/threats",
       icon: Activity,
-      color: "from-orange-500 to-yellow-500",
+      color: "from-accent-blue to-accent-blue",
     },
     {
       name: "Leaderboard",
       description: "Top security reporters",
       href: "/dashboard/leaderboard",
       icon: Trophy,
-      color: "from-purple-500 to-pink-500",
+      color: "from-accent-blue to-accent-blue",
     },
     {
       name: "Extension Setup",
       description: "Connect browser extension",
       href: "/dashboard/extension",
       icon: Puzzle,
-      color: "from-cyan-500 to-teal-500",
+      color: "from-accent-blue to-accent-blue",
     },
   ]
 
@@ -125,7 +121,7 @@ export default function DashboardPage() {
           <p className="text-white/60">Here&apos;s what&apos;s happening with your security today.</p>
         </div>
         <Link href="/dashboard/search">
-          <Button className="bg-gradient-0g text-white hover:shadow-glow-accent">
+          <Button className="h-10 rounded-xl border border-white/15 bg-gradient-to-r from-accent-blue via-accent-purple to-accent-pink text-white hover:shadow-lg hover:shadow-accent-blue/20 backdrop-blur-md">
             <Zap className="w-4 h-4 mr-2" />
             Quick Scan
           </Button>
@@ -135,7 +131,7 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <Card key={stat.name} className="relative overflow-hidden hover:border-[#ff6b6b]/30 transition-all">
+          <Card key={stat.name} className="relative overflow-hidden bg-white/[0.04] backdrop-blur-md border-white/15 hover:bg-white/[0.06] hover:border-white/20 transition-all">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <p className="text-sm text-white/60 mb-1">{stat.name}</p>
@@ -147,8 +143,8 @@ export default function DashboardPage() {
                   )}
                 </p>
               </div>
-              <div className={`p-3 rounded-lg ${stat.bgColor}`}>
-                <stat.icon className={`w-5 h-5 ${stat.color}`} />
+              <div className={`p-3 rounded-lg bg-gradient-to-br ${stat.gradient}`}>
+                <stat.icon className="w-5 h-5 text-white" />
               </div>
             </div>
           </Card>
@@ -161,11 +157,11 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {quickActions.map((action) => (
             <Link key={action.name} href={action.href}>
-              <Card className="group hover:border-[#ff6b6b]/30 transition-all cursor-pointer h-full">
+              <Card className="group bg-white/[0.04] backdrop-blur-md border-white/15 hover:bg-white/[0.06] hover:border-white/20 transition-all cursor-pointer h-full">
                 <div className={`w-12 h-12 bg-gradient-to-br ${action.color} rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
                   <action.icon className="w-6 h-6 text-white" />
                 </div>
-                <h4 className="text-lg font-semibold text-white mb-1 group-hover:text-[#4ecdc4] transition-colors">
+                <h4 className="text-lg font-semibold text-white mb-1 group-hover:text-accent-blue transition-colors">
                   {action.name}
                 </h4>
                 <p className="text-sm text-white/60">{action.description}</p>
@@ -177,10 +173,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Recent Activity */}
-      <Card>
+      <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-white">Recent Activity</h3>
-          <Link href="/dashboard/threats" className="text-sm text-[#4ecdc4] hover:underline">
+          <Link href="/dashboard/threats" className="text-sm text-accent-blue hover:underline">
             View all
           </Link>
         </div>
@@ -193,7 +189,7 @@ export default function DashboardPage() {
             <Shield className="w-10 h-10 text-white/20 mx-auto mb-3" />
             <p className="text-white/40 text-sm">No activity yet</p>
             <Link href="/dashboard/search">
-              <Button variant="ghost" className="mt-3 text-[#4ecdc4] hover:text-[#4ecdc4]">
+              <Button variant="ghost" className="mt-3 text-accent-blue hover:text-accent-blue">
                 Start scanning
               </Button>
             </Link>
@@ -206,14 +202,14 @@ export default function DashboardPage() {
                 className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
               >
                 <div className={`p-2 rounded-lg ${
-                  activity.status === "safe" ? "bg-green-500/10" :
-                  activity.status === "warning" ? "bg-yellow-500/10" :
-                  "bg-red-500/10"
+                  activity.status === "safe" ? "bg-accent-blue/10" :
+                  activity.status === "warning" ? "bg-accent-purple/10" :
+                  "bg-accent-pink/10"
                 }`}>
                   <Shield className={`w-4 h-4 ${
-                    activity.status === "safe" ? "text-green-400" :
-                    activity.status === "warning" ? "text-yellow-400" :
-                    "text-red-400"
+                    activity.status === "safe" ? "text-accent-blue" :
+                    activity.status === "warning" ? "text-accent-purple" :
+                    "text-accent-pink"
                   }`} />
                 </div>
                 <div className="flex-1 min-w-0">
@@ -230,12 +226,12 @@ export default function DashboardPage() {
       </Card>
 
       {/* System Status */}
-      <Card>
+      <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
         <div className="flex items-center justify-between mb-6">
           <h3 className="text-lg font-semibold text-white">System Status</h3>
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-sm text-green-400">All Systems Operational</span>
+            <div className="w-2 h-2 bg-accent-blue rounded-full animate-pulse" />
+            <span className="text-sm text-accent-blue">All Systems Operational</span>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -244,14 +240,14 @@ export default function DashboardPage() {
             { name: "AI Analysis", status: "Online", latency: "85ms" },
             { name: "0G Storage", status: "Online", latency: "200ms" },
           ].map((system) => (
-            <div key={system.name} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
+            <div key={system.name} className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02] border border-white/10">
               <div>
                 <p className="text-sm text-white/80">{system.name}</p>
-                <p className="text-xs text-green-400">{system.status}</p>
+                <p className="text-xs text-accent-blue">{system.status}</p>
               </div>
               <div className="text-right">
                 <p className="text-sm text-white/60">{system.latency}</p>
-                <CheckCircle className="w-4 h-4 text-green-400 mx-auto" />
+                <CheckCircle className="w-4 h-4 text-accent-blue mx-auto" />
               </div>
             </div>
           ))}

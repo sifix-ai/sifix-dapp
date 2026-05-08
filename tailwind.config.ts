@@ -47,6 +47,12 @@ export default {
         accent: {
           DEFAULT: '#ec4899', // pink-500 - vibrant accent
           foreground: '#ffffff',
+          blue: '#3b9eff',
+          purple: '#a78bfa',
+          pink: '#ec4899',
+          orange: '#ff801f',
+          yellow: '#ffc53d',
+          red: '#ff2047',
         },
         
         // Brand colors - Purple/Pink/Blue only (NO GREEN)

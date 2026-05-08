@@ -27,11 +27,15 @@
   --accent-orange-glow: rgba(255, 89, 0, 0.22);
   --accent-yellow: #ffc53d;
   --accent-blue: #3b9eff;
-  --accent-blue-glow: rgba(0, 117, 255, 0.34);
+  --accent-blue-glow: rgba(59, 158, 255, 0.34);
   --accent-green: #11ff99;
-  --accent-green-glow: rgba(34, 255, 153, 0.18);
+  --accent-green-glow: rgba(17, 255, 153, 0.18);
   --accent-red: #ff2047;
   --accent-red-glow: rgba(255, 32, 71, 0.34);
+  --accent-purple: #3b9eff;
+  --accent-purple-glow: rgba(59, 158, 255, 0.34);
+  --accent-pink: #3b9eff;
+  --accent-pink-glow: rgba(59, 158, 255, 0.34);
   --link: #3b9eff;
   --surface-light: #f1f7fe;
   
@@ -78,6 +82,10 @@
   --color-accent-green-glow: var(--accent-green-glow);
   --color-accent-red: var(--accent-red);
   --color-accent-red-glow: var(--accent-red-glow);
+  --color-accent-purple: var(--accent-blue);
+  --color-accent-purple-glow: var(--accent-blue-glow);
+  --color-accent-pink: var(--accent-blue);
+  --color-accent-pink-glow: var(--accent-blue-glow);
   --color-link: var(--link);
   --color-primary: var(--primary);
   --color-primary-on: var(--primary-on);

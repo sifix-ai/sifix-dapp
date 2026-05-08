@@ -91,7 +91,7 @@ export default function DashboardLayout({
     : null
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f]">
+    <div className="min-h-screen bg-canvas">
       {/* Mobile sidebar backdrop */}
       {mobileMenuOpen && (
         <div
@@ -103,15 +103,15 @@ export default function DashboardLayout({
       {/* Sidebar */}
       <div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-[#101111] border-r border-white/[0.08] transform transition-transform duration-300 ease-in-out lg:translate-x-0",
+          "fixed inset-y-0 left-0 z-50 w-64 bg-canvas/95 backdrop-blur-xl border-r border-white/15 transform transition-transform duration-300 ease-in-out lg:translate-x-0",
           mobileMenuOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex h-full flex-col">
           {/* Logo */}
-          <div className="flex h-16 items-center justify-between px-6 border-b border-white/[0.08]">
+          <div className="flex h-16 items-center justify-between px-6 border-b border-white/15">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-0g rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-gradient-to-br from-accent-blue to-accent-blue rounded-lg flex items-center justify-center">
                 <Shield className="w-5 h-5 text-white" />
               </div>
               <span className="font-semibold text-white tracking-tight">SIFIX</span>
@@ -140,7 +140,7 @@ export default function DashboardLayout({
                       className={cn(
                         "group flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200",
                         isActive
-                          ? "bg-gradient-0g text-white shadow-lg"
+                          ? "bg-gradient-to-r from-accent-blue to-accent-blue text-white shadow-lg shadow-accent-blue/20"
                           : "text-white/60 hover:text-white hover:bg-white/[0.04]"
                       )}
                       onClick={() => setMobileMenuOpen(false)}
@@ -187,26 +187,30 @@ export default function DashboardLayout({
             </div>
           </div>
 
-          {/* User Info */}
-          <div className="p-4 border-t border-white/[0.08]">
-            <div className="flex items-center gap-3 p-3 bg-white/[0.02] rounded-lg">
-              <div className="w-10 h-10 bg-gradient-0g rounded-full flex items-center justify-center flex-shrink-0">
-                <Wallet className="w-5 h-5 text-white" />
+          {/* Wallet Connection */}
+          <div className="p-4 border-t border-white/15">
+            {isConnected && address ? (
+              <div className="flex items-center gap-3 p-3 bg-white/[0.04] backdrop-blur-md rounded-lg border border-white/15">
+                <div className="w-10 h-10 bg-gradient-to-br from-accent-blue to-accent-blue rounded-full flex items-center justify-center flex-shrink-0">
+                  <Wallet className="w-5 h-5 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">{truncatedAddress}</p>
+                  <p className="text-xs text-accent-blue font-medium">
+                    {formattedBalance || "0"} A0GI
+                  </p>
+                </div>
+                <button
+                  onClick={() => disconnect()}
+                  className="text-white/40 hover:text-white/60 transition-colors"
+                  title="Disconnect"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">{truncatedAddress}</p>
-                <p className="text-xs text-[#4ecdc4] font-medium">
-                  {formattedBalance || "0"} A0GI
-                </p>
-              </div>
-              <button
-                onClick={() => disconnect()}
-                className="text-white/40 hover:text-white/60 transition-colors"
-                title="Disconnect"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
+            ) : (
+              <ConnectButton />
+            )}
           </div>
         </div>
       </div>
@@ -214,7 +218,7 @@ export default function DashboardLayout({
       {/* Main content */}
       <div className="lg:pl-64">
         {/* Top navbar */}
-        <header className="sticky top-0 z-30 h-16 border-b border-white/[0.08] bg-[#0a0a0f]/80 backdrop-blur-xl">
+        <header className="sticky top-0 z-30 h-16 border-b border-white/15 bg-canvas/70 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
             {/* Mobile menu button */}
             <button
@@ -234,15 +238,15 @@ export default function DashboardLayout({
             {/* Right side */}
             <div className="flex items-center gap-4">
               {/* Network indicator */}
-              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <Network className="w-3 h-3 text-green-500" />
-                <span className="text-xs font-medium text-green-400">0G Newton</span>
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-accent-blue/10 border border-accent-blue/20 rounded-lg backdrop-blur-md">
+                <Network className="w-3 h-3 text-accent-blue" />
+                <span className="text-xs font-medium text-accent-blue">0G Newton</span>
               </div>
 
               {/* Notifications */}
               <button className="relative text-white/60 hover:text-white transition-colors">
                 <Bell className="w-5 h-5" />
-                <span className="absolute top-0 right-0 w-2 h-2 bg-[#ff6b6b] rounded-full border-2 border-[#0a0a0f]" />
+                <span className="absolute top-0 right-0 w-2 h-2 bg-accent-blue rounded-full border-2 border-canvas" />
               </button>
             </div>
           </div>

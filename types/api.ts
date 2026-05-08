@@ -1,12 +1,32 @@
 // SIFIX API Types
 
-export interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: string;
+export interface ApiSuccessResponse<T = any> {
+  success: true;
+  data: T;
+  meta?: {
+    pagination?: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+    cached?: boolean;
+    [key: string]: any;
+  };
 }
 
-export interface PaginatedResponse<T> extends ApiResponse<T> {
+export interface ApiErrorResponse {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+    details?: unknown;
+  };
+}
+
+export type ApiResponse<T = any> = ApiSuccessResponse<T> | ApiErrorResponse;
+
+export interface PaginatedResponse<T> extends ApiSuccessResponse<T> {
   total: number;
   page: number;
   limit: number;

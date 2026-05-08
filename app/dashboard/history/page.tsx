@@ -119,7 +119,7 @@ export default function ScanHistoryPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <History className="w-6 h-6 text-[#FF6363]" />
+            <History className="w-6 h-6 text-accent-blue" />
             Scan History
           </h2>
           <p className="text-white/50 text-sm mt-1">
@@ -137,10 +137,10 @@ export default function ScanHistoryPage() {
       {/* Stats Cards */}
       {stats && stats.totalScans > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <Card>
+          <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
             <div className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#FF6363]/10 flex items-center justify-center border border-[#FF6363]/20">
-                <Shield className="w-5 h-5 text-[#FF6363]" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-blue/80 to-accent-blue flex items-center justify-center">
+                <Shield className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-xs text-white/40">Total Scans</p>
@@ -148,10 +148,10 @@ export default function ScanHistoryPage() {
               </div>
             </div>
           </Card>
-          <Card>
+          <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
             <div className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
-                <TrendingUp className="w-5 h-5 text-yellow-400" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-blue/70 to-accent-blue/90 flex items-center justify-center">
+                <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-xs text-white/40">Avg Risk Score</p>
@@ -159,10 +159,10 @@ export default function ScanHistoryPage() {
               </div>
             </div>
           </Card>
-          <Card>
+          <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
             <div className="p-4 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
-                <AlertTriangle className="w-5 h-5 text-red-400" />
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-blue to-accent-blue/80 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-white" />
               </div>
               <div>
                 <p className="text-xs text-white/40">Highest Risk</p>
@@ -189,21 +189,21 @@ export default function ScanHistoryPage() {
 
       {/* Content */}
       {!isConnected ? (
-        <Card>
+        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
           <div className="p-12 text-center">
             <Shield className="w-12 h-12 text-white/20 mx-auto mb-3" />
             <p className="text-white/40 text-sm">Connect your wallet to view scan history</p>
           </div>
         </Card>
       ) : loading ? (
-        <Card>
+        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
           <div className="p-12 text-center">
-            <Loader2 className="w-8 h-8 text-[#FF6363] mx-auto mb-3 animate-spin" />
+            <Loader2 className="w-8 h-8 text-accent-blue mx-auto mb-3 animate-spin" />
             <p className="text-white/40 text-sm">Loading scan history...</p>
           </div>
         </Card>
       ) : filteredScans.length === 0 ? (
-        <Card>
+        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
           <div className="p-12 text-center">
             <History className="w-12 h-12 text-white/20 mx-auto mb-3" />
             <p className="text-white/60 font-medium">No scans yet</p>
@@ -217,7 +217,7 @@ export default function ScanHistoryPage() {
           {filteredScans.map((scan) => {
             const colors = RISK_COLORS[scan.riskLevel] || RISK_COLORS.MEDIUM;
             return (
-              <Card key={scan.id}>
+              <Card key={scan.id} className="bg-white/[0.04] backdrop-blur-md border-white/15">
                 <button
                   onClick={() => setSelectedScan(selectedScan?.id === scan.id ? null : scan)}
                   className="w-full p-4 text-left hover:bg-white/[0.02] transition-colors"

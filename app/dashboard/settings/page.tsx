@@ -182,107 +182,54 @@ export default function SettingsPage() {
 
   console.log(currentProviderConfig)
 
+  // Guard: Wallet not connected
+  if (!isConnected) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Settings className="w-6 h-6 text-accent-blue" />
+            Settings
+          </h2>
+          <p className="text-white/60">Manage your SIFIX preferences</p>
+        </div>
+
+        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
+          <div className="p-12 text-center">
+            <Settings className="w-12 h-12 text-white/20 mx-auto mb-3" />
+            <p className="text-white/40 text-sm">Connect your wallet to access settings</p>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold text-white mb-1">Settings</h2>
-        <p className="text-white/60">Manage your SIFIX preferences</p>
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <Settings className="w-6 h-6 text-accent-blue" />
+          Settings
+        </h2>
+        <p className="text-white/50 text-sm mt-1">Manage your SIFIX preferences</p>
       </div>
 
-      {/* Profile */}
-      <Card>
-        <div className="flex items-center gap-3 mb-6 p-6 pb-0">
-          <Settings className="w-5 h-5 text-white" />
-          <h3 className="text-lg font-semibold text-white">Profile</h3>
-        </div>
-        <div className="space-y-4 p-6 pt-4">
-          <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
-            <div>
-              <p className="text-sm text-white/80">Connected Wallet</p>
-              <p className="text-xs text-white/40 font-mono mt-0.5">
-                {address ? `${address.slice(0, 10)}...${address.slice(-8)}` : 'Not connected'}
-              </p>
-            </div>
-            <div
-              className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border ${isConnected
-                  ? 'bg-green-500/10 border-green-500/20'
-                  : 'bg-red-500/10 border-red-500/20'
-                }`}
-            >
-              <div
-                className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
-                  }`}
-              />
-              <span
-                className={`text-xs font-medium ${isConnected ? 'text-green-400' : 'text-red-400'
-                  }`}
-              >
-                {isConnected ? '0G Newton' : 'Disconnected'}
-              </span>
-            </div>
-          </div>
-        </div>
-      </Card>
-
       {/* ─── BYOAI Section ───────────────────────────────────────────────── */}
-      <Card>
-        <div className="p-6 pb-0">
-          {/* Section header */}
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#FF6363]/20 to-[#FF6363]/5 flex items-center justify-center border border-[#FF6363]/20">
-              <BrainCircuit className="w-4 h-4 text-[#FF6363]" />
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold text-white">BYOAI — Bring Your Own AI</h3>
-              <p className="text-xs text-white/40 mt-0.5">
-                Connect your own AI provider for threat analysis
-              </p>
-            </div>
+      <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-accent-blue/20 to-accent-blue/5 flex items-center justify-center border border-accent-blue/20">
+            <BrainCircuit className="w-4 h-4 text-accent-blue" />
+          </div>
+          <div>
+            <h3 className="text-lg font-semibold text-white">BYOAI — Bring Your Own AI</h3>
+            <p className="text-xs text-white/40 mt-0.5">
+              Connect your own AI provider for threat analysis
+            </p>
           </div>
         </div>
 
-        <div className="p-6 pt-5 space-y-5">
-          {/* Wallet Connection Status */}
-          <div
-            className={`flex items-center gap-3 p-3 rounded-lg border ${isConnected
-                ? 'bg-green-500/[0.04] border-green-500/10'
-                : 'bg-red-500/[0.04] border-red-500/10'
-              }`}
-          >
-            <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center ${isConnected ? 'bg-green-500/10' : 'bg-red-500/10'
-                }`}
-            >
-              <Wallet
-                className={`w-4 h-4 ${isConnected ? 'text-green-400' : 'text-red-400'}`}
-              />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm text-white/80">
-                {isConnected ? 'Wallet Connected' : 'Wallet Not Connected'}
-              </p>
-              <p className="text-xs text-white/40 mt-0.5">
-                {isConnected
-                  ? `${address!.slice(0, 6)}...${address!.slice(-4)}`
-                  : 'Connect your wallet to save AI provider settings'}
-              </p>
-            </div>
-            <div
-              className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${isConnected
-                  ? 'bg-green-500/10 text-green-400'
-                  : 'bg-red-500/10 text-red-400'
-                }`}
-            >
-              <div
-                className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'
-                  } ${isConnected ? 'animate-pulse' : ''}`}
-              />
-              {isConnected ? 'Active' : 'Required'}
-            </div>
-          </div>
-
-          {/* Provider Selector */}
+        <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-white/70 mb-2">
               <div className="flex items-center gap-1.5">
@@ -474,7 +421,7 @@ export default function SettingsPage() {
               disabled={saving || !isConnected}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${saving || !isConnected
                   ? 'bg-white/[0.04] text-white/30 cursor-not-allowed border border-white/[0.06]'
-                  : 'bg-gradient-to-r from-[#FF6363] to-[#ff4444] text-white hover:shadow-lg hover:shadow-[#FF6363]/20 hover:scale-[1.02] active:scale-[0.98]'
+                  : 'bg-gradient-to-r from-accent-blue/80 to-accent-blue text-white hover:shadow-lg hover:shadow-accent-blue/20 hover:scale-[1.02] active:scale-[0.98]'
                 }`}
             >
               {saving ? (
@@ -509,12 +456,12 @@ export default function SettingsPage() {
       </Card>
 
       {/* Notifications */}
-      <Card>
-        <div className="flex items-center gap-3 mb-6 p-6 pb-0">
+      <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
+        <div className="flex items-center gap-3 mb-4">
           <Bell className="w-5 h-5 text-white" />
           <h3 className="text-lg font-semibold text-white">Notifications</h3>
         </div>
-        <div className="space-y-3 p-6 pt-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
             <div>
               <p className="text-sm text-white/80">Threat Alerts</p>
@@ -522,7 +469,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setNotifications(!notifications)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notifications ? 'bg-[#FF6363]' : 'bg-white/10'
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notifications ? 'bg-accent-blue' : 'bg-white/10'
                 }`}
             >
               <span
@@ -535,12 +482,12 @@ export default function SettingsPage() {
       </Card>
 
       {/* Security */}
-      <Card>
-        <div className="flex items-center gap-3 mb-6 p-6 pb-0">
+      <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
+        <div className="flex items-center gap-3 mb-4">
           <Shield className="w-5 h-5 text-white" />
           <h3 className="text-lg font-semibold text-white">Security</h3>
         </div>
-        <div className="space-y-3 p-6 pt-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
             <div>
               <p className="text-sm text-white/80">Auto-Report High/Critical Threats</p>
@@ -550,7 +497,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setAutoReport(!autoReport)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoReport ? 'bg-[#FF6363]' : 'bg-white/10'
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoReport ? 'bg-accent-blue' : 'bg-white/10'
                 }`}
             >
               <span
@@ -563,18 +510,18 @@ export default function SettingsPage() {
       </Card>
 
       {/* Network */}
-      <Card>
-        <div className="flex items-center gap-3 mb-6 p-6 pb-0">
+      <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
+        <div className="flex items-center gap-3 mb-4">
           <Globe className="w-5 h-5 text-white" />
           <h3 className="text-lg font-semibold text-white">Network</h3>
         </div>
-        <div className="space-y-3 p-6 pt-4">
+        <div className="space-y-3">
           <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
             <div>
               <p className="text-sm text-white/80">Chain</p>
               <p className="text-xs text-white/40 mt-0.5">0G Newton Testnet (Chain ID: 16602)</p>
             </div>
-            <span className="text-xs font-mono text-[#4ecdc4]">evmrpc-testnet.0g.ai</span>
+            <span className="text-xs font-mono text-accent-blue">evmrpc-testnet.0g.ai</span>
           </div>
         </div>
       </Card>

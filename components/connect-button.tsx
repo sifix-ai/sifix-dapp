@@ -142,23 +142,23 @@ export function ConnectButton() {
 
   return (
     <>
-      <div className="relative inline-flex">
+      <div className="relative w-full">
         <Button
           size="sm"
           onClick={() => setIsWalletModalOpen(true)}
           disabled={isPending}
-          className="group h-10 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:border-white/30 hover:bg-white/[0.08]"
+          className="w-full h-10 rounded-xl border border-white/15 bg-gradient-to-r from-accent-blue/80 to-accent-blue text-white shadow-lg shadow-accent-blue/20 hover:shadow-xl hover:shadow-accent-blue/30 transition-all"
         >
           {isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (
             <Wallet className="mr-2 h-4 w-4" strokeWidth={2} />
           )}
-          Launch Dashboard
+          Connect Wallet
         </Button>
 
         {(localError || connectError) && (
-          <div className="absolute top-full right-0 z-20 mt-2 flex max-w-xs items-center gap-2 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs text-red-300 backdrop-blur">
+          <div className="absolute top-full left-0 right-0 z-20 mt-2 flex items-center gap-2 rounded-lg border border-red-400/30 bg-red-500/10 px-3 py-2 text-xs text-red-300 backdrop-blur">
             <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{localError || connectError?.message}</span>
           </div>

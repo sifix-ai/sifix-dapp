@@ -154,43 +154,47 @@ export const errors = {
  * Wrap async route handlers with error handling
  */
 export function withErrorHandler<T>(
-  handler: () => Promise<NextResponse<ApiResponse<T>>>
-): Promise<NextResponse<ApiResponse<T>>> {
-  return handler().catch((error) => {
-    console.error('API Error:', error);
+  handler: (...args: any[]) => Promise<NextResponse<ApiResponse<T>>>
+): (...args: any[]) => Promise<NextResponse<ApiResponse<T>>> {
+  return async (...args: any[]) => {
+    try {
+      return await handler(...args);
+    } catch (error) {
+      console.error('API Error:', error);
 
-    // Handle AppError (application-level errors with explicit status codes)
-    if (error?.name === 'AppError') {
-      return apiError(error.code, error.message, error.details, error.statusCode);
+      // Handle AppError (application-level errors with explicit status codes)
+      if (error?.name === 'AppError') {
+        return apiError(error.code, error.message, error.details, error.statusCode);
+      }
+
+      // Handle Prisma errors
+      if (error.code === 'P2002') {
+        return errors.validation('Resource already exists', { field: error.meta?.target });
+      }
+
+      if (error.code === 'P2025') {
+        return errors.notFound('Record');
+      }
+
+      if (error.code === 'P2000') {
+        return errors.validation('Input value too long for field', { field: error.meta?.column_name });
+      }
+
+      if (error.code === 'P2003') {
+        return errors.validation('Related record not found', { field: error.meta?.field_name });
+      }
+
+      // Handle Zod validation errors
+      if (error.name === 'ZodError') {
+        return errors.validation('Invalid input format', error.errors);
+      }
+
+      // Default error
+      return errors.internal(
+        process.env.NODE_ENV === 'development' ? error.message : 'An unexpected error occurred'
+      );
     }
-
-    // Handle Prisma errors
-    if (error.code === 'P2002') {
-      return errors.validation('Resource already exists', { field: error.meta?.target });
-    }
-
-    if (error.code === 'P2025') {
-      return errors.notFound('Record');
-    }
-
-    if (error.code === 'P2000') {
-      return errors.validation('Input value too long for field', { field: error.meta?.column_name });
-    }
-
-    if (error.code === 'P2003') {
-      return errors.validation('Related record not found', { field: error.meta?.field_name });
-    }
-
-    // Handle Zod validation errors
-    if (error.name === 'ZodError') {
-      return errors.validation('Invalid input format', error.errors);
-    }
-
-    // Default error
-    return errors.internal(
-      process.env.NODE_ENV === 'development' ? error.message : 'An unexpected error occurred'
-    );
-  });
+  };
 }
 
 /**
