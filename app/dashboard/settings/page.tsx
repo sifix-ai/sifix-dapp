@@ -123,7 +123,7 @@ export default function SettingsPage() {
     }
     loadSettings();
   }, [address]);
-  
+
   // Handle provider change — reset fields to provider defaults
   const handleProviderChange = useCallback((provider: AIProvider) => {
     const config = PROVIDERS.find((p) => p.id === provider)!;
@@ -178,7 +178,9 @@ export default function SettingsPage() {
     }
   }, [address, selectedProvider, apiKey, baseUrl, model]);
 
-  const currentProviderConfig = PROVIDERS.find((p) => p.id === selectedProvider)!;
+  const currentProviderConfig = PROVIDERS.find((p) => p.id === selectedProvider) || PROVIDERS[0];
+
+  console.log(currentProviderConfig)
 
   return (
     <div className="space-y-8">
@@ -203,21 +205,18 @@ export default function SettingsPage() {
               </p>
             </div>
             <div
-              className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border ${
-                isConnected
+              className={`flex items-center gap-2 px-2.5 py-1 rounded-lg border ${isConnected
                   ? 'bg-green-500/10 border-green-500/20'
                   : 'bg-red-500/10 border-red-500/20'
-              }`}
+                }`}
             >
               <div
-                className={`w-1.5 h-1.5 rounded-full ${
-                  isConnected ? 'bg-green-500' : 'bg-red-500'
-                }`}
+                className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'
+                  }`}
               />
               <span
-                className={`text-xs font-medium ${
-                  isConnected ? 'text-green-400' : 'text-red-400'
-                }`}
+                className={`text-xs font-medium ${isConnected ? 'text-green-400' : 'text-red-400'
+                  }`}
               >
                 {isConnected ? '0G Newton' : 'Disconnected'}
               </span>
@@ -246,16 +245,14 @@ export default function SettingsPage() {
         <div className="p-6 pt-5 space-y-5">
           {/* Wallet Connection Status */}
           <div
-            className={`flex items-center gap-3 p-3 rounded-lg border ${
-              isConnected
+            className={`flex items-center gap-3 p-3 rounded-lg border ${isConnected
                 ? 'bg-green-500/[0.04] border-green-500/10'
                 : 'bg-red-500/[0.04] border-red-500/10'
-            }`}
+              }`}
           >
             <div
-              className={`w-8 h-8 rounded-lg flex items-center justify-center ${
-                isConnected ? 'bg-green-500/10' : 'bg-red-500/10'
-              }`}
+              className={`w-8 h-8 rounded-lg flex items-center justify-center ${isConnected ? 'bg-green-500/10' : 'bg-red-500/10'
+                }`}
             >
               <Wallet
                 className={`w-4 h-4 ${isConnected ? 'text-green-400' : 'text-red-400'}`}
@@ -272,16 +269,14 @@ export default function SettingsPage() {
               </p>
             </div>
             <div
-              className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${
-                isConnected
+              className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-semibold uppercase tracking-wider ${isConnected
                   ? 'bg-green-500/10 text-green-400'
                   : 'bg-red-500/10 text-red-400'
-              }`}
+                }`}
             >
               <div
-                className={`w-1.5 h-1.5 rounded-full ${
-                  isConnected ? 'bg-green-400' : 'bg-red-400'
-                } ${isConnected ? 'animate-pulse' : ''}`}
+                className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-400' : 'bg-red-400'
+                  } ${isConnected ? 'animate-pulse' : ''}`}
               />
               {isConnected ? 'Active' : 'Required'}
             </div>
@@ -316,9 +311,8 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <ChevronDown
-                  className={`w-4 h-4 text-white/40 transition-transform ${
-                    providerDropdownOpen ? 'rotate-180' : ''
-                  }`}
+                  className={`w-4 h-4 text-white/40 transition-transform ${providerDropdownOpen ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
 
@@ -337,31 +331,27 @@ export default function SettingsPage() {
                         <button
                           key={provider.id}
                           onClick={() => handleProviderChange(provider.id)}
-                          className={`w-full flex items-center justify-between p-3 hover:bg-white/[0.04] transition-colors ${
-                            isSelected ? 'bg-white/[0.04]' : ''
-                          }`}
+                          className={`w-full flex items-center justify-between p-3 hover:bg-white/[0.04] transition-colors ${isSelected ? 'bg-white/[0.04]' : ''
+                            }`}
                         >
                           <div className="flex items-center gap-3">
                             <div
-                              className={`w-7 h-7 rounded-lg flex items-center justify-center border ${
-                                isSelected
+                              className={`w-7 h-7 rounded-lg flex items-center justify-center border ${isSelected
                                   ? 'bg-[#FF6363]/10 border-[#FF6363]/30'
                                   : 'bg-white/[0.04] border-white/[0.06]'
-                              }`}
+                                }`}
                             >
                               <span
-                                className={`text-[10px] font-bold ${
-                                  isSelected ? 'text-[#FF6363]' : 'text-white/50'
-                                }`}
+                                className={`text-[10px] font-bold ${isSelected ? 'text-[#FF6363]' : 'text-white/50'
+                                  }`}
                               >
                                 {provider.icon}
                               </span>
                             </div>
                             <div className="text-left">
                               <span
-                                className={`text-sm font-medium ${
-                                  isSelected ? 'text-white' : 'text-white/70'
-                                }`}
+                                className={`text-sm font-medium ${isSelected ? 'text-white' : 'text-white/70'
+                                  }`}
                               >
                                 {provider.label}
                               </span>
@@ -482,11 +472,10 @@ export default function SettingsPage() {
             <button
               onClick={handleSave}
               disabled={saving || !isConnected}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                saving || !isConnected
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${saving || !isConnected
                   ? 'bg-white/[0.04] text-white/30 cursor-not-allowed border border-white/[0.06]'
                   : 'bg-gradient-to-r from-[#FF6363] to-[#ff4444] text-white hover:shadow-lg hover:shadow-[#FF6363]/20 hover:scale-[1.02] active:scale-[0.98]'
-              }`}
+                }`}
             >
               {saving ? (
                 <>
@@ -504,9 +493,8 @@ export default function SettingsPage() {
             {/* Inline status feedback */}
             {saveStatus !== 'idle' && (
               <div
-                className={`flex items-center gap-1.5 text-sm animate-in fade-in duration-300 ${
-                  saveStatus === 'success' ? 'text-green-400' : 'text-red-400'
-                }`}
+                className={`flex items-center gap-1.5 text-sm animate-in fade-in duration-300 ${saveStatus === 'success' ? 'text-green-400' : 'text-red-400'
+                  }`}
               >
                 {saveStatus === 'success' ? (
                   <Check className="w-3.5 h-3.5" />
@@ -534,14 +522,12 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setNotifications(!notifications)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                notifications ? 'bg-[#FF6363]' : 'bg-white/10'
-              }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${notifications ? 'bg-[#FF6363]' : 'bg-white/10'
+                }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  notifications ? 'translate-x-6' : 'translate-x-1'
-                }`}
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${notifications ? 'translate-x-6' : 'translate-x-1'
+                  }`}
               />
             </button>
           </div>
@@ -564,14 +550,12 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={() => setAutoReport(!autoReport)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                autoReport ? 'bg-[#FF6363]' : 'bg-white/10'
-              }`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${autoReport ? 'bg-[#FF6363]' : 'bg-white/10'
+                }`}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  autoReport ? 'translate-x-6' : 'translate-x-1'
-                }`}
+                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${autoReport ? 'translate-x-6' : 'translate-x-1'
+                  }`}
               />
             </button>
           </div>
