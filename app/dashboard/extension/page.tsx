@@ -47,36 +47,17 @@ export default function ExtensionSetupPage() {
       const address = accounts[0]
       setWalletAddress(address)
 
-      // 2. Get nonce
-      const nonceRes = await fetch(`/api/v1/auth/nonce?walletAddress=${address}`)
-      const nonceData = await nonceRes.json()
-
-      if (!nonceData.message) {
-        throw new Error("Gagal mendapatkan nonce")
-      }
-
-      // 3. Sign message
-      const signature: string = await window.ethereum.request({
-        method: "personal_sign",
-        params: [nonceData.message, address],
+      // 2-4. Authenticate via service (nonce → sign → verify)
+      const { authenticateExtension } = await import("@/services/extension-auth-service")
+      const verifyData = await authenticateExtension({
+        walletAddress: address,
+        signMessage: async (message: string, addr: string) => {
+          return window.ethereum!.request({
+            method: "personal_sign",
+            params: [message, addr],
+          })
+        },
       })
-
-      // 4. Verify and get token
-      const verifyRes = await fetch("/api/v1/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          walletAddress: address,
-          signature,
-          message: nonceData.message,
-        }),
-      })
-
-      const verifyData = await verifyRes.json()
-
-      if (!verifyData.success || !verifyData.token) {
-        throw new Error(verifyData.error || "Verifikasi gagal")
-      }
 
       setToken(verifyData.token)
       setExpiresAt(verifyData.expiresAt)

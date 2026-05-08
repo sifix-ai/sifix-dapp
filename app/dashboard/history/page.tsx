@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAccount } from 'wagmi';
 import {
   History,
@@ -18,27 +18,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-
-interface ScanRecord {
-  id: string;
-  from: string;
-  to: string;
-  riskScore: number;
-  riskLevel: string;
-  recommendation: string;
-  reasoning: string | null;
-  threats: string[];
-  confidence: number;
-  rootHash: string | null;
-  storageExplorer: string | null;
-  analyzedAt: string;
-}
-
-interface ScanStats {
-  totalScans: number;
-  avgRiskScore: number;
-  maxRiskScore: number;
-}
+import { useScanHistory, type ScanRecord, type ScanStats } from '@/hooks/use-scan-history';
 
 const RISK_COLORS: Record<string, { bg: string; text: string; border: string; dot: string }> = {
   SAFE: { bg: 'bg-green-500/10', text: 'text-green-400', border: 'border-green-500/20', dot: 'bg-green-500' },
@@ -68,41 +48,14 @@ function shortAddr(addr: string): string {
 
 export default function ScanHistoryPage() {
   const { address, isConnected } = useAccount();
-  const [scans, setScans] = useState<ScanRecord[]>([]);
-  const [stats, setStats] = useState<ScanStats | null>(null);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedScan, setSelectedScan] = useState<ScanRecord | null>(null);
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
-  useEffect(() => {
-    if (!address) {
-      setLoading(false);
-      return;
-    }
-    loadHistory();
-  }, [address, page]);
-
-  async function loadHistory() {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `/api/v1/scan-history?address=${address}&page=${page}&limit=20`
-      );
-      if (res.ok) {
-        const json = await res.json();
-        const data = json.data;
-        setScans(data.scans);
-        setStats(data.stats);
-        setTotalPages(data.pagination.totalPages);
-      }
-    } catch {
-      // silently fail
-    } finally {
-      setLoading(false);
-    }
-  }
+  const { data, isLoading: loading } = useScanHistory(address, page, 20);
+  const scans = data?.scans ?? [];
+  const stats = data?.stats ?? null;
+  const totalPages = data?.pagination?.totalPages ?? 1;
 
   const filteredScans = searchQuery
     ? scans.filter(

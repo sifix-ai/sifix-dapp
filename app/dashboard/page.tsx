@@ -1,42 +1,17 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { Shield, Search, Activity, TrendingUp, AlertTriangle, CheckCircle, ArrowRight, Zap, Trophy, Puzzle } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { useDashboardStats, useRecentThreats } from "@/hooks/use-dashboard"
 
 export default function DashboardPage() {
-  const [statsData, setStatsData] = useState<any>(null)
-  const [threats, setThreats] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchDashboardData()
-  }, [])
-
-  const fetchDashboardData = async () => {
-    try {
-      const [statsRes, threatsRes] = await Promise.all([
-        fetch('/api/v1/stats').catch(() => null),
-        fetch('/api/v1/threats?limit=5').catch(() => null),
-      ])
-
-      if (statsRes?.ok) {
-        const statsJson = await statsRes.json()
-        if (statsJson.success) setStatsData(statsJson.data)
-      }
-      if (threatsRes?.ok) {
-        const threatsJson = await threatsRes.json()
-        if (threatsJson.success) setThreats(threatsJson.data?.reports || threatsJson.data || [])
-      }
-    } catch (err) {
-      console.error('Failed to fetch dashboard data:', err)
-    } finally {
-      setLoading(false)
-    }
-  }
+  const { data: statsData, isLoading: statsLoading } = useDashboardStats()
+  const { data: threats, isLoading: threatsLoading } = useRecentThreats(5)
+  const loading = statsLoading || threatsLoading
 
   const stats = [
     {
@@ -65,7 +40,7 @@ export default function DashboardPage() {
     },
   ]
 
-  const recentActivity = threats.slice(0, 5).map((t: any, i: number) => ({
+  const recentActivity = (threats || []).slice(0, 5).map((t: any, i: number) => ({
     id: t.id || i,
     type: "report" as const,
     address: t.targetAddress ? `${t.targetAddress.slice(0, 6)}...${t.targetAddress.slice(-4)}` : "Unknown",

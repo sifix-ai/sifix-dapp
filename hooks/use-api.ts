@@ -1,10 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { addressSchema, scanRequestSchema, reportThreatSchema } from '@/lib/validations'
 import type { ScanRequest, ReportThreat } from '@/lib/validations'
+import { fetchAISettings, saveAISettings, resetAISettings } from '@/services/settings-service'
+import { fetchScanHistory } from '@/services/scan-history-service'
+import { authenticateExtension } from '@/services/extension-auth-service'
+import { fetchDashboardData, fetchPlatformStats, fetchLeaderboard } from '@/services/dashboard-service'
+import type { ScanHistoryResponse } from '@/services/scan-history-service'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'
 
-// Helper to extract error message
+// ─── Helpers ────────────────────────────────────────────────────────────────
+
 function getErrorMessage(error: unknown): string {
   if (error instanceof Error) return error.message
   if (typeof error === 'string') return error
@@ -14,7 +20,6 @@ function getErrorMessage(error: unknown): string {
   return 'An unexpected error occurred'
 }
 
-// Helper for API calls with better error handling
 async function apiCall<T>(url: string, options?: RequestInit): Promise<T> {
   try {
     const response = await fetch(url, {
@@ -26,13 +31,11 @@ async function apiCall<T>(url: string, options?: RequestInit): Promise<T> {
     })
 
     if (!response.ok) {
-      // Try to parse error response
       let errorMessage = `Request failed with status ${response.status}`
       try {
         const errorData = await response.json()
         errorMessage = errorData?.error?.message || errorData?.message || errorMessage
       } catch {
-        // If JSON parsing fails, use status text
         errorMessage = response.statusText || errorMessage
       }
       throw new Error(errorMessage)
@@ -47,7 +50,21 @@ async function apiCall<T>(url: string, options?: RequestInit): Promise<T> {
   }
 }
 
-// Scan address
+// ─── Query Key Factories ────────────────────────────────────────────────────
+
+export const queryKeys = {
+  analytics: ['analytics'] as const,
+  leaderboard: (limit?: number) => ['leaderboard', limit] as const,
+  threats: (limit?: number) => ['threats', limit] as const,
+  reputation: (address: string) => ['reputation', address] as const,
+  aiSettings: (address: string) => ['settings', 'ai-provider', address] as const,
+  scanHistory: (address: string, page?: number, limit?: number) =>
+    ['scan-history', address, page, limit] as const,
+  dashboardStats: ['dashboard', 'stats'] as const,
+}
+
+// ─── Scan / Address Hooks ───────────────────────────────────────────────────
+
 export function useScanAddress() {
   return useMutation({
     mutationFn: async (data: ScanRequest) => {
@@ -66,10 +83,9 @@ export function useScanAddress() {
   })
 }
 
-// Get address reputation
 export function useAddressReputation(address: string | undefined) {
   return useQuery({
-    queryKey: ['reputation', address],
+    queryKey: queryKeys.reputation(address ?? ''),
     queryFn: async () => {
       try {
         if (!address) throw new Error('Address is required')
@@ -82,14 +98,15 @@ export function useAddressReputation(address: string | undefined) {
     enabled: !!address,
     retry: 2,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
   })
 }
 
-// Get threat feed
+// ─── Threats Hooks ──────────────────────────────────────────────────────────
+
 export function useThreatFeed(limit = 10) {
   return useQuery({
-    queryKey: ['threats', limit],
+    queryKey: queryKeys.threats(limit),
     queryFn: async () => {
       try {
         const result = await apiCall(`${API_BASE_URL}/api/v1/threats?limit=${limit}`)
@@ -98,22 +115,20 @@ export function useThreatFeed(limit = 10) {
         throw new Error(getErrorMessage(error))
       }
     },
-    refetchInterval: 30000, // Refetch every 30 seconds
+    refetchInterval: 30000,
     retry: 2,
     retryDelay: 2000,
-    staleTime: 10000, // 10 seconds
+    staleTime: 10000,
   })
 }
 
-// Alias for useThreatFeed
 export function useThreats(limit = 50) {
   return useThreatFeed(limit)
 }
 
-// Report threat
 export function useReportThreat() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (data: ReportThreat) => {
       try {
@@ -127,7 +142,6 @@ export function useReportThreat() {
       }
     },
     onSuccess: () => {
-      // Invalidate threats query to refetch
       queryClient.invalidateQueries({ queryKey: ['threats'] })
     },
     retry: 1,
@@ -135,39 +149,135 @@ export function useReportThreat() {
   })
 }
 
-// Get analytics stats
+// ─── Analytics / Leaderboard Hooks ──────────────────────────────────────────
+
 export function useAnalyticsStats() {
   return useQuery({
-    queryKey: ['analytics'],
-    queryFn: async () => {
-      try {
-        return await apiCall(`${API_BASE_URL}/api/v1/stats`)
-      } catch (error) {
-        throw new Error(getErrorMessage(error))
-      }
-    },
-    refetchInterval: 60000, // Refetch every minute
+    queryKey: queryKeys.analytics,
+    queryFn: fetchPlatformStats,
+    refetchInterval: 60000,
     retry: 2,
     retryDelay: 2000,
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
   })
 }
 
-// Get leaderboard
 export function useLeaderboard(limit = 10) {
   return useQuery({
-    queryKey: ['leaderboard', limit],
-    queryFn: async () => {
-      try {
-        const result = await apiCall(`${API_BASE_URL}/api/v1/leaderboard?limit=${limit}`)
-        return (result as any).success ? (result as any).data : result
-      } catch (error) {
-        throw new Error(getErrorMessage(error))
-      }
-    },
-    refetchInterval: 60000, // Refetch every minute
+    queryKey: queryKeys.leaderboard(limit),
+    queryFn: () => fetchLeaderboard(limit),
+    refetchInterval: 60000,
     retry: 2,
     retryDelay: 2000,
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
+  })
+}
+
+// ─── Dashboard Hook (combined stats + recent threats) ────────────────────────
+
+export interface DashboardData {
+  stats: {
+    totalAddresses: number
+    totalReports: number
+    totalScans: number
+    criticalThreats: number
+    recentReports: number
+  } | null
+  recentThreats: any[]
+}
+
+export function useDashboardData() {
+  return useQuery<DashboardData>({
+    queryKey: queryKeys.dashboardStats,
+    queryFn: async () => {
+      const [statsRes, threatsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/api/v1/stats`).catch(() => null),
+        fetch(`${API_BASE_URL}/api/v1/threats?limit=5`).catch(() => null),
+      ])
+
+      let stats: DashboardData['stats'] = null
+      let recentThreats: any[] = []
+
+      if (statsRes?.ok) {
+        const statsJson = await statsRes.json()
+        if (statsJson.success) stats = statsJson.data
+      }
+      if (threatsRes?.ok) {
+        const threatsJson = await threatsRes.json()
+        if (threatsJson.success) {
+          recentThreats = threatsJson.data?.reports || threatsJson.data || []
+        }
+      }
+
+      return { stats, recentThreats }
+    },
+    staleTime: 30000,
+    refetchInterval: 60000,
+    retry: 1,
+  })
+}
+
+// ─── Settings Hooks (BYOAI) ─────────────────────────────────────────────────
+
+export function useAISettings(address: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.aiSettings(address ?? ''),
+    queryFn: () => fetchAISettings(address!),
+    enabled: !!address,
+    staleTime: 60000,
+  })
+}
+
+export function useSaveAISettings() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: saveAISettings,
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.aiSettings(variables.address),
+      })
+    },
+  })
+}
+
+export function useResetAISettings() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: resetAISettings,
+    onSuccess: (_data, address) => {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.aiSettings(address),
+      })
+    },
+  })
+}
+
+// ─── Scan History Hooks ─────────────────────────────────────────────────────
+
+export function useScanHistory(
+  address: string | undefined,
+  page = 1,
+  limit = 20,
+) {
+  return useQuery<ScanHistoryResponse>({
+    queryKey: queryKeys.scanHistory(address ?? '', page, limit),
+    queryFn: () => fetchScanHistory({ address: address!, page, limit }),
+    enabled: !!address,
+    staleTime: 15000,
+  })
+}
+
+// ─── Extension Auth Hook ────────────────────────────────────────────────────
+
+export function useExtensionAuth() {
+  return useMutation({
+    mutationFn: async (params: {
+      walletAddress: string
+      signMessage: (message: string, address: string) => Promise<string>
+    }) => {
+      return authenticateExtension(params)
+    },
   })
 }

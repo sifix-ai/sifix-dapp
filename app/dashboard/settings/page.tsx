@@ -21,6 +21,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { useAIProviderSettings, useUpdateAIProviderSettings } from '@/hooks/use-settings';
 
 // ─── AI Provider Types ───────────────────────────────────────────────────────
 
@@ -92,37 +93,28 @@ export default function SettingsPage() {
   const [model, setModel] = useState(PROVIDERS[0].defaultModel);
   const [showApiKey, setShowApiKey] = useState(false);
   const [providerDropdownOpen, setProviderDropdownOpen] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [saveMessage, setSaveMessage] = useState('');
-  const [settingsLoaded, setSettingsLoaded] = useState(false);
 
-  // Load saved AI provider settings when wallet connects
+  // Load saved AI provider settings via TanStack Query
+  const { data: savedSettings, isLoading: settingsLoading } = useAIProviderSettings(address ?? undefined)
+
+  // Apply loaded settings to local state (once)
   useEffect(() => {
-    if (!address) return;
-    async function loadSettings() {
-      try {
-        const res = await fetch(`/api/v1/settings/ai-provider?address=${address}`);
-        if (res.ok) {
-          const json = await res.json();
-          const data = json.data; // apiSuccess wraps in { success, data }
-          if (data?.aiProvider) {
-            // DB stores "0g-compute" but frontend uses "0g_compute"
-            const provider = data.aiProvider === '0g-compute' ? '0g_compute' : data.aiProvider;
-            setSelectedProvider(provider as AIProvider);
-          }
-          if (data?.aiApiKey) setApiKey(data.aiApiKey);
-          if (data?.aiBaseUrl) setBaseUrl(data.aiBaseUrl);
-          if (data?.aiModel) setModel(data.aiModel);
-        }
-      } catch {
-        // Settings not loaded — defaults remain
-      } finally {
-        setSettingsLoaded(true);
-      }
+    if (!savedSettings) return
+    if (savedSettings.aiProvider) {
+      const provider = savedSettings.aiProvider === '0g-compute' ? '0g_compute' : savedSettings.aiProvider;
+      setSelectedProvider(provider as AIProvider);
     }
-    loadSettings();
-  }, [address]);
+    if (savedSettings.aiApiKey) setApiKey(savedSettings.aiApiKey);
+    if (savedSettings.aiBaseUrl) setBaseUrl(savedSettings.aiBaseUrl);
+    if (savedSettings.aiModel) setModel(savedSettings.aiModel);
+  }, [savedSettings])
+
+  // Save mutation
+  const updateSettingsMutation = useUpdateAIProviderSettings()
+
+  const saving = updateSettingsMutation.isPending
 
   // Handle provider change — reset fields to provider defaults
   const handleProviderChange = useCallback((provider: AIProvider) => {
@@ -133,54 +125,38 @@ export default function SettingsPage() {
     setProviderDropdownOpen(false);
   }, []);
 
-  // Save AI provider settings
+  // Save AI provider settings via mutation
   const handleSave = useCallback(async () => {
     if (!address) return;
-    setSaving(true);
     setSaveStatus('idle');
     setSaveMessage('');
 
+    // Frontend uses "0g_compute" but DB/API uses "0g-compute"
+    const apiProvider = selectedProvider === '0g_compute' ? '0g-compute' : selectedProvider;
+
     try {
-      // Frontend uses "0g_compute" but DB/API uses "0g-compute"
-      const apiProvider = selectedProvider === '0g_compute' ? '0g-compute' : selectedProvider;
-
-      const res = await fetch('/api/v1/settings/ai-provider', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          address,
-          aiProvider: apiProvider,
-          aiApiKey: apiKey || undefined,
-          aiBaseUrl: baseUrl || undefined,
-          aiModel: model || undefined,
-        }),
-      });
-
-      if (res.ok) {
-        setSaveStatus('success');
-        setSaveMessage('AI provider settings saved successfully');
-      } else {
-        const json = await res.json().catch(() => ({}));
-        // Error shape: { success: false, error: { code, message } }
-        const errMsg = json?.error?.message || json?.error?.code || 'Failed to save settings';
-        setSaveStatus('error');
-        setSaveMessage(errMsg);
-      }
-    } catch {
+      await updateSettingsMutation.mutateAsync({
+        address,
+        aiProvider: apiProvider,
+        aiApiKey: apiKey || undefined,
+        aiBaseUrl: baseUrl || undefined,
+        aiModel: model || undefined,
+      })
+      setSaveStatus('success');
+      setSaveMessage('AI provider settings saved successfully');
+    } catch (err: any) {
+      const errMsg = err?.message || 'Failed to save settings';
       setSaveStatus('error');
-      setSaveMessage('Network error — please try again');
+      setSaveMessage(errMsg);
     } finally {
-      setSaving(false);
       setTimeout(() => {
         setSaveStatus('idle');
         setSaveMessage('');
       }, 4000);
     }
-  }, [address, selectedProvider, apiKey, baseUrl, model]);
+  }, [address, selectedProvider, apiKey, baseUrl, model, updateSettingsMutation]);
 
   const currentProviderConfig = PROVIDERS.find((p) => p.id === selectedProvider) || PROVIDERS[0];
-
-  console.log(currentProviderConfig)
 
   // Guard: Wallet not connected
   if (!isConnected) {

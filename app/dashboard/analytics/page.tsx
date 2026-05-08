@@ -1,36 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { TrendingUp, Activity, AlertTriangle, Shield, Users } from 'lucide-react';
+import { TrendingUp, Activity, AlertTriangle, Shield, Users, Loader2 } from 'lucide-react';
+import { useAnalyticsStats } from '@/hooks/use-analytics';
+import { useLeaderboard } from '@/hooks/use-analytics';
 
 export default function AnalyticsPage() {
-  const [stats, setStats] = useState<any>(null);
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
-    setLoading(true);
-    try {
-      const [statsRes, leaderboardRes] = await Promise.all([
-        fetch('/api/v1/stats'),
-        fetch('/api/v1/leaderboard'),
-      ]);
-
-      const statsData = await statsRes.json();
-      const leaderboardData = await leaderboardRes.json();
-
-      if (statsData.success) setStats(statsData.data);
-      if (leaderboardData.success) setLeaderboard(leaderboardData.data);
-    } catch (err) {
-      console.error('Failed to fetch analytics:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: stats, isLoading: statsLoading, error: statsError } = useAnalyticsStats();
+  const { data: leaderboard, isLoading: leaderboardLoading } = useLeaderboard(50);
+  const loading = statsLoading || leaderboardLoading;
 
   return (
     <div className="space-y-8">
@@ -106,15 +83,15 @@ export default function AnalyticsPage() {
               <h2 className="text-xl font-semibold text-white">Top Reporters</h2>
             </div>
 
-            {leaderboard.length === 0 ? (
+            {!leaderboard || leaderboard.length === 0 ? (
               <div className="text-center py-8 text-white/60">
                 No reporters yet
               </div>
             ) : (
               <div className="space-y-3">
-                {leaderboard.map((reporter, index) => (
+                {leaderboard.map((reporter: any, index: number) => (
                   <div
-                    key={reporter.address}
+                    key={reporter.address || index}
                     className="flex items-center justify-between p-4 bg-white/[0.02] border border-white/[0.05] rounded-lg hover:border-white/[0.1] transition-colors"
                   >
                     <div className="flex items-center gap-4">
@@ -128,15 +105,15 @@ export default function AnalyticsPage() {
                       </div>
                       <div>
                         <div className="text-white font-mono text-sm">
-                          {reporter.address.slice(0, 10)}...{reporter.address.slice(-8)}
+                          {reporter.address ? `${reporter.address.slice(0, 10)}...${reporter.address.slice(-8)}` : 'Unknown'}
                         </div>
                         <div className="text-xs text-white/40">
-                          {reporter.reportCount} reports
+                          {reporter.reportCount ?? reporter.reportsSubmitted ?? 0} reports
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-white">{reporter.totalScore}</div>
+                      <div className="text-lg font-bold text-white">{reporter.totalScore ?? reporter.reporterScore ?? 0}</div>
                       <div className="text-xs text-white/40">reputation</div>
                     </div>
                   </div>
