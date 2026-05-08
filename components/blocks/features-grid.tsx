@@ -1,21 +1,80 @@
-"use client"
+'use client';
 
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
-import { Shield, Lock, Eye, LucideIcon } from 'lucide-react'
-import { ReactNode } from 'react'
+import { Shield, Brain, Zap, Database, Users, Lock, Eye, MessageSquare, DollarSign, AlertTriangle, LucideIcon } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
+import { FeatureCard } from '@/components/ui/grid-feature-cards';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
+import { ReactNode } from 'react';
 
-export function FeaturesAdvanced() {
+const coreFeatures = [
+  {
+    title: 'Real-time Protection',
+    icon: Shield,
+    description: 'Intercept and analyze transactions before execution to prevent malicious interactions.',
+  },
+  {
+    title: 'AI-Powered Analysis',
+    icon: Brain,
+    description: 'GPT-4 evaluates transaction risks and explains potential threats in plain language.',
+  },
+  {
+    title: 'Transaction Simulation',
+    icon: Zap,
+    description: 'Safe testing environment simulates transactions to reveal hidden risks before execution.',
+  },
+  {
+    title: '0G Storage',
+    icon: Database,
+    description: 'Decentralized threat intelligence stored permanently on 0G Chain for community access.',
+  },
+  {
+    title: 'Community-Driven',
+    icon: Users,
+    description: 'Collaborative security where users contribute to and benefit from shared threat data.',
+  },
+  {
+    title: 'On-chain Reputation',
+    icon: Lock,
+    description: 'Transparent reputation system tracks malicious addresses and rewards security contributors.',
+  },
+];
+
+export default function FeaturesGrid() {
   return (
-    <section className="bg-canvas py-32 relative overflow-visible">
+    <section id="features" className="py-16 md:py-32 relative bg-canvas overflow-visible">
       {/* Atmospheric glow - blue accent - subtle */}
       <div className="absolute inset-0 overflow-visible pointer-events-none">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1200px] h-[1200px] bg-accent-blue-glow rounded-full blur-3xl opacity-15" />
       </div>
 
-      <div className="mx-auto max-w-6xl px-8 relative z-10">
-        <div className="mx-auto grid gap-6 lg:grid-cols-2">
-          <FeatureCard>
+      <div className="mx-auto w-full max-w-6xl space-y-16 px-4 md:px-8 relative z-10">
+        {/* Header Section */}
+        <AnimatedContainer className="mx-auto max-w-3xl text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full mb-8">
+            <span className="text-xs font-medium text-body tracking-wide">FEATURES</span>
+          </div>
+          <h2 className="font-display text-4xl md:text-5xl lg:text-6xl leading-tight tracking-tight text-ink mb-6 font-normal">
+            Complete Protection
+          </h2>
+          <p className="text-muted-foreground text-base md:text-lg tracking-wide text-balance">
+            Everything you need to stay safe in Web3, powered by AI and decentralized storage.
+          </p>
+        </AnimatedContainer>
+
+        {/* Core Features Grid */}
+        <AnimatedContainer
+          delay={0.2}
+          className="grid grid-cols-1 divide-x divide-y divide-dashed border border-dashed sm:grid-cols-2 md:grid-cols-3"
+        >
+          {coreFeatures.map((feature, i) => (
+            <FeatureCard key={i} feature={feature} />
+          ))}
+        </AnimatedContainer>
+
+        {/* Advanced Features Cards */}
+        <AnimatedContainer delay={0.4} className="grid gap-6 lg:grid-cols-2">
+          <FeatureCardAdvanced>
             <CardHeader className="pb-3">
               <CardHeading
                 icon={Shield}
@@ -35,9 +94,9 @@ export function FeaturesAdvanced() {
                 />
               </div>
             </div>
-          </FeatureCard>
+          </FeatureCardAdvanced>
 
-          <FeatureCard>
+          <FeatureCardAdvanced>
             <CardHeader className="pb-3">
               <CardHeading
                 icon={Lock}
@@ -59,10 +118,10 @@ export function FeaturesAdvanced() {
                 </div>
               </div>
             </CardContent>
-          </FeatureCard>
+          </FeatureCardAdvanced>
 
-          <FeatureCard className="p-8 lg:col-span-2">
-            <p className="mx-auto my-6 max-w-2xl text-balance text-center text-3xl font-normal text-ink leading-tight">
+          <FeatureCardAdvanced className="p-8 lg:col-span-2">
+            <p className="mx-auto my-6 max-w-2xl text-balance text-center text-2xl md:text-3xl font-normal text-ink leading-tight">
               Smart threat detection with automated alerts for suspicious transactions.
             </p>
             <div className="flex justify-center gap-6 overflow-hidden">
@@ -84,24 +143,65 @@ export function FeaturesAdvanced() {
                 className="hidden sm:block"
               />
             </div>
-          </FeatureCard>
-        </div>
+          </FeatureCardAdvanced>
+        </AnimatedContainer>
+
+        {/* Bottom badges */}
+        <AnimatedContainer delay={0.6} className="flex flex-wrap justify-center gap-3">
+          <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
+            Free to use
+          </div>
+          <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
+            Open source
+          </div>
+          <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
+            Privacy-first
+          </div>
+        </AnimatedContainer>
       </div>
     </section>
-  )
+  );
 }
 
-interface FeatureCardProps {
-  children: ReactNode
-  className?: string
+// Animation Container Component
+type ViewAnimationProps = {
+  delay?: number;
+  className?: React.ComponentProps<typeof motion.div>['className'];
+  children: React.ReactNode;
+};
+
+function AnimatedContainer({ className, delay = 0.1, children }: ViewAnimationProps) {
+  const shouldReduceMotion = useReducedMotion();
+
+  if (shouldReduceMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
+  return (
+    <motion.div
+      initial={{ filter: 'blur(4px)', translateY: -8, opacity: 0 }}
+      whileInView={{ filter: 'blur(0px)', translateY: 0, opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay, duration: 0.8 }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
 }
 
-const FeatureCard = ({ children, className }: FeatureCardProps) => (
+// Advanced Feature Card Components
+interface FeatureCardAdvancedProps {
+  children: ReactNode;
+  className?: string;
+}
+
+const FeatureCardAdvanced = ({ children, className }: FeatureCardAdvancedProps) => (
   <Card className={cn('group relative rounded-lg shadow-none border-hairline-strong bg-surface-card', className)}>
     <CardDecorator />
     {children}
   </Card>
-)
+);
 
 const CardDecorator = () => (
   <>
@@ -110,12 +210,12 @@ const CardDecorator = () => (
     <span className="absolute -bottom-px -left-px block size-2 border-b-2 border-l-2 border-accent-blue"></span>
     <span className="absolute -bottom-px -right-px block size-2 border-b-2 border-r-2 border-accent-blue"></span>
   </>
-)
+);
 
 interface CardHeadingProps {
-  icon: LucideIcon
-  title: string
-  description: string
+  icon: LucideIcon;
+  title: string;
+  description: string;
 }
 
 const CardHeading = ({ icon: Icon, title, description }: CardHeadingProps) => (
@@ -126,16 +226,16 @@ const CardHeading = ({ icon: Icon, title, description }: CardHeadingProps) => (
     </span>
     <p className="mt-8 text-2xl font-medium text-ink leading-tight">{description}</p>
   </div>
-)
+);
 
 interface CircleConfig {
-  pattern: 'none' | 'border' | 'primary' | 'blue'
+  pattern: 'none' | 'border' | 'primary' | 'blue';
 }
 
 interface CircularUIProps {
-  label: string
-  circles: CircleConfig[]
-  className?: string
+  label: string;
+  circles: CircleConfig[];
+  className?: string;
 }
 
 const CircularUI = ({ label, circles, className }: CircularUIProps) => (
@@ -160,4 +260,4 @@ const CircularUI = ({ label, circles, className }: CircularUIProps) => (
     </div>
     <span className="mt-1.5 block text-center text-sm text-charcoal">{label}</span>
   </div>
-)
+);

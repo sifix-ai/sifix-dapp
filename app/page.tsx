@@ -2,23 +2,18 @@
 
 import { Shield } from "lucide-react"
 import { Hero2 } from '@/components/ui/hero-2'
-import { StatsSection } from '@/components/blocks/stats-section'
 import { ProblemSection } from '@/components/blocks/problem-section'
 import { SolutionSection } from '@/components/blocks/solution-section'
 import { PipelineSection } from '@/components/blocks/pipeline-flowchart'
-import { FeaturesComplete } from '@/components/blocks/features-complete'
-import { FeaturesAdvanced } from '@/components/blocks/features-advanced'
+import FeaturesGrid from '@/components/blocks/features-grid'
 import { WhySifixSection } from '@/components/blocks/why-sifix'
 import { BackgroundPaths } from "@/components/ui/background-paths"
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-canvas">
-      {/* Hero Section */}
+      {/* Hero Section with Integrated Stats */}
       <Hero2 />
-
-      {/* Stats Section */}
-      <StatsSection />
 
       {/* Problem Section */}
       <ProblemSection />
@@ -29,11 +24,8 @@ export default function Home() {
       {/* Pipeline Section with Animated Beam */}
       <PipelineSection />
 
-      {/* Features Section */}
-      <FeaturesComplete />
-
-      {/* Advanced Features Section */}
-      <FeaturesAdvanced />
+      {/* Features Section - Unified Grid & Advanced */}
+      <FeaturesGrid />
 
       {/* Why Choose SIFIX Section */}
       <WhySifixSection />

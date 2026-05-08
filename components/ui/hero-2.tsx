@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ArrowRight, Menu, X, Shield } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ConnectButton } from "@/components/connect-button";
 import { useAccount } from "wagmi";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 
 // Animated background paths component
 function FloatingPaths({ position }: { position: number }) {
@@ -175,7 +175,7 @@ export function Hero2() {
             >
               Wallet security
               <br />
-              for developers
+              for everyone
             </motion.h1>
 
             {/* Subtitle - Inter body */}
@@ -232,9 +232,68 @@ export function Hero2() {
                 <span>Powered by GPT-4</span>
               </div>
             </motion.div>
+
+            {/* Stats Grid - Integrated */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.5 }}
+              className="mt-24 grid grid-cols-2 lg:grid-cols-4 gap-8"
+            >
+              <StatsCard value="50K+" label="Transactions Analyzed" delay={0.6} />
+              <StatsCard value="1.2K+" label="Threats Blocked" delay={0.7} />
+              <StatsCard value="10K+" label="Protected Wallets" delay={0.8} />
+              <StatsCard value="99.9%" label="Detection Accuracy" delay={0.9} />
+            </motion.div>
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+// Stats Card Component
+function StatsCard({ value, label, delay }: { value: string; label: string; delay: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const isInView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (isInView) {
+      let startTime: number;
+      const numericValue = parseInt(value.replace(/[^\d]/g, ""));
+      const duration = 2000;
+
+      const animate = (currentTime: number) => {
+        if (!startTime) startTime = currentTime;
+        const progress = Math.min((currentTime - startTime) / duration, 1);
+
+        setCount(Math.floor(progress * numericValue));
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    }
+  }, [isInView, value]);
+
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay }}
+      className="text-left"
+    >
+      <div className="text-4xl md:text-5xl font-normal text-ink mb-2 tracking-tight">
+        {count}
+        {value.replace(/[\d]/g, "")}
+      </div>
+      <div className="text-sm text-charcoal">
+        {label}
+      </div>
+    </motion.div>
   );
 }

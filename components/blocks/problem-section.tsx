@@ -2,6 +2,13 @@
 
 import { motion } from "framer-motion"
 import { AlertTriangle, Ghost, TrendingDown, Receipt } from "lucide-react"
+import dynamic from "next/dynamic"
+
+// Dynamic import to avoid SSR hydration issues
+const WorldMap = dynamic(
+  () => import("@/components/ui/world-map").then((mod) => ({ default: mod.WorldMap })),
+  { ssr: false }
+)
 
 export function ProblemSection() {
   const threats = [
@@ -27,8 +34,46 @@ export function ProblemSection() {
     },
   ]
 
+  // Threat connections showing global attack patterns
+  const threatConnections = [
+    {
+      start: { lat: 37.7749, lng: -122.4194, label: "SF" },
+      end: { lat: 40.7128, lng: -74.0060, label: "NYC" },
+    },
+    {
+      start: { lat: 51.5074, lng: -0.1278, label: "London" },
+      end: { lat: 39.9042, lng: 116.4074, label: "Beijing" },
+    },
+    {
+      start: { lat: 35.6762, lng: 139.6503, label: "Tokyo" },
+      end: { lat: 1.3521, lng: 103.8198, label: "Singapore" },
+    },
+    {
+      start: { lat: -23.5505, lng: -46.6333, label: "São Paulo" },
+      end: { lat: 51.5074, lng: -0.1278, label: "London" },
+    },
+    {
+      start: { lat: 19.0760, lng: 72.8777, label: "Mumbai" },
+      end: { lat: -1.2921, lng: 36.8219, label: "Nairobi" },
+    },
+  ]
+
   return (
-    <section className="py-32 relative bg-canvas">
+    <section className="py-32 relative bg-canvas overflow-hidden">
+      {/* World Map Background */}
+      <div className="absolute inset-0">
+        <WorldMap
+          dots={threatConnections}
+          lineColor="#ef4444"
+          showLabels={false}
+          animationDuration={3}
+          loop={true}
+        />
+      </div>
+
+      {/* Dark overlay to make content readable */}
+      <div className="absolute inset-0 bg-gradient-to-b from-canvas/90 via-canvas/70 to-canvas/90 pointer-events-none" />
+
       {/* Atmospheric glow - red accent - subtle */}
       <div className="absolute inset-0 overflow-visible pointer-events-none">
         <div className="absolute top-1/2 -translate-y-1/2 left-0 w-[1000px] h-[1000px] bg-accent-red-glow rounded-full blur-3xl opacity-15" />
@@ -36,24 +81,35 @@ export function ProblemSection() {
 
       <div className="container mx-auto px-8 relative z-10">
         <div className="max-w-6xl mx-auto">
-          {/* Section Header - Resend Style */}
+          {/* Section Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="mb-16"
+            className="mb-16 text-center"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full mb-8">
               <AlertTriangle className="w-4 h-4 text-accent-red" />
               <span className="text-xs font-medium text-body tracking-wide">THE PROBLEM</span>
             </div>
-            <h2 className="font-display text-[76.8px] leading-[1.0] tracking-[-0.768px] text-ink mb-6 font-normal">
-              Web3 is a minefield
+            <h2 className="font-display text-4xl md:text-5xl lg:text-[64px] leading-[1.1] tracking-tight text-ink mb-6 font-normal">
+              Web3 is a <span className="text-accent-red">global minefield</span>
             </h2>
-            <p className="text-lg text-body max-w-2xl">
-              Every day, hackers steal millions through sophisticated attacks. Even experienced users fall victim.
+            <p className="text-lg text-body mb-8 leading-relaxed max-w-3xl mx-auto">
+              Every day, hackers steal millions through sophisticated attacks targeting users worldwide. Even experienced crypto users fall victim to these evolving threats.
             </p>
+            {/* <div className="flex flex-wrap justify-center gap-3">
+              <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
+                🌍 Global Threat
+              </div>
+              <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
+                💰 $2B+ Stolen in 2024
+              </div>
+              <div className="px-4 py-2 bg-surface-elevated border border-hairline-strong rounded-full text-xs text-body">
+                ⚠️ 24/7 Risk
+              </div>
+            </div> */}
           </motion.div>
 
           {/* Threat Cards - Feature Card Style */}
