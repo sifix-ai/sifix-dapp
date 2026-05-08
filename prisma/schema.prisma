@@ -237,3 +237,24 @@ model ExtensionSession {
   @@index([expiresAt])
   @@map("extension_sessions")
 }
+
+model ScanHistory {
+  id            String   @id @default(cuid())
+  fromAddress   String
+  toAddress     String
+  riskScore     Int
+  riskLevel     String   // SAFE | LOW | MEDIUM | HIGH | CRITICAL
+  recommendation String  // BLOCK | WARN | ALLOW
+  reasoning     String?
+  threats       String?  // JSON array stored as string
+  confidence    Float    @default(0)
+  rootHash      String?  // 0G Storage root hash
+  storageExplorer String? // 0G Storage explorer URL
+  analyzedAt    DateTime @default(now())
+
+  @@index([fromAddress])
+  @@index([toAddress])
+  @@index([riskLevel])
+  @@index([analyzedAt])
+  @@map("scan_history")
+}

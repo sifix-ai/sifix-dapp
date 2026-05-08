@@ -3,6 +3,10 @@ import { SecurityAgent } from "@sifix/agent"
 import type { Address, Hash } from "viem"
 import { prisma } from "@/lib/prisma"
 import { verifyExtensionAuth } from "@/lib/extension-auth"
+import { PrismaThreatIntel } from "@/lib/threat-intel"
+
+// Singleton threat intel provider (shared across all agent instances)
+const threatIntel = new PrismaThreatIntel()
 
 // Singleton agent instances (reused across requests)
 let defaultAgent: SecurityAgent | null = null
@@ -25,6 +29,7 @@ function getDefaultAgent(): SecurityAgent {
         privateKey: process.env.STORAGE_PRIVATE_KEY,
         mockMode: process.env.STORAGE_MOCK_MODE === "true",
       },
+      threatIntel,
     })
   }
   return defaultAgent
@@ -46,6 +51,7 @@ async function getComputeAgent(): Promise<SecurityAgent> {
         privateKey: process.env.STORAGE_PRIVATE_KEY,
         mockMode: process.env.STORAGE_MOCK_MODE === "true",
       },
+      threatIntel,
     })
     await computeAgent.init()
   }
@@ -104,6 +110,7 @@ export async function POST(request: NextRequest) {
             privateKey: process.env.STORAGE_PRIVATE_KEY,
             mockMode: process.env.STORAGE_MOCK_MODE === "true",
           },
+          threatIntel,
         })
       } else {
         agent = new SecurityAgent({
@@ -118,6 +125,7 @@ export async function POST(request: NextRequest) {
             privateKey: process.env.STORAGE_PRIVATE_KEY,
             mockMode: process.env.STORAGE_MOCK_MODE === "true",
           },
+          threatIntel,
         })
       }
     } else {

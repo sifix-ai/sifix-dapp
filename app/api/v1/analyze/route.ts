@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
 import { SecurityAgent } from "@sifix/agent"
 import type { Address, Hash } from "viem"
+import { PrismaThreatIntel } from "@/lib/threat-intel"
+
+// Singleton threat intel provider
+const threatIntel = new PrismaThreatIntel()
 
 // Singleton agent — 0G Compute if configured, else fallback to AI_API_KEY
 let agentInstance: SecurityAgent | null = null
@@ -21,9 +25,10 @@ async function getAgent(): Promise<SecurityAgent> {
           privateKey: process.env.STORAGE_PRIVATE_KEY,
           mockMode: process.env.STORAGE_MOCK_MODE === "true",
         },
+        threatIntel,
       })
       await agentInstance.init()
-      console.log("[API] Agent initialized with 0G Compute")
+      console.log("[API] Agent initialized with 0G Compute + Threat Intel")
     } else {
       agentInstance = new SecurityAgent({
         rpcUrl: process.env.NEXT_PUBLIC_ZG_RPC_URL || "https://evmrpc-testnet.0g.ai",
@@ -37,8 +42,9 @@ async function getAgent(): Promise<SecurityAgent> {
           privateKey: process.env.STORAGE_PRIVATE_KEY,
           mockMode: process.env.STORAGE_MOCK_MODE === "true",
         },
+        threatIntel,
       })
-      console.log("[API] Agent initialized with fallback AI provider")
+      console.log("[API] Agent initialized with fallback AI + Threat Intel")
     }
   }
   return agentInstance

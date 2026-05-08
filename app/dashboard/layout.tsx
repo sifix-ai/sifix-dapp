@@ -17,7 +17,8 @@ import {
   Home,
   Menu,
   X,
-  Sparkles
+  Sparkles,
+  History
 } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { cn } from "@/lib/utils"
@@ -42,6 +43,12 @@ const navigation = [
     name: "Threat Feed",
     href: "/dashboard/threats",
     icon: Activity,
+    current: false,
+  },
+  {
+    name: "Scan History",
+    href: "/dashboard/history",
+    icon: History,
     current: false,
   },
   {
