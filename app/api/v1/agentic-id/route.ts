@@ -6,8 +6,10 @@ import {
   AGENTIC_ID_ABI,
 } from '@/config/contracts'
 import { apiSuccess, errors, withErrorHandler } from '@/lib/api-response'
-import { isAuthorizedForSifixAgent, authorizeUserServerSide, getMintFee, getConfiguredAgenticTokenId } from '@/lib/agentic-id'
+import { isAuthorizedForSifixAgent, authorizeUserServerSide, getMintFee, getConfiguredAgenticTokenId, isTokenOwner } from '@/lib/agentic-id'
 import { readFullAgentProfile } from '@/lib/agentic-id-client'
+import { isValidEthereumAddress } from '@/lib/address-validation'
+import { verifyApiAuth } from '@/lib/extension-auth'
 
 export const GET = withErrorHandler(async () => {
   const tokenId = getConfiguredAgenticTokenId()
@@ -33,8 +35,16 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     user?: string
     tokenId?: string
   }
+
+  // All POST actions require auth
+  const auth = await verifyApiAuth()
+  if (!auth.authorized) {
+    return errors.unauthorized(auth.error)
+  }
+
   if (action === 'check') {
     if (!user) return errors.validation('Missing field: user')
+    if (!isValidEthereumAddress(user)) return errors.invalidAddress()
     const result = await isAuthorizedForSifixAgent(user as Address)
     return apiSuccess(result)
   }
@@ -44,6 +54,15 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
       : getConfiguredAgenticTokenId()
     if (!tokenId) return errors.validation('tokenId is required (no default configured)')
     if (!user) return errors.validation('Missing field: user')
+    if (!isValidEthereumAddress(user)) return errors.invalidAddress()
+
+    // Owner-only check: only the token owner can authorize users
+    const authenticatedWallet = (auth.walletAddress ?? '').toLowerCase() as Address
+    const isOwner = await isTokenOwner(tokenId, authenticatedWallet)
+    if (!isOwner) {
+      return errors.forbidden('Only the token owner can authorize users')
+    }
+
     const result = await authorizeUserServerSide({
       tokenId,
       user: user as Address,

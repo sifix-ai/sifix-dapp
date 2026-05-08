@@ -85,7 +85,7 @@ export function validateEnv(): EnvValidationResult {
     NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME || "SIFIX",
     AI_MODEL: process.env.AI_MODEL || "glm/glm-5.1",
-    AI_BASE_URL: process.env.AI_BASE_URL || "http://43.156.177.86:20128/v1",
+    AI_BASE_URL: process.env.AI_BASE_URL || "",
   };
 
   // Warn about sensitive data in public variables

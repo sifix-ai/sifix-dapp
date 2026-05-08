@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { apiSuccess, errors, withErrorHandler } from "@/lib/api-response"
+import { isValidEthereumAddress } from "@/lib/address-validation"
 
 // Valid AI provider values
 const VALID_AI_PROVIDERS = [
@@ -15,6 +16,17 @@ const VALID_AI_PROVIDERS = [
 type AiProvider = (typeof VALID_AI_PROVIDERS)[number]
 
 /**
+ * Strip sensitive fields (aiApiKey) from a settings object before returning it.
+ */
+function sanitizeSettings<T extends Record<string, unknown>>(settings: T): Omit<T, 'aiApiKey'> & { hasApiKey: boolean } {
+  const { aiApiKey, ...rest } = settings
+  return {
+    ...rest,
+    hasApiKey: !!aiApiKey,
+  }
+}
+
+/**
  * GET /api/v1/settings/ai-provider?address=0x...
  * Retrieve AI provider settings for a given address
  */
@@ -25,6 +37,10 @@ export async function GET(request: NextRequest) {
 
     if (!address) {
       return errors.validation("Missing required query parameter: address")
+    }
+
+    if (!isValidEthereumAddress(address)) {
+      return errors.invalidAddress()
     }
 
     let settings = await prisma.userSettings.findUnique({
@@ -38,7 +54,8 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    return apiSuccess(settings)
+    // Strip aiApiKey before sending to client
+    return apiSuccess(sanitizeSettings(settings))
   })
 }
 
@@ -56,6 +73,10 @@ export async function PUT(request: NextRequest) {
     // Validate required fields
     if (!address) {
       return errors.validation("Missing required field: address")
+    }
+
+    if (!isValidEthereumAddress(address)) {
+      return errors.invalidAddress()
     }
 
     if (aiProvider && !VALID_AI_PROVIDERS.includes(aiProvider as AiProvider)) {
@@ -85,7 +106,8 @@ export async function PUT(request: NextRequest) {
       },
     })
 
-    return apiSuccess(settings)
+    // Strip aiApiKey before sending to client
+    return apiSuccess(sanitizeSettings(settings))
   })
 }
 
@@ -94,12 +116,22 @@ export async function PUT(request: NextRequest) {
  * Reset AI provider settings to defaults for a given address
  */
 export async function DELETE(request: NextRequest) {
+  // Auth check
+  const auth = await verifyApiAuth()
+  if (!auth.authorized) {
+    return errors.unauthorized(auth.error)
+  }
+
   return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url)
     const address = searchParams.get("address")
 
     if (!address) {
       return errors.validation("Missing required query parameter: address")
+    }
+
+    if (!isValidEthereumAddress(address)) {
+      return errors.invalidAddress()
     }
 
     // Reset to defaults instead of deleting the record entirely
@@ -116,6 +148,7 @@ export async function DELETE(request: NextRequest) {
       },
     })
 
-    return apiSuccess(settings)
+    // Strip aiApiKey before sending to client
+    return apiSuccess(sanitizeSettings(settings))
   })
 }

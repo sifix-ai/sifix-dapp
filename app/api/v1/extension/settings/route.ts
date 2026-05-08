@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
+import { isValidEthereumAddress } from "@/lib/address-validation"
 
 /**
  * GET /api/v1/extension/settings?walletAddress=0x...
@@ -12,6 +13,10 @@ export async function GET(request: NextRequest) {
 
     if (!walletAddress) {
       return NextResponse.json({ error: "Missing walletAddress" }, { status: 400 })
+    }
+
+    if (!isValidEthereumAddress(walletAddress)) {
+      return NextResponse.json({ error: "Invalid walletAddress format" }, { status: 400 })
     }
 
     const settings = await prisma.userSettings.findUnique({

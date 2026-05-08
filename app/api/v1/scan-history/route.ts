@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { apiSuccess, errors, withErrorHandler } from "@/lib/api-response"
+import { isValidEthereumAddress } from "@/lib/address-validation"
 
 /**
  * GET /api/v1/scan-history?address=0x...&page=1&limit=20
@@ -15,6 +16,10 @@ export async function GET(request: NextRequest) {
 
     if (!address) {
       return errors.validation("Missing required query parameter: address")
+    }
+
+    if (!isValidEthereumAddress(address)) {
+      return errors.invalidAddress()
     }
 
     const where = {

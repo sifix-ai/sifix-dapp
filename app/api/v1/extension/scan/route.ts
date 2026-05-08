@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getAddressReputation } from "@/lib/contract"
 import { prisma } from "@/lib/prisma"
 import { verifyExtensionAuth } from "@/lib/extension-auth"
+import { isValidEthereumAddress } from "@/lib/address-validation"
 
 /**
  * POST /api/v1/extension/scan
@@ -19,8 +20,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { address } = body
 
-    if (!address || !address.startsWith("0x")) {
-      return NextResponse.json({ error: "Invalid address" }, { status: 400 })
+    if (!address || !isValidEthereumAddress(address)) {
+      return NextResponse.json({ error: "Invalid Ethereum address format" }, { status: 400 })
     }
 
     // Get on-chain reputation

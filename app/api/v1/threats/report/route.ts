@@ -2,8 +2,16 @@ import { NextRequest, NextResponse } from "next/server"
 import { uploadThreatEvidence } from "@/lib/zerog-storage"
 import { reportThreatToContract, severityToNumber } from "@/lib/contract"
 import { prisma } from "@/lib/prisma"
+import { isValidEthereumAddress } from "@/lib/address-validation"
+import { verifyApiAuth } from "@/lib/extension-auth"
 
 export async function POST(request: NextRequest) {
+  // Auth check
+  const auth = await verifyApiAuth()
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { address, severity, type, description, evidence } = body
@@ -11,6 +19,14 @@ export async function POST(request: NextRequest) {
     if (!address || !severity || !type || !description) {
       return NextResponse.json(
         { error: "Missing required fields" },
+        { status: 400 }
+      )
+    }
+
+    // Validate address format
+    if (!isValidEthereumAddress(address)) {
+      return NextResponse.json(
+        { error: "Invalid Ethereum address format" },
         { status: 400 }
       )
     }

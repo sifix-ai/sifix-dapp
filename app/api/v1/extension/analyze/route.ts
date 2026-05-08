@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { SecurityAgent } from "@sifix/agent"
 import type { Address, Hash } from "viem"
 import { prisma } from "@/lib/prisma"
-import { verifyExtensionAuth } from "@/lib/extension-auth"
+import { verifyApiAuth } from "@/lib/extension-auth"
 import { PrismaThreatIntel } from "@/lib/threat-intel"
+import { isValidEthereumAddress } from "@/lib/address-validation"
 
 // Singleton threat intel provider (shared across all agent instances)
 const threatIntel = new PrismaThreatIntel()
@@ -66,7 +67,7 @@ async function getComputeAgent(): Promise<SecurityAgent> {
  */
 export async function POST(request: NextRequest) {
   // Auth check
-  const auth = await verifyExtensionAuth()
+  const auth = await verifyApiAuth()
   if (!auth.authorized) {
     return NextResponse.json({ error: auth.error }, { status: 401 })
   }
@@ -81,8 +82,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required field: from" }, { status: 400 })
     }
 
+    if (!isValidEthereumAddress(from)) {
+      return NextResponse.json({ error: "Invalid 'from' Ethereum address format" }, { status: 400 })
+    }
+
     // Allow requests without 'to' (e.g. contract deployment, signature requests)
     const toAddress = to || "0x0000000000000000000000000000000000000000"
+
+    if (to && !isValidEthereumAddress(to)) {
+      return NextResponse.json({ error: "Invalid 'to' Ethereum address format" }, { status: 400 })
+    }
 
     // Determine which agent to use based on user settings
     let agent: SecurityAgent

@@ -3,10 +3,10 @@ import { headers } from "next/headers"
 import { isAuthorizedForSifixAgent } from "@/lib/agentic-id"
 
 /**
- * Verify extension auth token from Authorization header
- * Used by all /api/v1/extension/* routes
+ * Verify API auth token from Authorization header
+ * Used by all authenticated API routes (extension & dApp)
  */
-export async function verifyExtensionAuth(): Promise<{
+export async function verifyApiAuth(): Promise<{
   authorized: boolean
   walletAddress?: string
   agenticId?: {

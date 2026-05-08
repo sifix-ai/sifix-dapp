@@ -1,15 +1,23 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAddressReputation } from "@/lib/contract"
 import { prisma } from "@/lib/prisma"
+import { isValidEthereumAddress } from "@/lib/address-validation"
+import { verifyApiAuth } from "@/lib/extension-auth"
 
 export async function POST(request: NextRequest) {
+  // Auth check
+  const auth = await verifyApiAuth()
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { address } = body
 
-    if (!address || !address.startsWith("0x")) {
+    if (!address || !isValidEthereumAddress(address)) {
       return NextResponse.json(
-        { error: "Invalid address" },
+        { error: "Invalid Ethereum address format" },
         { status: 400 }
       )
     }

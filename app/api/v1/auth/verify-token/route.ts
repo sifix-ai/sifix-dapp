@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server"
-import { verifyExtensionAuth } from "@/lib/extension-auth"
+import { verifyApiAuth } from "@/lib/extension-auth"
 
 /**
  * GET /api/v1/auth/verify-token
  * Check if the current Bearer token is valid
  */
 export async function GET() {
-  const auth = await verifyExtensionAuth()
+  const auth = await verifyApiAuth()
 
   if (!auth.authorized) {
     return NextResponse.json(

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAddressReputation, getThreatReports } from "@/lib/contract"
+import { isValidEthereumAddress } from "@/lib/address-validation"
 
 export async function GET(
   request: NextRequest,
@@ -8,9 +9,9 @@ export async function GET(
   try {
     const { address } = await params
 
-    if (!address || !address.startsWith("0x")) {
+    if (!address || !isValidEthereumAddress(address)) {
       return NextResponse.json(
-        { error: "Invalid address" },
+        { error: "Invalid Ethereum address format" },
         { status: 400 }
       )
     }

@@ -84,6 +84,21 @@ export async function isAuthorizedUser(tokenId: bigint, user: Address): Promise<
   }
 }
 
+export async function isTokenOwner(tokenId: bigint, walletAddress: Address): Promise<boolean> {
+  try {
+    const owner = await publicClient.readContract({
+      address: AGENTIC_ID_CONTRACT_ADDRESS,
+      abi: AGENTIC_ID_ABI,
+      functionName: 'ownerOf',
+      args: [tokenId],
+    }) as Address
+    return owner.toLowerCase() === walletAddress.toLowerCase()
+  } catch (error) {
+    console.error('[AgenticID] isTokenOwner failed:', error)
+    return false
+  }
+}
+
 export async function isAuthorizedForSifixAgent(user: Address): Promise<{
   enabled: boolean
   authorized: boolean

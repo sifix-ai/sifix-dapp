@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { ethers } from "ethers"
 import { randomBytes } from "crypto"
 import { prisma } from "@/lib/prisma"
+import { consumeNonce } from "@/lib/nonce-store"
+import { isValidEthereumAddress } from "@/lib/address-validation"
 
 /**
  * POST /api/v1/auth/verify
@@ -17,6 +19,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: "Missing required fields: walletAddress, signature, message" },
         { status: 400 }
+      )
+    }
+
+    if (!isValidEthereumAddress(walletAddress)) {
+      return NextResponse.json(
+        { error: "Invalid walletAddress format" },
+        { status: 400 }
+      )
+    }
+
+    // Verify that a valid nonce was issued for this wallet
+    const nonceEntry = consumeNonce(walletAddress)
+    if (!nonceEntry) {
+      return NextResponse.json(
+        { error: "No valid nonce found. Request a new nonce first." },
+        { status: 401 }
+      )
+    }
+
+    // Verify the nonce appears in the signed message (replay protection)
+    if (!message.includes(nonceEntry.nonce)) {
+      return NextResponse.json(
+        { error: "Nonce mismatch in signed message" },
+        { status: 401 }
       )
     }
 

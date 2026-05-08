@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server"
 import { SecurityAgent } from "@sifix/agent"
 import type { Address, Hash } from "viem"
 import { PrismaThreatIntel } from "@/lib/threat-intel"
+import { isValidEthereumAddress } from "@/lib/address-validation"
+import { verifyApiAuth } from "@/lib/extension-auth"
 
 // Singleton threat intel provider
 const threatIntel = new PrismaThreatIntel()
@@ -52,6 +54,15 @@ async function getAgent(): Promise<SecurityAgent> {
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth guard
+    const auth = await verifyApiAuth()
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { error: auth.error || "Authentication required" },
+        { status: 401 }
+      )
+    }
+
     const body = await request.json()
     const { from, to, data, value } = body
 
@@ -62,9 +73,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!from.startsWith("0x") || !to.startsWith("0x")) {
+    if (!isValidEthereumAddress(from) || !isValidEthereumAddress(to)) {
       return NextResponse.json(
-        { error: "Invalid address format" },
+        { error: "Invalid Ethereum address format" },
         { status: 400 }
       )
     }
@@ -130,7 +141,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to analyze transaction",
-        details: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     )

@@ -1,21 +1,35 @@
 // GET /api/v1/threats - List threat reports
-// POST /api/v1/report - Submit new threat report
+// POST /api/v1/threats - Submit new threat report
 
 import { NextRequest, NextResponse } from 'next/server';
 import { ReportService } from '@/services/report-service';
 import { apiSuccess, apiError } from '@/lib/api-response';
+import { isValidEthereumAddress } from '@/lib/address-validation';
+
+/** Maximum number of threat reports a client may request per page */
+const MAX_THREATS_LIMIT = 100;
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    
+
+    const rawLimit = parseInt(searchParams.get('limit') || '50');
+    // Cap limit to prevent abuse
+    const limit = Math.min(Math.max(rawLimit, 1), MAX_THREATS_LIMIT);
+    const offset = Math.max(parseInt(searchParams.get('offset') || '0'), 0);
+
+    const reporterAddress = searchParams.get('reporter') || undefined;
+    if (reporterAddress && !isValidEthereumAddress(reporterAddress)) {
+      return apiError('Invalid reporter address format', '400');
+    }
+
     const filters = {
       status: searchParams.get('status') as any,
       threatType: searchParams.get('threatType') as any,
       riskLevel: searchParams.get('riskLevel') as any,
-      reporterAddress: searchParams.get('reporter') || undefined,
-      limit: parseInt(searchParams.get('limit') || '50'),
-      offset: parseInt(searchParams.get('offset') || '0'),
+      reporterAddress,
+      limit,
+      offset,
     };
 
     const reports = await ReportService.list(filters);
@@ -57,12 +71,12 @@ export async function POST(request: NextRequest) {
       simulationData,
     } = body;
 
-    // Validation
-    if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
+    // Validate addresses
+    if (!address || !isValidEthereumAddress(address)) {
       return apiError('Invalid address format', '400');
     }
 
-    if (!reporterAddress || !/^0x[a-fA-F0-9]{40}$/.test(reporterAddress)) {
+    if (!reporterAddress || !isValidEthereumAddress(reporterAddress)) {
       return apiError('Invalid reporter address format', '400');
     }
 

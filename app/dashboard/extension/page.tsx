@@ -21,6 +21,12 @@ export default function ExtensionSetupPage() {
   const [expiresAt, setExpiresAt] = useState("")
   const [copied, setCopied] = useState(false)
   const [error, setError] = useState("")
+  const [showToken, setShowToken] = useState(false)
+
+  /** Mask token for display: show first 8 and last 4 characters */
+  const maskedToken = token
+    ? `${token.slice(0, 8)}${"*".repeat(Math.max(0, token.length - 12))}${token.slice(-4)}`
+    : ""
 
   const handleConnect = async () => {
     setError("")
@@ -70,7 +76,7 @@ export default function ExtensionSetupPage() {
           type: "SIFIX_EXTENSION_TOKEN",
           token: verifyData.token,
           walletAddress: verifyData.walletAddress,
-        }, "*")
+        }, window.location.origin)
         console.log("[SIFIX] Token sent to extension via postMessage")
       }
     } catch (err: any) {
@@ -181,7 +187,7 @@ export default function ExtensionSetupPage() {
               </h4>
               <div className="relative">
                 <div className="bg-[#111] rounded-lg p-4 pr-24 font-mono text-xs break-all text-accent-blue border border-white/5">
-                  {token}
+                  {token ? `${token.slice(0, 12)}${'•'.repeat(24)}${token.slice(-6)}` : ''}
                 </div>
                 <button
                   onClick={handleCopy}

@@ -1,8 +1,9 @@
 // GET /api/v1/address/:address - Get address reputation
 
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { AddressService } from '@/services/address-service';
-import { apiSuccess, apiError } from '@/lib/api-response';
+import { apiSuccess, apiError, errors } from '@/lib/api-response';
+import { isValidEthereumAddress } from '@/lib/address-validation';
 
 export async function GET(
   request: NextRequest,
@@ -11,14 +12,14 @@ export async function GET(
   try {
     const { address } = await params;
 
-    if (!address || !/^0x[a-fA-F0-9]{40}$/.test(address)) {
-      return apiError('Invalid address format', '400');
+    if (!address || !isValidEthereumAddress(address)) {
+      return errors.invalidAddress();
     }
 
     const data = await AddressService.getDetails(address);
 
     if (!data) {
-      return apiError('Address not found', '404');
+      return errors.addressNotFound(address);
     }
 
     return apiSuccess({

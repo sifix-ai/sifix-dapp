@@ -1,19 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { randomUUID } from "crypto"
-
-// In-memory nonce store (ephemeral, resets on server restart)
-// For production, use Redis or DB — but this is fine for hackathon
-const nonceStore = new Map<string, { nonce: string; createdAt: number }>()
-
-// Clean up old nonces every 5 minutes
-setInterval(() => {
-  const now = Date.now()
-  for (const [key, val] of nonceStore.entries()) {
-    if (now - val.createdAt > 5 * 60 * 1000) {
-      nonceStore.delete(key)
-    }
-  }
-}, 5 * 60 * 1000)
+import { isValidEthereumAddress } from "@/lib/address-validation"
+import { setNonce } from "@/lib/nonce-store"
 
 /**
  * GET /api/v1/auth/nonce?walletAddress=0x...
@@ -22,7 +10,7 @@ setInterval(() => {
 export async function GET(request: NextRequest) {
   const walletAddress = request.nextUrl.searchParams.get("walletAddress")
 
-  if (!walletAddress || !walletAddress.startsWith("0x")) {
+  if (!walletAddress || !isValidEthereumAddress(walletAddress)) {
     return NextResponse.json({ error: "Valid walletAddress required" }, { status: 400 })
   }
 
@@ -41,8 +29,8 @@ export async function GET(request: NextRequest) {
     `Expires: 5 minutes`,
   ].join("\n")
 
-  // Store nonce (lowercase key for case-insensitive lookup)
-  nonceStore.set(walletAddress.toLowerCase(), { nonce, createdAt: timestamp })
+  // Store nonce via shared store (lowercase key for case-insensitive lookup)
+  setNonce(walletAddress, nonce, timestamp)
 
   return NextResponse.json({ nonce, message, timestamp })
 }
