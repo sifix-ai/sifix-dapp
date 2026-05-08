@@ -7,16 +7,22 @@ import {
 } from '@/config/contracts'
 import { apiSuccess, errors, withErrorHandler } from '@/lib/api-response'
 import { isAuthorizedForSifixAgent, authorizeUserServerSide, getMintFee, getConfiguredAgenticTokenId } from '@/lib/agentic-id'
+import { readFullAgentProfile } from '@/lib/agentic-id-client'
 
 export const GET = withErrorHandler(async () => {
   const tokenId = getConfiguredAgenticTokenId()
   let mintFee: bigint | null = null
+  let profile = null
   try { mintFee = await getMintFee() } catch {}
+  if (tokenId) {
+    try { profile = await readFullAgentProfile(tokenId) } catch {}
+  }
   return apiSuccess({
     contractAddress: AGENTIC_ID_CONTRACT_ADDRESS,
     tokenId: tokenId ? tokenId.toString() : null,
     abi: AGENTIC_ID_ABI,
     mintFee: mintFee ? mintFee.toString() : null,
+    profile,
   })
 })
 
