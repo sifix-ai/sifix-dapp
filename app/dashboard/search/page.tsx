@@ -1,7 +1,7 @@
 'use client'
 
 import { AuthGuard } from '@/components/auth-guard'
-import { useScanAddress, useAddressReputation } from '@/hooks/use-api'
+import { useScanAddress, useAddressReputation } from '@/hooks/use-scan'
 import { useAppStore } from '@/store/app-store'
 import { useState } from 'react'
 import { addressSchema } from '@/lib/validations'

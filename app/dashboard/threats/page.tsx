@@ -1,6 +1,6 @@
 'use client'
 
-import { useThreats } from '@/hooks/use-api'
+import { useThreats } from '@/hooks/use-threats'
 import { useAccount } from 'wagmi'
 import { AlertTriangle, Shield, Clock, TrendingUp, Filter, Search } from 'lucide-react'
 import { EmptyState } from '@/components/ui/empty-state'
