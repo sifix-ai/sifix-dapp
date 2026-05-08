@@ -53,11 +53,21 @@ export function validateEnv(): EnvValidationResult {
   const contractVars = [
     "NEXT_PUBLIC_SIFIX_CONTRACT",
     "NEXT_PUBLIC_FLOW_CONTRACT",
+    "NEXT_PUBLIC_AGENTIC_ID_CONTRACT_ADDRESS",
   ] as const;
   for (const varName of contractVars) {
     const address = process.env[varName];
     if (address && !/^0x[a-fA-F0-9]{40}$/.test(address)) {
       errors.push(`${varName} must be a valid Ethereum address`);
+    }
+  }
+
+  // Validate Agentic ID token ID (optional, must be positive integer if set)
+  const agenticTokenId = process.env.NEXT_PUBLIC_AGENTIC_ID_TOKEN_ID;
+  if (agenticTokenId) {
+    const tid = Number(agenticTokenId);
+    if (!Number.isInteger(tid) || tid <= 0) {
+      errors.push("NEXT_PUBLIC_AGENTIC_ID_TOKEN_ID must be a positive integer");
     }
   }
 
