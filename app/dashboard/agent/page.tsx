@@ -12,11 +12,37 @@ import {
   Check,
   AlertTriangle,
   Fingerprint,
+  Cpu,
+  Database,
+  Globe,
+  Users,
+  FileCode,
+  Hash,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { AGENTIC_ID_CONTRACT_ADDRESS, AGENTIC_ID_TOKEN_ID } from '@/config/contracts'
 
 type Status = 'idle' | 'loading' | 'success' | 'error'
+
+interface AgentProfile {
+  tokenId: string
+  owner: string
+  creator: string
+  cloneSource: string
+  intelligentData: Array<{
+    dataDescription: string
+    dataHash: string
+  }>
+  authorizedUsers: string[]
+  metadata: {
+    name: string
+    model: string
+    provider: string
+    capabilities: string[]
+  }
+  knownHash: string
+  hashVerified: boolean
+}
 
 export default function AgentIdPage() {
   const { address, isConnected } = useAccount()
@@ -24,7 +50,9 @@ export default function AgentIdPage() {
   const [config, setConfig] = useState<any>(null)
   const [authCheck, setAuthCheck] = useState<any>(null)
   const [error, setError] = useState('')
-  const [copied, setCopied] = useState(false)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+
+  const profile: AgentProfile | null = config?.profile ?? null
 
   const loadConfig = useCallback(async () => {
     try {
@@ -60,13 +88,16 @@ export default function AgentIdPage() {
     if (isConnected && address) checkAuth()
   }, [isConnected, address, checkAuth])
 
-  const handleCopy = async (text: string) => {
+  const handleCopy = async (text: string, field: string) => {
     await navigator.clipboard.writeText(text)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setCopiedField(field)
+    setTimeout(() => setCopiedField(null), 2000)
   }
 
   const explorerUrl = `https://chainscan-galileo.0g.ai/address/${AGENTIC_ID_CONTRACT_ADDRESS}`
+  const tokenExplorerUrl = AGENTIC_ID_TOKEN_ID
+    ? `https://chainscan-galileo.0g.ai/token/${AGENTIC_ID_CONTRACT_ADDRESS}/instance/${AGENTIC_ID_TOKEN_ID}`
+    : null
 
   // Guard: Wallet not connected
   if (!isConnected) {
@@ -105,7 +136,171 @@ export default function AgentIdPage() {
         </p>
       </div>
 
-      {/* Contract Info */}
+      {/* ====== AGENT SPECIFICATION ====== */}
+      {profile && (
+        <Card className="bg-white/[0.04] backdrop-blur-md border-white/15 overflow-hidden">
+          {/* Agent Identity Header */}
+          <div className="px-6 py-4 border-b border-white/[0.08] bg-gradient-to-r from-accent-blue/10 to-purple-500/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-blue to-purple-500 flex items-center justify-center">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-white">{profile.metadata.name}</h3>
+                  <p className="text-xs text-white/40">Token #{profile.tokenId}</p>
+                </div>
+              </div>
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
+                profile.hashVerified
+                  ? 'bg-green-500/15 text-green-400 border border-green-500/20'
+                  : 'bg-red-500/15 text-red-400 border border-red-500/20'
+              }`}>
+                {profile.hashVerified ? (
+                  <CheckCircle className="w-3.5 h-3.5" />
+                ) : (
+                  <XCircle className="w-3.5 h-3.5" />
+                )}
+                {profile.hashVerified ? 'Hash Verified' : 'Hash Mismatch'}
+              </div>
+            </div>
+          </div>
+
+          {/* Spec Grid */}
+          <div className="p-6 grid grid-cols-2 gap-4">
+            {/* Model */}
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+              <div className="flex items-center gap-2 mb-2">
+                <Cpu className="w-4 h-4 text-accent-blue" />
+                <span className="text-xs text-white/40 uppercase tracking-wider">Model</span>
+              </div>
+              <p className="text-sm font-mono text-white/90">{profile.metadata.model}</p>
+            </div>
+
+            {/* Provider */}
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+              <div className="flex items-center gap-2 mb-2">
+                <Globe className="w-4 h-4 text-purple-400" />
+                <span className="text-xs text-white/40 uppercase tracking-wider">Provider</span>
+              </div>
+              <p className="text-sm font-mono text-white/90">{profile.metadata.provider}</p>
+            </div>
+
+            {/* Capabilities */}
+            <div className="col-span-2 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+              <div className="flex items-center gap-2 mb-3">
+                <FileCode className="w-4 h-4 text-emerald-400" />
+                <span className="text-xs text-white/40 uppercase tracking-wider">Capabilities</span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {profile.metadata.capabilities.map((cap) => (
+                  <span key={cap} className="px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium">
+                    {cap}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Data Description */}
+            {profile.intelligentData.length > 0 && (
+              <div className="col-span-2 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                <div className="flex items-center gap-2 mb-2">
+                  <Database className="w-4 h-4 text-amber-400" />
+                  <span className="text-xs text-white/40 uppercase tracking-wider">On-Chain Description</span>
+                </div>
+                <p className="text-sm text-white/80">{profile.intelligentData[0].dataDescription}</p>
+              </div>
+            )}
+
+            {/* Data Hash */}
+            {profile.intelligentData.length > 0 && (
+              <div className="col-span-2 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Hash className="w-4 h-4 text-cyan-400" />
+                    <span className="text-xs text-white/40 uppercase tracking-wider">Data Hash (keccak256)</span>
+                  </div>
+                  <button
+                    onClick={() => handleCopy(profile.intelligentData[0].dataHash, 'dataHash')}
+                    className="text-white/30 hover:text-white/60 transition-colors"
+                  >
+                    {copiedField === 'dataHash' ? <Check className="w-3.5 h-3.5 text-green-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  </button>
+                </div>
+                <code className="text-xs font-mono text-cyan-300 break-all">{profile.intelligentData[0].dataHash}</code>
+                {profile.knownHash && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-xs text-white/30">Computed:</span>
+                    <code className="text-xs font-mono text-white/40">{profile.knownHash.slice(0, 18)}...{profile.knownHash.slice(-10)}</code>
+                    {profile.hashVerified && <CheckCircle className="w-3.5 h-3.5 text-green-400" />}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* On-Chain Details */}
+          <div className="px-6 pb-6 grid grid-cols-2 gap-4">
+            {/* Owner */}
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+              <span className="text-xs text-white/40 uppercase tracking-wider">Owner</span>
+              <div className="flex items-center gap-2 mt-1.5">
+                <code className="text-xs font-mono text-white/70">
+                  {profile.owner.slice(0, 8)}...{profile.owner.slice(-6)}
+                </code>
+                <button
+                  onClick={() => handleCopy(profile.owner, 'owner')}
+                  className="text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {copiedField === 'owner' ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Creator */}
+            <div className="p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+              <span className="text-xs text-white/40 uppercase tracking-wider">Creator</span>
+              <div className="flex items-center gap-2 mt-1.5">
+                <code className="text-xs font-mono text-white/70">
+                  {profile.creator.slice(0, 8)}...{profile.creator.slice(-6)}
+                </code>
+                <button
+                  onClick={() => handleCopy(profile.creator, 'creator')}
+                  className="text-white/30 hover:text-white/60 transition-colors"
+                >
+                  {copiedField === 'creator' ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Authorized Users */}
+            <div className="col-span-2 p-4 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+              <div className="flex items-center gap-2 mb-2">
+                <Users className="w-4 h-4 text-blue-400" />
+                <span className="text-xs text-white/40 uppercase tracking-wider">
+                  Authorized Users ({profile.authorizedUsers.length})
+                </span>
+              </div>
+              {profile.authorizedUsers.length > 0 ? (
+                <div className="space-y-1.5">
+                  {profile.authorizedUsers.map((user) => (
+                    <div key={user} className="flex items-center gap-2">
+                      <CheckCircle className="w-3 h-3 text-green-400" />
+                      <code className="text-xs font-mono text-white/70">
+                        {user.slice(0, 10)}...{user.slice(-8)}
+                      </code>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-white/30">No authorized users yet</p>
+              )}
+            </div>
+          </div>
+        </Card>
+      )}
+
+      {/* ====== CONTRACT INFO ====== */}
       <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
         <h3 className="text-sm font-medium text-white/60 mb-4">Contract Information</h3>
         <div className="space-y-3">
@@ -116,10 +311,10 @@ export default function AgentIdPage() {
                 {AGENTIC_ID_CONTRACT_ADDRESS.slice(0, 10)}...{AGENTIC_ID_CONTRACT_ADDRESS.slice(-8)}
               </code>
               <button
-                onClick={() => handleCopy(AGENTIC_ID_CONTRACT_ADDRESS)}
+                onClick={() => handleCopy(AGENTIC_ID_CONTRACT_ADDRESS, 'contract')}
                 className="text-white/30 hover:text-white/60 transition-colors"
               >
-                {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                {copiedField === 'contract' ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
               </button>
               <a href={explorerUrl} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-white/60 transition-colors">
                 <ExternalLink className="w-3 h-3" />
@@ -128,24 +323,27 @@ export default function AgentIdPage() {
           </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-white/40">Token ID</span>
-            <code className="text-xs text-white/80 font-mono">
-              {AGENTIC_ID_TOKEN_ID || 'Not configured'}
-            </code>
-          </div>
-          {config?.mintFee && (
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-white/40">Mint Fee</span>
-              <span className="text-xs text-white/80">{config.mintFee} wei</span>
+            <div className="flex items-center gap-2">
+              <code className="text-xs text-white/80 font-mono">{AGENTIC_ID_TOKEN_ID || 'Not configured'}</code>
+              {tokenExplorerUrl && (
+                <a href={tokenExplorerUrl} target="_blank" rel="noopener noreferrer" className="text-white/30 hover:text-white/60 transition-colors">
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              )}
             </div>
-          )}
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-white/40">Standard</span>
+            <span className="text-xs text-white/80">ERC-7857 (Agentic ID)</span>
+          </div>
           <div className="flex items-center justify-between">
             <span className="text-xs text-white/40">Chain</span>
-            <span className="text-xs text-white/80">0G Newton Testnet (16602)</span>
+            <span className="text-xs text-white/80">0G Galileo Testnet (16602)</span>
           </div>
         </div>
       </Card>
 
-      {/* Authorization Status */}
+      {/* ====== AUTHORIZATION STATUS ====== */}
       {authCheck ? (
         <Card className={`bg-white/[0.04] backdrop-blur-md ${authCheck.authorized ? 'border-accent-blue/20' : 'border-red-500/20'}`}>
           <div className="flex items-center gap-3 mb-3">
@@ -163,24 +361,11 @@ export default function AgentIdPage() {
               </p>
             </div>
           </div>
-          {authCheck.tokenId && (
-            <div className="mt-2 p-3 rounded-lg bg-white/[0.03] border border-white/[0.05]">
-              <p className="text-xs text-white/50">Agent Token #{authCheck.tokenId}</p>
-              <p className="text-xs text-white/30 mt-1">{authCheck.reason}</p>
-            </div>
-          )}
           {!authCheck.authorized && authCheck.enabled && (
             <div className="mt-3 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
               <p className="text-xs text-red-300">
-                Wallet not authorized. Ask SIFIX Agent owner to authorize this wallet via{' '}
+                Wallet not authorized. Ask SIFIX Agent owner to authorize via{' '}
                 <code className="text-red-200">authorizeUsage()</code>.
-              </p>
-            </div>
-          )}
-          {!authCheck.enabled && (
-            <div className="mt-3 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
-              <p className="text-xs text-blue-300">
-                Agentic ID guard is not active (token ID not configured). All users can use the agent.
               </p>
             </div>
           )}
@@ -194,52 +379,13 @@ export default function AgentIdPage() {
         </Card>
       )}
 
-      {/* How It Works */}
-      <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
-        <h3 className="text-sm font-medium text-white/80 mb-4">How It Works</h3>
-        <div className="space-y-4">
-          {[
-            {
-              step: '1',
-              title: 'Owner Mints Agent NFT',
-              desc: 'SIFIX Agent is registered as an ERC-7857 NFT on 0G Chain. Metadata contains model, capabilities, and compute provider.',
-            },
-            {
-              step: '2',
-              title: 'Authorize Users',
-              desc: 'Owner calls authorizeUsage(tokenId, userWallet) to grant access to specific users.',
-            },
-            {
-              step: '3',
-              title: 'Extension Verifies',
-              desc: 'During scan, API checks isAuthorizedUser on-chain. If authorized, analysis proceeds. Otherwise, rejected.',
-            },
-            {
-              step: '4',
-              title: 'Verified Results',
-              desc: 'Scan results in 0G Storage can be traced back to agent identity on-chain. Full provenance.',
-            },
-          ].map((item) => (
-            <div key={item.step} className="flex gap-3">
-              <div className="w-6 h-6 rounded-full bg-accent-blue/20 flex items-center justify-center text-accent-blue text-xs font-bold shrink-0">
-                {item.step}
-              </div>
-              <div>
-                <p className="text-xs font-medium text-white/80">{item.title}</p>
-                <p className="text-xs text-white/40 mt-0.5">{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </Card>
-
-      {/* 0G Stack */}
+      {/* ====== 0G STACK ====== */}
       <Card className="bg-white/[0.04] backdrop-blur-md border-white/15">
         <h3 className="text-sm font-medium text-white/80 mb-4">0G Stack Integration</h3>
         <div className="grid grid-cols-2 gap-3">
           {[
-            { name: 'Chain', status: true, desc: '0G Newton Testnet' },
-            { name: 'Compute', status: true, desc: 'AI Inference (default)' },
+            { name: 'Chain', status: true, desc: '0G Galileo Testnet' },
+            { name: 'Compute', status: true, desc: profile?.metadata.model || 'AI Inference' },
             { name: 'Storage', status: true, desc: 'Evidence storage' },
             { name: 'Agentic ID', status: !!AGENTIC_ID_TOKEN_ID, desc: AGENTIC_ID_TOKEN_ID ? `Token #${AGENTIC_ID_TOKEN_ID}` : 'Not minted' },
           ].map((item) => (
