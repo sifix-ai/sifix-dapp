@@ -83,6 +83,13 @@ export async function POST(request: NextRequest) {
     else if (riskScore >= 20) riskLevel = "LOW"
     else riskLevel = "SAFE"
 
+    // Generate storage URL if we have a hash but no explorer URL
+    let storageUrl = result.storageExplorer || null
+    if (!storageUrl && result.storageRootHash) {
+      const explorerBaseUrl = process.env.STORAGE_EXPLORER_URL || "https://storage-testnet.0g.ai"
+      storageUrl = `${explorerBaseUrl}/file/${result.storageRootHash}`
+    }
+
     return NextResponse.json({
       success: true,
       riskLevel,
@@ -107,7 +114,7 @@ export async function POST(request: NextRequest) {
       timestamp: result.timestamp,
       // 0G Storage proof
       storageHash: result.storageRootHash || null,
-      storageExplorer: result.storageExplorer || null,
+      storageExplorer: storageUrl,
       storageDownload: result.storageRootHash
         ? `/api/v1/storage/${result.storageRootHash}/download`
         : null,
