@@ -19,7 +19,9 @@ import {
   X,
   Sparkles,
   History,
-  ExternalLink
+  ExternalLink,
+  Eye,
+  Tag
 } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { cn } from "@/lib/utils"
@@ -37,8 +39,8 @@ const navigation = [
     current: false,
   },
   {
-    name: "Address Search",
-    href: "/dashboard/search",
+    name: "Checker",
+    href: "/dashboard/checker",
     icon: Search,
     current: false,
   },
@@ -46,6 +48,18 @@ const navigation = [
     name: "Threat Feed",
     href: "/dashboard/threats",
     icon: Activity,
+    current: false,
+  },
+  {
+    name: "Watchlist",
+    href: "/dashboard/watchlist",
+    icon: Eye,
+    current: false,
+  },
+  {
+    name: "Tags",
+    href: "/dashboard/tags",
+    icon: Tag,
     current: false,
   },
   {

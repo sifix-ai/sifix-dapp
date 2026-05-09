@@ -275,6 +275,23 @@ model AddressTag {
   @@map("address_tags")
 }
 
+model Watchlist {
+  id             String   @id @default(cuid())
+  userAddress    String   // The watcher's address
+  watchedAddress String   // The address being watched
+  label          String?  // Optional label
+  lastScore      Int      @default(0)
+  prevScore      Int      @default(0)
+  alertOnChange  Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([userAddress, watchedAddress])
+  @@index([userAddress])
+  @@index([watchedAddress])
+  @@map("watchlist")
+}
+
 model ScanHistory {
   id            String   @id @default(cuid())
   fromAddress   String
