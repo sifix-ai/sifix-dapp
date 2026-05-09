@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getAddressReputation } from "@/lib/contract"
 import { prisma } from "@/lib/prisma"
-import { verifyExtensionAuth } from "@/lib/extension-auth"
+import { verifyApiAuth } from "@/lib/extension-auth"
 import { isValidEthereumAddress } from "@/lib/address-validation"
 
 /**
@@ -11,7 +11,7 @@ import { isValidEthereumAddress } from "@/lib/address-validation"
  */
 export async function POST(request: NextRequest) {
   // Auth check
-  const auth = await verifyExtensionAuth()
+  const auth = await verifyApiAuth()
   if (!auth.authorized) {
     return NextResponse.json({ error: auth.error }, { status: 401 })
   }
