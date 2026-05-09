@@ -15,7 +15,7 @@
 - **Shadcn Components** - Using proper shadcn Card, Button, Badge components
 - **0G Branding** - Coral (#ff6b6b) and teal (#4ecdc4) gradient throughout
 - **Mobile Responsive** - Sidebar navigation with mobile menu
-- **Network Status** - Real-time 0G Newton connection indicator
+- **Network Status** - Real-time 0G Galileo connection indicator
 - **A0GI Balance** - Native token balance display
 - **Professional Layout** - Sidebar + navbar like asset management dapps
 

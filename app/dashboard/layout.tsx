@@ -273,7 +273,7 @@ export default function DashboardLayout({
               {/* Network indicator */}
               <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-accent-blue/10 border border-accent-blue/20 rounded-lg backdrop-blur-md">
                 <Network className="w-3 h-3 text-accent-blue" />
-                <span className="text-xs font-medium text-accent-blue">0G Newton</span>
+                <span className="text-xs font-medium text-accent-blue">0G Galileo</span>
               </div>
 
               {/* Notifications */}

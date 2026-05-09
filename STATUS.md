@@ -4,7 +4,7 @@
 
 **Date:** 2026-05-06
 **Status:** Production Ready 🚀
-**Chain:** 0G Newton Testnet (Chain ID: 16602)
+**Chain:** 0G Galileo Testnet (Chain ID: 16602)
 
 ---
 
@@ -17,11 +17,11 @@ All critical improvements have been successfully implemented to bring the SIFIX 
 #### 1.1 Chain ID Mismatch Fixed ✅
 - **File:** `config/contracts.ts`
 - **Change:** Updated `ZEROG_CHAIN_ID` from 16600 → 16602
-- **Status:** Chain ID now matches 0G Newton Testnet
+- **Status:** Chain ID now matches 0G Galileo Testnet
 
 #### 1.2 Wagmi Configuration Updated ✅
 - **File:** `lib/wagmi.ts`
-- **Change:** Replaced Base/Base Sepolia with 0G Newton Testnet configuration
+- **Change:** Replaced Base/Base Sepolia with 0G Galileo Testnet configuration
 - **Status:** Wallet connections now use 0G chain
 
 #### 1.3 Duplicate Provider Removed ✅
@@ -60,7 +60,7 @@ All critical improvements have been successfully implemented to bring the SIFIX 
 
 #### 3.2 Network Status Indicator Added ✅
 - **File:** `components/dashboard/header.tsx`
-- **Change:** Added 0G Newton Testnet network badge
+- **Change:** Added 0G Galileo Testnet network badge
 - **Status:** Shows real-time network connection status
 
 #### 3.3 A0GI Balance Display Added ✅
@@ -83,7 +83,7 @@ All critical improvements have been successfully implemented to bring the SIFIX 
 #### 4.2 Network Switcher Component Added ✅
 - **File:** `components/dashboard/network-switcher.tsx` (NEW)
 - **Change:** Created one-click network switcher
-- **Status:** Easy switching to 0G Newton Testnet
+- **Status:** Easy switching to 0G Galileo Testnet
 
 #### 4.3 Real-Time Block Updates Added ✅
 - **File:** `hooks/use-block-number.ts` (NEW)
@@ -129,7 +129,7 @@ All critical improvements have been successfully implemented to bring the SIFIX 
 
 ### ✅ Chain Configuration
 - [x] Chain ID consistently 16602 across all files
-- [x] Wallet connects to 0G Newton Testnet automatically
+- [x] Wallet connects to 0G Galileo Testnet automatically
 - [x] Contract read functions return valid data
 - [x] No hardcoded Base chain references
 
@@ -159,7 +159,7 @@ All critical improvements have been successfully implemented to bring the SIFIX 
 ## 🎯 Key Features Now Available
 
 ### 1. **0G Chain Integration**
-- Automatic connection to 0G Newton Testnet
+- Automatic connection to 0G Galileo Testnet
 - Chain ID: 16602
 - Native token: A0GI
 - Explorer integration: https://chainscan-galielo.0g.ai
@@ -255,7 +255,7 @@ The SIFIX dApp is now **production-ready** for 0G Chain!
    ```
 
 5. **Test the application**:
-   - Connect wallet to 0G Newton Testnet
+   - Connect wallet to 0G Galileo Testnet
    - Verify A0GI balance displays
    - Test address scanning
    - Try reporting a threat

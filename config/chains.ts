@@ -2,7 +2,7 @@
 
 export const SIFIX_CHAIN = {
   id: 16602,
-  name: '0G Newton Testnet',
+  name: '0G Galileo Testnet',
   network: '0g-galileo',
   nativeCurrency: {
     decimals: 18,

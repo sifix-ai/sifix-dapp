@@ -52,7 +52,7 @@ function NetworkBadge({ chainId }: { chainId: number }) {
       <span
         className={`inline-block h-1.5 w-1.5 rounded-full ${isSupported ? 'bg-blue-400' : 'bg-red-400'}`}
       />
-      {is0G ? '0G Newton' : `Chain ${chainId}`}
+      {is0G ? '0G Galileo' : `Chain ${chainId}`}
     </span>
   );
 }
@@ -222,7 +222,7 @@ function Step2Preview({ targetAddress, selectedReasons, customText, chainId, isD
                 variant="secondary"
                 size="sm"
               >
-                {isSwitching ? <Loader2 size={12} className="animate-spin" /> : 'Switch to 0G Newton'}
+                {isSwitching ? <Loader2 size={12} className="animate-spin" /> : 'Switch to 0G Galileo'}
               </Button>
             )}
           </div>
@@ -230,7 +230,7 @@ function Step2Preview({ targetAddress, selectedReasons, customText, chainId, isD
             <div className="flex items-start gap-2 rounded-xl border border-yellow-900 bg-yellow-950/20 px-4 py-3 text-xs text-yellow-400">
               <AlertTriangle size={13} className="mt-0.5 shrink-0" />
               <span>
-                Please switch to <strong>0G Newton Testnet</strong> to submit on-chain reports.
+                Please switch to <strong>0G Galileo Testnet</strong> to submit on-chain reports.
               </span>
             </div>
           )}
@@ -412,7 +412,7 @@ function Step3Confirm({ targetAddress, selectedReasons, customText, chainId, isD
         <span>
           {isDomain
             ? 'Your report will be saved to our community database to help warn other users. No gas fee required.'
-            : 'Submitting requires a small gas fee on 0G Newton. If the contract is not yet deployed, you will be asked to approve a deploy transaction first (one-time). Only the hash of your report is stored on-chain — no personal data.'}
+            : 'Submitting requires a small gas fee on 0G Galileo. If the contract is not yet deployed, you will be asked to approve a deploy transaction first (one-time). Only the hash of your report is stored on-chain — no personal data.'}
         </span>
       </div>
 

@@ -36,7 +36,7 @@ const coreFeatures = [
   {
     title: 'On-chain Reputation',
     icon: Lock,
-    description: 'Transparent reputation system on 0G Newton tracks malicious addresses and rewards contributors.',
+    description: 'Transparent reputation system on 0G Galileo tracks malicious addresses and rewards contributors.',
   },
 ];
 
@@ -102,7 +102,7 @@ export default function FeaturesGrid() {
               <CardHeading
                 icon={Lock}
                 title="On-Chain Reputation"
-                description="Community-driven security scores stored permanently on 0G Newton and 0G Storage."
+                description="Community-driven security scores stored permanently on 0G Galileo and 0G Storage."
               />
             </CardHeader>
             <CardContent>

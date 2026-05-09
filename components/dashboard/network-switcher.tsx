@@ -7,7 +7,7 @@ import { ChevronDown, Check } from "lucide-react";
 const SUPPORTED_NETWORKS = [
   {
     id: 16602,
-    name: "0G Newton Testnet",
+    name: "0G Galileo Testnet",
     color: "bg-green-500",
     rpc: "https://evmrpc-testnet.0g.ai",
     explorer: "https://chainscan-galileo.0g.ai"

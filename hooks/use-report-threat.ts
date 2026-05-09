@@ -152,7 +152,7 @@ export function useReportThreat(): UseReportThreatReturn {
 
         if (!contractAddress) {
           if (chainId === 16602) {
-            throw new Error('Contract not deployed to 0G Newton testnet. Please check contract configuration.');
+            throw new Error('Contract not deployed to 0G Galileo testnet. Please check contract configuration.');
           }
 
           // Deploy the contract — user approves in wallet

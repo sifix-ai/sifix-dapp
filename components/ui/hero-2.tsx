@@ -93,7 +93,7 @@ export function Hero2() {
             >
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-accent-green rounded-full shadow-[0_0_6px_rgba(17,255,153,0.5)]" />
-                <span>Live on 0G Newton</span>
+                <span>Live on 0G Galileo</span>
               </div>
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-accent-blue rounded-full shadow-[0_0_6px_rgba(59,158,255,0.5)]" />

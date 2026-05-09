@@ -45,7 +45,7 @@ export function validateEnv(): EnvValidationResult {
     errors.push("NEXT_PUBLIC_ZG_CHAIN_ID must be a valid number");
   } else if (chainId !== 16602) {
     warnings.push(
-      `NEXT_PUBLIC_ZG_CHAIN_ID is ${chainId}, expected 16602 for 0G Newton Testnet`
+      `NEXT_PUBLIC_ZG_CHAIN_ID is ${chainId}, expected 16602 for 0G Galileo Testnet`
     );
   }
 

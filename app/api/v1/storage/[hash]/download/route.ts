@@ -76,7 +76,7 @@ export async function GET(
         "Content-Disposition": `attachment; filename="sifix-analysis-${hash.slice(0, 10)}.json"`,
         "Cache-Control": "public, max-age=31536000, immutable",
         "X-Storage-Hash": hash,
-        "X-Storage-Network": "0G Newton Testnet",
+        "X-Storage-Network": "0G Galileo Testnet",
       }
     })
 

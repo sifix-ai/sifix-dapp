@@ -111,7 +111,7 @@ export function ConnectButton() {
           </Button>
         ) : (
           <div className="hidden rounded-xl border border-emerald-400/30 bg-emerald-500/10 px-2.5 py-1 text-[11px] font-medium text-emerald-300 sm:block">
-            0G Newton
+            0G Galileo
           </div>
         )}
 
@@ -175,7 +175,7 @@ export function ConnectButton() {
           <div className="rounded-xl border border-card-border bg-surface p-4">
             <p className="text-sm text-foreground">Choose your wallet</p>
             <p className="mt-1 text-xs text-muted">
-              Connect to <span className="font-medium text-[#F59E0B]">0G Newton Testnet</span> for secure access.
+              Connect to <span className="font-medium text-[#F59E0B]">0G Galileo Testnet</span> for secure access.
             </p>
           </div>
 

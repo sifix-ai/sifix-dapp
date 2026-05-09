@@ -19,7 +19,7 @@ function NetworkStatus() {
     );
   }
 
-  const isCorrectNetwork = chain.id === 16602; // 0G Newton Testnet
+  const isCorrectNetwork = chain.id === 16602; // 0G Galileo Testnet
 
   return (
     <div className={`flex items-center gap-2 px-3 py-1.5 ${isCorrectNetwork ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/10 border-red-500/20'} border rounded-lg`}>

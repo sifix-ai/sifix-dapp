@@ -42,7 +42,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                 <TrendingUp className="h-4 w-4 text-[#55b3ff]" />
                 Reputation Layer
               </div>
-              <p className="text-xs text-white/60">Live score and threat history powered by 0G Newton Testnet.</p>
+              <p className="text-xs text-white/60">Live score and threat history powered by 0G Galileo Testnet.</p>
             </div>
           </div>
         </div>

@@ -85,7 +85,7 @@ Text: White with opacity variants
 - ✅ Single connect button (fixed!)
 - ✅ Wallet status indicator
 - ✅ A0GI balance display
-- ✅ Network status (0G Newton)
+- ✅ Network status (0G Galileo)
 - ✅ Quick actions grid
 - ✅ Recent activity feed
 - ✅ System status cards

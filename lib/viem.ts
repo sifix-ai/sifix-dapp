@@ -1,7 +1,7 @@
 /**
  * Viem Client Configuration
  *
- * Configures Viem clients for interacting with 0G Newton blockchain.
+ * Configures Viem clients for interacting with 0G Galileo blockchain.
  * - Public client: For reading blockchain data (getCode, readContract, etc.)
  * - Wallet client: For server-side contract writes (with private key)
  *
@@ -37,11 +37,11 @@ function validateEnv(): {
 }
 
 /**
- * Custom 0G Newton chain configuration
+ * Custom 0G Galileo chain configuration
  */
 export const sifixChainConfig: Chain = {
   ...SIFIX_CHAIN,
-  name: '0G Newton Testnet',
+  name: '0G Galileo Testnet',
   nativeCurrency: {
     name: 'A0GI',
     symbol: 'A0GI',

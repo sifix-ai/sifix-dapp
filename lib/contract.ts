@@ -7,10 +7,10 @@ import { createPublicClient, createWalletClient, http, parseEther, formatUnits, 
 import { privateKeyToAccount } from "viem/accounts"
 import { defineChain } from "viem"
 
-// 0G Newton Testnet
+// 0G Galileo Testnet
 const zgChain = defineChain({
   id: 16602,
-  name: "0G Newton Testnet",
+  name: "0G Galileo Testnet",
   network: "0g-galileo-testnet",
   nativeCurrency: {
     decimals: 18,

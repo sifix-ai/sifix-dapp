@@ -495,7 +495,7 @@ export default function SettingsPage() {
           <div className="flex items-center justify-between p-3 rounded-lg bg-white/[0.02]">
             <div>
               <p className="text-sm text-white/80">Chain</p>
-              <p className="text-xs text-white/40 mt-0.5">0G Newton Testnet (Chain ID: 16602)</p>
+              <p className="text-xs text-white/40 mt-0.5">0G Galileo Testnet (Chain ID: 16602)</p>
             </div>
             <span className="text-xs font-mono text-accent-blue">evmrpc-testnet.0g.ai</span>
           </div>

@@ -1,7 +1,7 @@
 /**
  * Wagmi v3 Configuration
  *
- * Client-side wallet and contract interaction for 0G Newton Testnet.
+ * Client-side wallet and contract interaction for 0G Galileo Testnet.
  * Uses injected() for MetaMask and other wallet providers.
  */
 
