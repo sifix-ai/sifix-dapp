@@ -111,6 +111,47 @@ It leverages the `@sifix/agent` SDK for AI-driven security analysis and integrat
 
 ## Architecture
 
+```mermaid
+graph TB
+    subgraph CLIENT["CLIENT LAYER"]
+        LANDING[Marketing Landing Page]
+        DASH[Dashboard<br/>12 Pages]
+        EXT[Browser Extension<br/>SIWE Auth]
+    end
+
+    REACT[React 19 + Wagmi v3 + TanStack Query]
+    LANDING --> REACT
+    DASH --> REACT
+    EXT --> REACT
+
+    subgraph API["NEXT.JS APP ROUTER"]
+        ROUTES[API Routes<br/>35 Endpoints]
+        ROUTES --> PRISMA[Prisma ORM<br/>SQLite · 13 Models]
+        ROUTES --> AGENT["@sifix/agent SDK<br/>SecurityAgent · AI · Simulation"]
+    end
+
+    REACT --> API
+
+    subgraph ZG["0G GALILEO TESTNET"]
+        STORAGE[0G Storage<br/>Evidence]
+        COMPUTE[0G Compute<br/>AI Inference]
+        EVM[EVM Chain 16602<br/>Contracts · Agent ID]
+    end
+
+    PRISMA --> ZG
+    AGENT --> ZG
+
+    style CLIENT fill:#1a1a2e,color:#fff
+    style API fill:#16213e,color:#fff
+    style ZG fill:#0f3460,color:#fff
+    style REACT fill:#3b9eff,color:#fff
+    style AGENT fill:#a855f7,color:#fff
+    style PRISMA fill:#22c55e,color:#fff
+```
+
+<details>
+<summary>📐 ASCII Version</summary>
+
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        CLIENT LAYER                             │
@@ -147,6 +188,7 @@ It leverages the `@sifix/agent` SDK for AI-driven security analysis and integrat
 │  └────────────┘  └──────────────┘  └───────────────────────┘  │
 └────────────────────────────────────────────────────────────────┘
 ```
+</details>
 
 ---
 
