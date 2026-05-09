@@ -31,6 +31,7 @@ model Address {
   reports    ThreatReport[]
   scans      TransactionScan[]
   reputation ReputationScore?
+  tags       AddressTag[]
 
   @@index([riskScore])
   @@index([riskLevel])
@@ -236,6 +237,42 @@ model ExtensionSession {
   @@index([walletAddress])
   @@index([expiresAt])
   @@map("extension_sessions")
+}
+
+model ScamDomain {
+  id          String   @id @default(cuid())
+  domain      String   @unique
+  riskScore   Int      @default(80)
+  category    String   @default("PHISHING") // PHISHING, MALWARE, SCAM, RUGPULL, FAKE_AIRDROP
+  description String?
+  source      String   @default("COMMUNITY") // COMMUNITY, AUTOMATED, MANUAL, GOPUS
+  reportedBy  String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([domain])
+  @@index([category])
+  @@index([isActive])
+  @@map("scam_domains")
+}
+
+model AddressTag {
+  id        String  @id @default(cuid())
+  addressId String
+  address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  tag       String
+  taggedBy  String? // Wallet address of tagger
+  upvotes   Int     @default(0)
+  downvotes Int     @default(0)
+
+  createdAt DateTime @default(now())
+
+  @@unique([addressId, tag])
+  @@index([addressId])
+  @@index([tag])
+  @@index([taggedBy])
+  @@map("address_tags")
 }
 
 model ScanHistory {
