@@ -6,12 +6,56 @@ import { ReportService, DuplicateReportError } from '@/services/report-service';
 import { apiSuccess, apiError, errors } from '@/lib/api-response';
 import { isValidEthereumAddress } from '@/lib/address-validation';
 import { verifyApiAuth } from '@/lib/extension-auth';
-import { uploadThreatEvidence } from '@/lib/zerog-storage';
-import { reportThreatToContract, severityToNumber } from '@/lib/contract';
-import { prisma } from '@/lib/prisma';
 
 /** Maximum number of threat reports a client may request per page */
 const MAX_THREATS_LIMIT = 100;
+
+const ZERO_G_RPC_URL = 'https://evmrpc-testnet.0g.ai';
+const SCAM_REPORTER_ADDRESS = '0x544a39149d5169e4e1bdf7f8492804224cb70152';
+const SCAM_VOTE_SUBMITTED_TOPIC0 = '0x4866b80505de2a9f11bc92df30aba8d340b203e4e3700be812a4477860fb7c21';
+
+interface JsonRpcReceiptLog {
+  address: string;
+  topics: string[];
+}
+
+interface JsonRpcReceipt {
+  logs: JsonRpcReceiptLog[];
+}
+
+async function hasValidScamVoteEvent(txHash: string): Promise<boolean> {
+  const response = await fetch(ZERO_G_RPC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      jsonrpc: '2.0',
+      id: 1,
+      method: 'eth_getTransactionReceipt',
+      params: [txHash],
+    }),
+  });
+
+  if (!response.ok) {
+    return false;
+  }
+
+  const payload = (await response.json()) as {
+    result?: JsonRpcReceipt | null;
+    error?: { message?: string };
+  };
+
+  if (!payload.result || !Array.isArray(payload.result.logs)) {
+    return false;
+  }
+
+  return payload.result.logs.some((log) => {
+    const topic0 = log.topics?.[0]?.toLowerCase();
+    return (
+      log.address?.toLowerCase() === SCAM_REPORTER_ADDRESS &&
+      topic0 === SCAM_VOTE_SUBMITTED_TOPIC0
+    );
+  });
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -67,129 +111,37 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Strict auth: token is mandatory
+    const auth = await verifyApiAuth();
+    if (!auth.authorized) {
+      return NextResponse.json({ error: auth.error || 'Unauthorized' }, { status: 401 });
+    }
+
     const body = await request.json();
 
     const {
-      // Canonical fields (service-layer)
       address,
       reporterAddress,
       threatType,
       severity,
       evidenceHash,
       explanation,
-      transactionHash,
+      txHash,
       confidence,
       simulationData,
+    } = body as {
+      address?: string;
+      reporterAddress?: string;
+      threatType?: string;
+      severity?: number;
+      evidenceHash?: string;
+      explanation?: string;
+      txHash?: string;
+      confidence?: number;
+      simulationData?: string;
+    };
 
-      // Legacy /threats/report fields (0G Storage + on-chain)
-      type,
-      description,
-      evidence,
-    } = body;
-
-    // ============================================
-    // Mode A: Threat report with 0G Storage + on-chain
-    // ============================================
-    if (type && description && address && typeof severity === 'string') {
-      // Auth required for on-chain reports
-      const auth = await verifyApiAuth();
-      if (!auth.authorized) {
-        return NextResponse.json({ error: auth.error }, { status: 401 });
-      }
-
-      if (!isValidEthereumAddress(address)) {
-        return apiError('Invalid address format', '400');
-      }
-
-      // 1. Upload evidence to 0G Storage
-      let evidenceCid: string | null = null;
-      try {
-        const storageResult = await uploadThreatEvidence({
-          address,
-          severity,
-          type,
-          description,
-          timestamp: Date.now(),
-          transactionData: evidence?.transactionData,
-          simulationResult: evidence?.simulationResult,
-          aiAnalysis: evidence?.aiAnalysis,
-        });
-        evidenceCid = storageResult.cid;
-      } catch (error) {
-        console.error('[API] 0G Storage upload failed:', error);
-      }
-
-      // 2. Report to smart contract (only for HIGH/CRITICAL)
-      let contractTxHash: string | null = null;
-      if (evidenceCid && (severity === 'HIGH' || severity === 'CRITICAL')) {
-        try {
-          const contractResult = await reportThreatToContract(
-            address as `0x${string}`,
-            severityToNumber(severity),
-            evidenceCid
-          );
-          if (contractResult.success) {
-            contractTxHash = contractResult.txHash;
-          }
-        } catch (error) {
-          console.error('[API] Contract report failed:', error);
-        }
-      }
-
-      // 3. Persist using ReportService
-      const severityScore = severityToNumber(severity);
-      let report;
-      try {
-        report = await ReportService.create({
-          address,
-          reporterAddress: auth.walletAddress || '0x0000000000000000000000000000000000000000',
-          threatType: type,
-          severity: severityScore,
-          evidenceHash: evidenceCid || `mock-${Date.now()}`,
-          explanation: description,
-          transactionHash: contractTxHash || undefined,
-          confidence: 85,
-          simulationData: evidence ? JSON.stringify(evidence) : undefined,
-        });
-      } catch (error) {
-        if (error instanceof DuplicateReportError) {
-          return errors.duplicateReport();
-        }
-        throw error;
-      }
-
-      return NextResponse.json(
-        {
-          success: true,
-          data: {
-            id: report.id,
-            address: report.address.address,
-            threatType: report.threatType,
-            severity: report.severity,
-            riskLevel: report.riskLevel,
-            status: report.status,
-            createdAt: report.createdAt,
-            storageCid: evidenceCid,
-            contractTxHash,
-          },
-        },
-        { status: 201 }
-      );
-    }
-
-    // ============================================
-    // Mode B: Standard threat report (service-layer)
-    // ============================================
-    // Support legacy body with addressId (convert to address)
-    let finalAddress = address as string | undefined;
-    if (!finalAddress && body.addressId) {
-      const addressRecord = await prisma.address.findUnique({
-        where: { id: body.addressId },
-      });
-      if (addressRecord) finalAddress = addressRecord.address;
-    }
-
-    if (!finalAddress || !isValidEthereumAddress(finalAddress)) {
+    if (!address || !isValidEthereumAddress(address)) {
       return apiError('Invalid address format', '400');
     }
 
@@ -197,21 +149,38 @@ export async function POST(request: NextRequest) {
       return apiError('Invalid reporter address format', '400');
     }
 
-    if (!threatType || !severity || !explanation || !confidence) {
-      return apiError('Missing required fields', '400');
+    if (!threatType || typeof threatType !== 'string') {
+      return apiError('Missing required field: threatType', '400');
+    }
+
+    if (typeof severity !== 'number' || Number.isNaN(severity)) {
+      return apiError('Missing or invalid required field: severity', '400');
+    }
+
+    if (!explanation || typeof explanation !== 'string') {
+      return apiError('Missing required field: explanation', '400');
+    }
+
+    if (!txHash || typeof txHash !== 'string') {
+      return apiError('Missing required field: txHash', '400');
+    }
+
+    const isValidTx = await hasValidScamVoteEvent(txHash);
+    if (!isValidTx) {
+      return apiError('Invalid txHash: ScamVoteSubmitted event not found', '400');
     }
 
     let report;
     try {
       report = await ReportService.create({
-        address: finalAddress,
+        address,
         reporterAddress,
         threatType,
         severity,
         evidenceHash: evidenceHash || `manual-${Date.now()}`,
         explanation,
-        transactionHash,
-        confidence,
+        transactionHash: txHash,
+        confidence: typeof confidence === 'number' ? confidence : 60,
         simulationData,
       });
     } catch (error) {
@@ -227,10 +196,14 @@ export async function POST(request: NextRequest) {
         data: {
           id: report.id,
           address: report.address.address,
+          reporterAddress: report.reporterAddress,
           threatType: report.threatType,
           severity: report.severity,
           riskLevel: report.riskLevel,
+          explanation: report.explanation,
           status: report.status,
+          confidence: report.confidence,
+          transactionHash: report.transactionHash,
           createdAt: report.createdAt,
         },
       },

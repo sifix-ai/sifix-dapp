@@ -4,26 +4,22 @@ import { useState, useCallback } from 'react';
 import {
   useWriteContract,
   useWaitForTransactionReceipt,
-  useDeployContract,
 } from 'wagmi';
 import { waitForTransactionReceipt } from 'wagmi/actions';
 import { hashReasonData, type ReasonData } from '@/lib/hash';
 import {
-  DOMAIN_CONTRACT_ABI,
-  CONTRACT_ADDRESSES,
+  SCAM_REPORTER_ABI,
+  SIFIX_REPUTATION_ADDRESS,
   SUPPORTED_CHAIN_IDS,
 } from '@/config/contracts';
 import { wagmiConfig } from '@/lib/wagmi';
-import artifact from '@/ThreatReporter.json';
 import { isAddress, keccak256, pad, toBytes } from 'viem';
 
 export type ReportStep =
   | 'idle'
-  | 'saving'
-  | 'deploying'
-  | 'deploy-confirming'
   | 'wallet'
   | 'confirming'
+  | 'saving'
   | 'success'
   | 'error';
 
@@ -39,13 +35,6 @@ export interface UseReportScamReturn {
     chainId: number;
   }) => Promise<void>;
   reset: () => void;
-}
-
-/** Read cached contract address from localStorage (set after first deploy). */
-function getCachedAddress(chainId: number): `0x${string}` | null {
-  if (typeof window === 'undefined') return null;
-  const v = localStorage.getItem(`wallo:contract:${chainId}`);
-  return v ? (v as `0x${string}`) : null;
 }
 
 function getTargetTypeAndId(target: string): { targetType: number; targetId: `0x${string}` } {
@@ -71,7 +60,6 @@ export function useReportScam(): UseReportScamReturn {
   const [error, setError] = useState<string | null>(null);
 
   const { writeContractAsync } = useWriteContract();
-  const { deployContractAsync } = useDeployContract();
   const [pendingTxHash, setPendingTxHash] = useState<`0x${string}` | undefined>(undefined);
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
@@ -99,10 +87,7 @@ export function useReportScam(): UseReportScamReturn {
     }) => {
       setError(null);
 
-      // Determine whether on-chain submission is possible
       const isChainSupported = (SUPPORTED_CHAIN_IDS as readonly number[]).includes(chainId);
-      const existingAddress: `0x${string}` | '' =
-        CONTRACT_ADDRESSES[chainId] || getCachedAddress(chainId) || '';
 
       try {
         // 1. Hash reason data deterministically
@@ -117,7 +102,30 @@ export function useReportScam(): UseReportScamReturn {
           .filter(Boolean)
           .join(', ') || 'Reported as scam';
 
-        // 2. Save off-chain first — always succeeds regardless of wallet/chain
+        if (!isChainSupported) {
+          throw new Error('Unsupported chain. Please connect to 0G Galileo testnet.');
+        }
+
+        // 2. Trigger wallet for on-chain submission FIRST
+        setStep('wallet');
+        const txHash = await writeContractAsync({
+          address: SIFIX_REPUTATION_ADDRESS,
+          abi: SCAM_REPORTER_ABI,
+          functionName: 'submitVote',
+          args: [targetType, targetId, reasonHash, true],
+          chainId,
+        });
+
+        setPendingTxHash(txHash);
+        setStep('confirming');
+
+        // 3. Wait for on-chain confirmation
+        await waitForTransactionReceipt(wagmiConfig, {
+          hash: txHash,
+          confirmations: 1,
+        });
+
+        // 4. On-chain confirmed — now save off-chain with txHash
         setStep('saving');
         const res = await fetch('/api/v1/threats', {
           method: 'POST',
@@ -130,6 +138,7 @@ export function useReportScam(): UseReportScamReturn {
             confidence: 60,
             reporterAddress,
             evidenceHash: reasonHash,
+            txHash,
           }),
         });
 
@@ -138,57 +147,7 @@ export function useReportScam(): UseReportScamReturn {
           throw new Error(json?.error?.message ?? 'Failed to save report. Please try again.');
         }
 
-        // 3. On-chain step — only if chain is supported
-        if (!isChainSupported) {
-          // Off-chain report saved; skip on-chain
-          setStep('success');
-          return;
-        }
-
-        // Resolve contract address (config → localStorage cache → deploy)
-        let contractAddress: `0x${string}` | '' = existingAddress;
-
-        if (!contractAddress) {
-          if (chainId === 16602) {
-            throw new Error('Contract not deployed to 0G Galileo testnet. Please check contract configuration.');
-          }
-
-          // Deploy the contract — user approves in wallet
-          setStep('deploying');
-          const deployTxHash = await deployContractAsync({
-            abi: artifact.abi,
-            bytecode: artifact.bytecode.object as `0x${string}`,
-            args: [],
-          });
-
-          setStep('deploy-confirming');
-          const receipt = await waitForTransactionReceipt(wagmiConfig, {
-            hash: deployTxHash,
-            confirmations: 1,
-          });
-
-          if (!receipt.contractAddress) {
-            throw new Error('Contract deployment failed — no address in receipt.');
-          }
-
-          contractAddress = receipt.contractAddress;
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(`wallo:contract:${chainId}`, contractAddress);
-          }
-        }
-
-        // 4. Trigger wallet for on-chain submission
-        setStep('wallet');
-        const hash = await writeContractAsync({
-          address: contractAddress as `0x${string}`,
-          abi: DOMAIN_CONTRACT_ABI,
-          functionName: 'submitVote',
-          args: [targetType, targetId, reasonHash, true],
-          chainId,
-        });
-
-        setPendingTxHash(hash);
-        setStep('confirming');
+        setStep('success');
       } catch (err: unknown) {
         const message =
           err instanceof Error
@@ -202,7 +161,7 @@ export function useReportScam(): UseReportScamReturn {
         setStep('error');
       }
     },
-    [writeContractAsync, deployContractAsync]
+    [writeContractAsync]
   );
 
   const reset = useCallback(() => {
@@ -216,11 +175,9 @@ export function useReportScam(): UseReportScamReturn {
     txHash: pendingTxHash,
     error,
     isLoading:
-      resolvedStep === 'saving' ||
-      resolvedStep === 'deploying' ||
-      resolvedStep === 'deploy-confirming' ||
       resolvedStep === 'wallet' ||
-      resolvedStep === 'confirming',
+      resolvedStep === 'confirming' ||
+      resolvedStep === 'saving',
     submit,
     reset,
   };

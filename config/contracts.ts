@@ -7,68 +7,114 @@ export const SUPPORTED_CHAIN_IDS = [ZEROG_CHAIN_ID] as const;
 
 export const CONTRACT_ADDRESSES = {
   [ZEROG_CHAIN_ID]: {
-    SifixReputation: '0x544a39149d5169E4e1bDf7F8492804224CB70152',
+    ScamReporter: '0x544a39149d5169E4e1bDf7F8492804224CB70152',
   },
 } as const;
 
 export const SIFIX_REPUTATION_ADDRESS = '0x544a39149d5169E4e1bDf7F8492804224CB70152' as const;
 
-export const SIFIX_REPUTATION_ABI = [
+/**
+ * ScamReporter ABI — full ABI from ThreatReporter.json (ScamReporter contract).
+ * Includes submitVote, submitReport (deprecated), hasVoted, addressToTargetId,
+ * events (ScamVoteSubmitted, ScamReportSubmitted), and custom errors.
+ */
+export const SCAM_REPORTER_ABI = [
   {
-    "inputs": [
-      {"internalType": "bytes32", "name": "targetId", "type": "bytes32"},
-      {"internalType": "enum SifixReputation.TargetType", "name": "targetType", "type": "uint8"},
-      {"internalType": "bytes32", "name": "reasonHash", "type": "bytes32"},
-      {"internalType": "bool", "name": "isScam", "type": "bool"}
+    type: 'function',
+    name: 'addressToTargetId',
+    inputs: [
+      { name: 'target', type: 'address', internalType: 'address' },
     ],
-    "name": "reportTarget",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    outputs: [
+      { name: '', type: 'bytes32', internalType: 'bytes32' },
+    ],
+    stateMutability: 'pure',
   },
   {
-    "inputs": [
-      {"internalType": "bytes32", "name": "targetId", "type": "bytes32"}
+    type: 'function',
+    name: 'hasVoted',
+    inputs: [
+      { name: 'targetId', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'reporterAddr', type: 'address', internalType: 'address' },
     ],
-    "name": "getReputation",
-    "outputs": [
-      {"internalType": "uint256", "name": "totalReports", "type": "uint256"},
-      {"internalType": "uint256", "name": "scamReports", "type": "uint256"},
-      {"internalType": "uint256", "name": "legitimateReports", "type": "uint256"}
+    outputs: [
+      { name: '', type: 'bool', internalType: 'bool' },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: 'view',
   },
   {
-    "anonymous": false,
-    "inputs": [
-      {"indexed": true, "internalType": "address", "name": "reporter", "type": "address"},
-      {"indexed": true, "internalType": "bytes32", "name": "targetId", "type": "bytes32"},
-      {"indexed": false, "internalType": "enum SifixReputation.TargetType", "name": "targetType", "type": "uint8"},
-      {"indexed": false, "internalType": "bytes32", "name": "reasonHash", "type": "bytes32"},
-      {"indexed": false, "internalType": "bool", "name": "isScam", "type": "bool"}
+    type: 'function',
+    name: 'submitReport',
+    inputs: [
+      { name: 'reasonHash', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'isScam', type: 'bool', internalType: 'bool' },
     ],
-    "name": "TargetReported",
-    "type": "event"
-  }
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'submitVote',
+    inputs: [
+      { name: 'targetType', type: 'uint8', internalType: 'uint8' },
+      { name: 'targetId', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'reasonHash', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'isScam', type: 'bool', internalType: 'bool' },
+    ],
+    outputs: [],
+    stateMutability: 'nonpayable',
+  },
+  {
+    type: 'event',
+    name: 'ScamReportSubmitted',
+    inputs: [
+      { name: 'reporter', type: 'address', indexed: true, internalType: 'address' },
+      { name: 'reasonHash', type: 'bytes32', indexed: true, internalType: 'bytes32' },
+      { name: 'isScam', type: 'bool', indexed: false, internalType: 'bool' },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'event',
+    name: 'ScamVoteSubmitted',
+    inputs: [
+      { name: 'reporter', type: 'address', indexed: true, internalType: 'address' },
+      { name: 'targetId', type: 'bytes32', indexed: true, internalType: 'bytes32' },
+      { name: 'targetType', type: 'uint8', indexed: false, internalType: 'uint8' },
+      { name: 'reasonHash', type: 'bytes32', indexed: false, internalType: 'bytes32' },
+      { name: 'isScam', type: 'bool', indexed: false, internalType: 'bool' },
+    ],
+    anonymous: false,
+  },
+  {
+    type: 'error',
+    name: 'AlreadyVoted',
+    inputs: [
+      { name: 'targetId', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'reporter', type: 'address', internalType: 'address' },
+    ],
+  },
+  {
+    type: 'error',
+    name: 'EmptyReasonHash',
+    inputs: [],
+  },
+  {
+    type: 'error',
+    name: 'EmptyTargetId',
+    inputs: [],
+  },
+  {
+    type: 'error',
+    name: 'InvalidTargetType',
+    inputs: [],
+  },
 ] as const;
 
-/**
- * Domain contract ABI (placeholder — to be replaced with actual ABI when available)
- * Used for .0g / custom domain resolution on-chain.
- */
-export const DOMAIN_CONTRACT_ABI = [] as const;
-
-/**
- * DOMAN_CONTRACT_ABI — legacy alias kept for backward-compatible imports.
- * @deprecated Use DOMAIN_CONTRACT_ABI instead.
- */
-export const DOMAN_CONTRACT_ABI = DOMAIN_CONTRACT_ABI;
-
 export const CONTRACTS = {
-  SifixReputation: {
+  ScamReporter: {
     address: SIFIX_REPUTATION_ADDRESS,
-    abi: SIFIX_REPUTATION_ABI,
+    abi: SCAM_REPORTER_ABI,
   },
 } as const;
 
@@ -164,4 +210,3 @@ export const AGENTIC_ID_ABI = [
     ],
   },
 ] as const;
-
