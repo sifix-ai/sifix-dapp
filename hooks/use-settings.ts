@@ -8,6 +8,8 @@ export interface AIProviderSettings {
   aiApiKey?: string
   aiBaseUrl?: string
   aiModel?: string
+  effectiveProvider?: string
+  isLocked?: boolean
 }
 
 export interface UpdateAIProviderSettingsInput {

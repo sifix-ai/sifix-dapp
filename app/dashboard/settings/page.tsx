@@ -19,6 +19,7 @@ import {
   AlertCircle,
   Wallet,
   Sparkles,
+  Lock,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useAIProviderSettings, useUpdateAIProviderSettings } from '@/hooks/use-settings';
@@ -98,6 +99,9 @@ export default function SettingsPage() {
 
   // Load saved AI provider settings via TanStack Query
   const { data: savedSettings, isLoading: settingsLoading } = useAIProviderSettings(address ?? undefined)
+
+  // Derived: is the current provider locked (default → 0G Compute)?
+  const isLocked = savedSettings?.isLocked === true;
 
   // Apply loaded settings to local state (once)
   useEffect(() => {
@@ -215,8 +219,13 @@ export default function SettingsPage() {
             </label>
             <div className="relative">
               <button
-                onClick={() => setProviderDropdownOpen(!providerDropdownOpen)}
-                className="w-full flex items-center justify-between p-3 rounded-xl border border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.12] transition-all text-left group"
+                onClick={() => !isLocked && setProviderDropdownOpen(!providerDropdownOpen)}
+                disabled={isLocked}
+                className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all text-left group ${
+                  isLocked
+                    ? 'border-white/[0.04] bg-white/[0.01] cursor-not-allowed opacity-60'
+                    : 'border-white/[0.08] bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/[0.12]'
+                }`}
               >
                 <div className="flex items-center gap-3">
                   <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-white/[0.08] to-white/[0.02] flex items-center justify-center border border-white/[0.06]">
@@ -240,7 +249,7 @@ export default function SettingsPage() {
               </button>
 
               {/* Dropdown */}
-              {providerDropdownOpen && (
+              {!isLocked && providerDropdownOpen && (
                 <>
                   {/* Backdrop */}
                   <div
@@ -295,6 +304,16 @@ export default function SettingsPage() {
             </div>
           </div>
 
+          {/* Locked provider info banner */}
+          {isLocked && (
+            <div className="flex items-start gap-2.5 p-3 rounded-xl bg-accent-blue/[0.06] border border-accent-blue/[0.12]">
+              <Lock className="w-4 h-4 text-accent-blue shrink-0 mt-0.5" />
+              <p className="text-xs text-white/50 leading-relaxed">
+                Default provider uses <span className="text-white/70 font-medium">0G Compute</span> (qwen-2.5-7b-instruct) — configuration is locked.
+              </p>
+            </div>
+          )}
+
           {/* API Key Input */}
           {currentProviderConfig.requiresApiKey && (
             <div>
@@ -308,7 +327,8 @@ export default function SettingsPage() {
                 <input
                   type={showApiKey ? 'text' : 'password'}
                   value={apiKey}
-                  onChange={(e) => setApiKey(e.target.value)}
+                  onChange={(e) => !isLocked && setApiKey(e.target.value)}
+                  disabled={isLocked}
                   placeholder={
                     selectedProvider === 'openai'
                       ? 'sk-...'
@@ -316,12 +336,19 @@ export default function SettingsPage() {
                         ? 'gsk_...'
                         : 'Enter your API key'
                   }
-                  className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 pr-10 text-sm text-white placeholder:text-white/20 outline-none focus:border-[#FF6363]/40 focus:ring-1 focus:ring-[#FF6363]/20 transition-all"
+                  className={`w-full rounded-xl bg-white/[0.02] px-4 py-3 pr-10 text-sm text-white placeholder:text-white/20 outline-none transition-all ${
+                    isLocked
+                      ? 'border-white/[0.04] opacity-50 cursor-not-allowed'
+                      : 'border border-white/[0.08] focus:border-[#FF6363]/40 focus:ring-1 focus:ring-[#FF6363]/20'
+                  }`}
                 />
                 <button
                   type="button"
-                  onClick={() => setShowApiKey(!showApiKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors"
+                  onClick={() => !isLocked && setShowApiKey(!showApiKey)}
+                  disabled={isLocked}
+                  className={`absolute right-3 top-1/2 -translate-y-1/2 transition-colors ${
+                    isLocked ? 'text-white/20 cursor-not-allowed' : 'text-white/30 hover:text-white/60'
+                  }`}
                 >
                   {showApiKey ? (
                     <EyeOff className="w-4 h-4" />
@@ -353,9 +380,14 @@ export default function SettingsPage() {
             <input
               type="text"
               value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
+              onChange={(e) => !isLocked && setBaseUrl(e.target.value)}
+              disabled={isLocked}
               placeholder="https://api.example.com/v1"
-              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-sm text-white font-mono placeholder:text-white/20 outline-none focus:border-[#FF6363]/40 focus:ring-1 focus:ring-[#FF6363]/20 transition-all"
+              className={`w-full rounded-xl bg-white/[0.02] px-4 py-3 text-sm text-white font-mono placeholder:text-white/20 outline-none transition-all ${
+                isLocked
+                  ? 'border-white/[0.04] opacity-50 cursor-not-allowed'
+                  : 'border border-white/[0.08] focus:border-[#FF6363]/40 focus:ring-1 focus:ring-[#FF6363]/20'
+              }`}
             />
             <p className="text-[11px] text-white/25 mt-1.5">
               {selectedProvider === 'ollama'
@@ -375,9 +407,14 @@ export default function SettingsPage() {
             <input
               type="text"
               value={model}
-              onChange={(e) => setModel(e.target.value)}
+              onChange={(e) => !isLocked && setModel(e.target.value)}
+              disabled={isLocked}
               placeholder="gpt-4o"
-              className="w-full rounded-xl border border-white/[0.08] bg-white/[0.02] px-4 py-3 text-sm text-white font-mono placeholder:text-white/20 outline-none focus:border-[#FF6363]/40 focus:ring-1 focus:ring-[#FF6363]/20 transition-all"
+              className={`w-full rounded-xl bg-white/[0.02] px-4 py-3 text-sm text-white font-mono placeholder:text-white/20 outline-none transition-all ${
+                isLocked
+                  ? 'border-white/[0.04] opacity-50 cursor-not-allowed'
+                  : 'border border-white/[0.08] focus:border-[#FF6363]/40 focus:ring-1 focus:ring-[#FF6363]/20'
+              }`}
             />
             <p className="text-[11px] text-white/25 mt-1.5">
               {selectedProvider === 'openai'
@@ -391,6 +428,7 @@ export default function SettingsPage() {
           </div>
 
           {/* Save Button & Status */}
+          {!isLocked && (
           <div className="flex items-center gap-3 pt-2">
             <button
               onClick={handleSave}
@@ -428,6 +466,7 @@ export default function SettingsPage() {
               </div>
             )}
           </div>
+          )}
         </div>
       </Card>
 

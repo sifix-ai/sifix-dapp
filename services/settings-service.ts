@@ -7,6 +7,8 @@ export interface AISettings {
   aiApiKey: string | null
   aiBaseUrl: string | null
   aiModel: string | null
+  effectiveProvider?: string
+  isLocked?: boolean
 }
 
 export interface SettingsResponse {
