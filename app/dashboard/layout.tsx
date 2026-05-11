@@ -27,6 +27,7 @@ import { useAccount, useDisconnect } from "wagmi"
 import { cn } from "@/lib/utils"
 import { useBalance } from "@/hooks/use-balance"
 import { ConnectButton } from "@/components/connect-button"
+import { WalletGuard } from "@/components/dashboard/wallet-guard"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 
@@ -110,6 +111,7 @@ export default function DashboardLayout({
     : null
 
   return (
+    <WalletGuard>
     <div className="min-h-screen bg-canvas">
       {/* Mobile sidebar backdrop */}
       {mobileMenuOpen && (
@@ -289,5 +291,6 @@ export default function DashboardLayout({
         <main className="p-4 sm:p-6 lg:p-8">{children}</main>
       </div>
     </div>
+    </WalletGuard>
   )
 }
