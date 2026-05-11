@@ -13,6 +13,7 @@ export async function GET(
 ) {
   try {
     const { address } = await params;
+    const { searchParams } = new URL(request.url);
 
     if (!address || !isValidEthereumAddress(address)) {
       return errors.invalidAddress();
@@ -20,26 +21,53 @@ export async function GET(
 
     const normalizedAddress = address.toLowerCase();
 
-    // Find the address record (auto-create if missing for read)
+    // Parse pagination and sort params
+    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
+    const offset = Math.max(parseInt(searchParams.get('offset') || '0'), 0);
+    const sort = searchParams.get('sort') || 'upvotes'; // 'upvotes', 'createdAt', or 'score'
+
+    // Build orderBy clause based on sort param
+    let orderBy: any = { upvotes: 'desc' };
+    if (sort === 'createdAt') {
+      orderBy = { createdAt: 'desc' };
+    } else if (sort === 'score') {
+      orderBy = [{ upvotes: 'desc' }, { downvotes: 'asc' }];
+    }
+
+    // Find the address record
     let addressRecord = await prisma.address.findUnique({
       where: { address: normalizedAddress },
-      include: {
-        tags: {
-          orderBy: { upvotes: 'desc' },
-        },
-      },
     });
 
     if (!addressRecord) {
       return apiSuccess({
         address: normalizedAddress,
         tags: [],
+        pagination: {
+          limit,
+          offset,
+          total: 0,
+          totalPages: 0,
+        },
       });
     }
 
+    // Fetch tags with pagination
+    const [tags, total] = await Promise.all([
+      prisma.addressTag.findMany({
+        where: { addressId: addressRecord.id },
+        orderBy,
+        skip: offset,
+        take: limit,
+      }),
+      prisma.addressTag.count({
+        where: { addressId: addressRecord.id },
+      }),
+    ]);
+
     return apiSuccess({
       address: addressRecord.address,
-      tags: addressRecord.tags.map((t) => ({
+      tags: tags.map((t) => ({
         id: t.id,
         tag: t.tag,
         taggedBy: t.taggedBy,
@@ -48,6 +76,12 @@ export async function GET(
         score: t.upvotes - t.downvotes,
         createdAt: t.createdAt,
       })),
+      pagination: {
+        limit,
+        offset,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
     });
   } catch (error) {
     console.error('Error fetching address tags:', error);

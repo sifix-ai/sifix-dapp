@@ -1,79 +1,33 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getAddressReputation } from "@/lib/contract"
-import { prisma } from "@/lib/prisma"
-import { verifyApiAuth } from "@/lib/extension-auth"
-import { isValidEthereumAddress } from "@/lib/address-validation"
 
 /**
- * POST /api/v1/extension/scan
- * Protected: Requires Bearer token from extension auth
- * Body: { address: string }
+ * DEPRECATED — POST /api/v1/extension/scan
+ *
+ * This endpoint is deprecated and will be removed in a future version.
+ * Use POST /api/v1/scan instead (same auth, same response, richer data).
+ *
+ * For now this handler proxies to the unified scan logic so existing
+ * extension clients continue to work without changes.
  */
+
 export async function POST(request: NextRequest) {
-  // Auth check
-  const auth = await verifyApiAuth()
-  if (!auth.authorized) {
-    return NextResponse.json({ error: auth.error }, { status: 401 })
-  }
+  console.warn(
+    "[DEPRECATED] /api/v1/extension/scan called — migrate to /api/v1/scan"
+  )
 
-  try {
-    const body = await request.json()
-    const { address } = body
+  // Dynamic import avoids circular re-export issues and keeps the
+  // proxy thin — all business logic lives in the canonical route.
+  const { POST: scanPost } = await import("@/app/api/v1/scan/route")
 
-    if (!address || !isValidEthereumAddress(address)) {
-      return NextResponse.json({ error: "Invalid Ethereum address format" }, { status: 400 })
-    }
+  return scanPost(request)
+}
 
-    // Get on-chain reputation
-    const reputation = await getAddressReputation(address as `0x${string}`)
+export async function GET(request: NextRequest) {
+  console.warn(
+    "[DEPRECATED] /api/v1/extension/scan (GET) called — migrate to /api/v1/scan"
+  )
 
-    // Get from database
-    let addressRecord = await prisma.address.findUnique({ where: { address } })
+  const { GET: scanGet } = await import("@/app/api/v1/scan/route")
 
-    if (!addressRecord) {
-      addressRecord = await prisma.address.create({
-        data: {
-          address,
-          riskScore: reputation.score,
-          riskLevel: reputation.score >= 80 ? "CRITICAL" : reputation.score >= 60 ? "HIGH" : reputation.score >= 40 ? "MEDIUM" : "LOW"
-        }
-      })
-    }
-
-    const threatCount = await prisma.threatReport.count({
-      where: { addressId: addressRecord.id }
-    })
-
-    // Get tags from community
-    const tags = await prisma.threatReport.findMany({
-      where: { addressId: addressRecord.id, status: "VERIFIED" },
-      select: { threatType: true, explanation: true, severity: true },
-      take: 10
-    })
-
-    const score = reputation.score
-    let riskLevel: string
-    if (score >= 80) riskLevel = "CRITICAL"
-    else if (score >= 60) riskLevel = "HIGH"
-    else if (score >= 40) riskLevel = "MEDIUM"
-    else if (score >= 20) riskLevel = "LOW"
-    else riskLevel = "SAFE"
-
-    return NextResponse.json({
-      address,
-      inputType: "address",
-      riskScore: score,
-      riskLevel,
-      isVerified: reputation.reportCount > 0,
-      reportCount: threatCount,
-      tags: tags.map(t => ({
-        tag: t.threatType,
-        label: t.explanation,
-        severity: t.severity
-      }))
-    })
-  } catch (error) {
-    console.error("Extension scan error:", error)
-    return NextResponse.json({ error: "Scan failed" }, { status: 500 })
-  }
+  return scanGet(request)
 }

@@ -1,152 +1,123 @@
 /**
- * Address Tags API
- * POST /api/v1/address-tags — Create a tag for an address
- * GET /api/v1/address-tags — List all tags (with filters)
+ * Address Tags API (Deprecated)
+ * 
+ * DEPRECATED: This endpoint is being consolidated into /api/v1/address/[address]/tags
+ * 
+ * This file serves as a proxy to the new unified endpoint:
+ * - GET /api/v1/address-tags?address=0x... → GET /api/v1/address/0x.../tags
+ * - POST /api/v1/address-tags → POST /api/v1/address/[address]/tags
+ * 
+ * All requests are forwarded to the new endpoint structure.
  */
 
-import { NextRequest } from 'next/server'
-import { apiSuccess, apiError } from '@/lib/api-response'
-import { isValidEthereumAddress } from '@/lib/address-validation'
-import { prisma } from '@/lib/prisma'
+import { NextRequest, NextResponse } from 'next/server';
 
 /**
- * POST — Create address tag
+ * Deprecation notice logger
  */
-export async function POST(request: NextRequest) {
+function logDeprecation(method: string, queryParams: Record<string, any>) {
+  console.warn(
+    '[DEPRECATED] /api/v1/address-tags endpoint called',
+    {
+      method,
+      queryParams,
+      timestamp: new Date().toISOString(),
+      message: 'Use /api/v1/address/[address]/tags instead',
+    }
+  );
+}
+
+/**
+ * GET — List address tags (deprecated)
+ * Forwards to /api/v1/address/[address]/tags
+ */
+export async function GET(request: NextRequest) {
   try {
-    const body = await request.json()
-    const { address, tag, taggedBy } = body
+    const { searchParams } = new URL(request.url);
+    const address = searchParams.get('address');
 
-    if (!address || !isValidEthereumAddress(address)) {
-      return apiError('Valid Ethereum address is required', '400')
+    logDeprecation('GET', Object.fromEntries(searchParams));
+
+    if (!address) {
+      return NextResponse.json(
+        { error: 'Address parameter is required' },
+        { status: 400 }
+      );
     }
 
-    if (!tag || typeof tag !== 'string' || tag.trim().length < 1) {
-      return apiError('Tag is required', '400')
-    }
+    // Build new URL for the consolidated endpoint
+    const newPath = `/api/v1/address/${address}/tags`;
+    
+    // Preserve pagination and sort params
+    const newParams = new URLSearchParams();
+    const limit = searchParams.get('limit') || searchParams.get('page') ? searchParams.get('limit') || '20' : '20';
+    const offset = searchParams.get('offset');
+    const sort = searchParams.get('sort');
+    
+    newParams.set('limit', limit);
+    if (offset) newParams.set('offset', offset);
+    if (sort) newParams.set('sort', sort);
 
-    if (taggedBy && !isValidEthereumAddress(taggedBy)) {
-      return apiError('Invalid taggedBy address', '400')
-    }
+    const newUrl = `${newPath}?${newParams.toString()}`;
+    
+    // Forward the request
+    const forwardedRequest = new NextRequest(
+      new URL(newUrl, request.url),
+      {
+        method: 'GET',
+        headers: request.headers,
+      }
+    );
 
-    // Find or create address
-    let addressRecord = await prisma.address.findUnique({
-      where: { address: address.toLowerCase() },
-    })
-
-    if (!addressRecord) {
-      addressRecord = await prisma.address.create({
-        data: {
-          address: address.toLowerCase(),
-          riskScore: 0,
-          riskLevel: 'LOW',
-        },
-      })
-    }
-
-    // Upsert tag
-    const tagRecord = await prisma.addressTag.upsert({
-      where: {
-        addressId_tag: {
-          addressId: addressRecord.id,
-          tag: tag.trim(),
-        },
-      },
-      update: {
-        taggedBy: taggedBy?.toLowerCase() || null,
-      },
-      create: {
-        addressId: addressRecord.id,
-        tag: tag.trim(),
-        taggedBy: taggedBy?.toLowerCase() || null,
-        upvotes: taggedBy ? 1 : 0, // Auto-upvote by creator
-      },
-    })
-
-    return apiSuccess({
-      tag: {
-        id: tagRecord.id,
-        tag: tagRecord.tag,
-        taggedBy: tagRecord.taggedBy,
-        createdAt: tagRecord.createdAt.toISOString(),
-      },
-    }, { message: 'Tag created successfully' })
+    const response = await fetch(forwardedRequest);
+    return response;
   } catch (error) {
-    console.error('Create tag error:', error)
-    return apiError('Internal server error', '500')
+    console.error('Address tags proxy error (GET):', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
 /**
- * GET — List address tags
+ * POST — Create address tag (deprecated)
+ * Forwards to /api/v1/address/[address]/tags
  */
-export async function GET(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url)
-    const address = searchParams.get('address')
-    const tag = searchParams.get('tag')
-    const taggedBy = searchParams.get('taggedBy')
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
-    const skip = (page - 1) * limit
+    const body = await request.json();
+    const { address } = body;
 
-    // Build where clause
-    const where: any = {}
+    logDeprecation('POST', { address });
 
-    if (address) {
-      const addr = await prisma.address.findUnique({
-        where: { address: address.toLowerCase() },
-      })
-      if (!addr) {
-        return apiSuccess({ data: [], pagination: { page, limit, total: 0, totalPages: 0 } })
+    if (!address) {
+      return NextResponse.json(
+        { error: 'Address is required in request body' },
+        { status: 400 }
+      );
+    }
+
+    // Build new URL for the consolidated endpoint
+    const newPath = `/api/v1/address/${address}/tags`;
+    
+    // Forward the request with only the tag data
+    const forwardedRequest = new NextRequest(
+      new URL(newPath, request.url),
+      {
+        method: 'POST',
+        headers: request.headers,
+        body: JSON.stringify({ tag: body.tag }),
       }
-      where.addressId = addr.id
-    }
+    );
 
-    if (tag) {
-      where.tag = { contains: tag, mode: 'insensitive' }
-    }
-
-    if (taggedBy) {
-      where.taggedBy = taggedBy.toLowerCase()
-    }
-
-    const [tags, total] = await Promise.all([
-      prisma.addressTag.findMany({
-        where,
-        include: {
-          address: {
-            select: { address: true, riskScore: true, riskLevel: true },
-          },
-        },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      prisma.addressTag.count({ where }),
-    ])
-
-    return apiSuccess({
-      data: tags.map(t => ({
-        id: t.id,
-        tag: t.tag,
-        taggedBy: t.taggedBy,
-        upvotes: t.upvotes,
-        downvotes: t.downvotes,
-        score: t.upvotes - t.downvotes,
-        createdAt: t.createdAt.toISOString(),
-        address: t.address.address,
-        addressRisk: t.address.riskLevel,
-      })),
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
-    })
+    const response = await fetch(forwardedRequest);
+    return response;
   } catch (error) {
-    console.error('List tags error:', error)
-    return apiError('Internal server error', '500')
+    console.error('Address tags proxy error (POST):', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
