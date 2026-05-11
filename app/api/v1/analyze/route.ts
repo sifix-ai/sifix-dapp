@@ -56,31 +56,169 @@ export async function POST(request: NextRequest) {
   try {
     // Auth guard
     const auth = await verifyApiAuth()
+
     if (!auth.authorized) {
       return NextResponse.json(
-        { error: auth.error || "Authentication required" },
+        {
+          error: auth.error || "Authentication required",
+        },
         { status: 401 }
       )
     }
 
     const body = await request.json()
-    const { from, to, data, value } = body
 
-    if (!from || !to) {
-      return NextResponse.json(
-        { error: "Missing required fields: from, to" },
-        { status: 400 }
-      )
-    }
+    const {
+      // transaction fields
+      from,
+      to,
+      data,
+      value,
 
-    if (!isValidEthereumAddress(from) || !isValidEthereumAddress(to)) {
-      return NextResponse.json(
-        { error: "Invalid Ethereum address format" },
-        { status: 400 }
-      )
-    }
+      // signature fields
+      address,
+      message,
+      signature,
+      type,
+    } = body
 
     const agent = await getAgent()
+
+    /**
+     * =========================================================
+     * SIGNATURE ANALYSIS
+     * =========================================================
+     */
+    const isSignatureRequest =
+      !!message || type === "personal_sign" || !!signature
+
+    if (isSignatureRequest) {
+      const signerAddress = address || from
+
+      if (!signerAddress || !message) {
+        return NextResponse.json(
+          {
+            error:
+              "Missing required fields for signature analysis: address/message",
+          },
+          { status: 400 }
+        )
+      }
+
+      if (!isValidEthereumAddress(signerAddress)) {
+        return NextResponse.json(
+          {
+            error: "Invalid Ethereum address format",
+          },
+          { status: 400 }
+        )
+      }
+
+      console.log(
+        `[API] Analyzing signature request from ${signerAddress}`
+      )
+
+      /**
+       * Example analyzer call
+       * You can replace this with:
+       * agent.analyzeSignature(...)
+       */
+      const result = await agent.analyzeSignature({
+        address: signerAddress as Address,
+        message,
+        signature,
+        type: type || "personal_sign",
+      })
+
+      const riskScore = result.analysis.riskScore
+
+      let riskLevel:
+        | "SAFE"
+        | "LOW"
+        | "MEDIUM"
+        | "HIGH"
+        | "CRITICAL"
+
+      if (riskScore >= 80) riskLevel = "CRITICAL"
+      else if (riskScore >= 60) riskLevel = "HIGH"
+      else if (riskScore >= 40) riskLevel = "MEDIUM"
+      else if (riskScore >= 20) riskLevel = "LOW"
+      else riskLevel = "SAFE"
+
+      let storageUrl = result.storageExplorer || null
+
+      if (!storageUrl && result.storageRootHash) {
+        const explorerBaseUrl =
+          process.env.STORAGE_EXPLORER_URL ||
+          "https://storage-testnet.0g.ai"
+
+        storageUrl = `${explorerBaseUrl}/file/${result.storageRootHash}`
+      }
+
+      return NextResponse.json({
+        success: true,
+
+        analysisType: "signature",
+
+        signatureType: type || "personal_sign",
+
+        riskLevel,
+        riskScore,
+
+        confidence: result.analysis.confidence,
+        reasoning: result.analysis.reasoning,
+        threats: result.analysis.threats,
+        recommendation: result.analysis.recommendation,
+
+        provider: result.computeProvider,
+
+        signatureAnalysis: {
+          address: signerAddress,
+          hasSignature: !!signature,
+          messagePreview:
+            typeof message === "string"
+              ? message.slice(0, 200)
+              : null,
+        },
+
+        threatIntel: result.threatIntel,
+        timestamp: result.timestamp,
+
+        storageHash: result.storageRootHash || null,
+        storageExplorer: storageUrl,
+
+        storageDownload: result.storageRootHash
+          ? `/api/v1/storage/${result.storageRootHash}/download`
+          : null,
+      })
+    }
+
+    /**
+     * =========================================================
+     * TRANSACTION ANALYSIS
+     * =========================================================
+     */
+    if (!from || !to) {
+      return NextResponse.json(
+        {
+          error:
+            "Missing required fields for transaction analysis: from, to",
+        },
+        { status: 400 }
+      )
+    }
+
+    if (
+      !isValidEthereumAddress(from) ||
+      !isValidEthereumAddress(to)
+    ) {
+      return NextResponse.json(
+        {
+          error: "Invalid Ethereum address format",
+        },
+        { status: 400 }
+      )
+    }
 
     console.log(`[API] Analyzing transaction: ${from} → ${to}`)
 
@@ -92,7 +230,13 @@ export async function POST(request: NextRequest) {
     })
 
     const riskScore = result.analysis.riskScore
-    let riskLevel: "SAFE" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL"
+
+    let riskLevel:
+      | "SAFE"
+      | "LOW"
+      | "MEDIUM"
+      | "HIGH"
+      | "CRITICAL"
 
     if (riskScore >= 80) riskLevel = "CRITICAL"
     else if (riskScore >= 60) riskLevel = "HIGH"
@@ -102,45 +246,64 @@ export async function POST(request: NextRequest) {
 
     // Generate storage URL if we have a hash but no explorer URL
     let storageUrl = result.storageExplorer || null
+
     if (!storageUrl && result.storageRootHash) {
-      const explorerBaseUrl = process.env.STORAGE_EXPLORER_URL || "https://storage-testnet.0g.ai"
+      const explorerBaseUrl =
+        process.env.STORAGE_EXPLORER_URL ||
+        "https://storage-testnet.0g.ai"
+
       storageUrl = `${explorerBaseUrl}/file/${result.storageRootHash}`
     }
 
     return NextResponse.json({
       success: true,
+
+      analysisType: "transaction",
+
       riskLevel,
       riskScore,
+
       confidence: result.analysis.confidence,
       reasoning: result.analysis.reasoning,
       threats: result.analysis.threats,
       recommendation: result.analysis.recommendation,
+
       provider: result.computeProvider,
+
       simulation: {
         success: result.simulation.success,
         gasUsed: result.simulation.gasUsed.toString(),
-        balanceChanges: result.simulation.balanceChanges.map((change: any) => ({
-          token: change.token,
-          from: change.from,
-          to: change.to,
-          amount: change.amount.toString(),
-        })),
+
+        balanceChanges:
+          result.simulation.balanceChanges.map(
+            (change: any) => ({
+              token: change.token,
+              from: change.from,
+              to: change.to,
+              amount: change.amount.toString(),
+            })
+          ),
+
         revertReason: result.simulation.revertReason,
       },
+
       threatIntel: result.threatIntel,
       timestamp: result.timestamp,
+
       // 0G Storage proof
       storageHash: result.storageRootHash || null,
       storageExplorer: storageUrl,
+
       storageDownload: result.storageRootHash
         ? `/api/v1/storage/${result.storageRootHash}/download`
         : null,
     })
   } catch (error) {
-    console.error("[API] Transaction analysis error:", error)
+    console.error("[API] Analysis error:", error)
+
     return NextResponse.json(
       {
-        error: "Failed to analyze transaction",
+        error: "Failed to analyze request",
       },
       { status: 500 }
     )
