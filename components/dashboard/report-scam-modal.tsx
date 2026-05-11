@@ -366,23 +366,6 @@ function Step3Confirm({ targetAddress, selectedReasons, customText, chainId, isD
           Saving report…
         </div>
       )}
-      {!isDomain && step === 'deploying' && (
-        <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm text-muted">
-            <Loader2 size={14} className="animate-spin" />
-            Deploying ThreatReporter contract — approve in your wallet…
-          </div>
-          <p className="pl-6 text-xs text-muted">
-            One-time setup. Only needed once per network.
-          </p>
-        </div>
-      )}
-      {!isDomain && step === 'deploy-confirming' && (
-        <div className="flex items-center gap-2 text-sm text-muted">
-          <Loader2 size={14} className="animate-spin" />
-          Waiting for contract deployment to confirm…
-        </div>
-      )}
       {!isDomain && step === 'wallet' && (
         <div className="flex items-center gap-2 text-sm text-muted">
           <Loader2 size={14} className="animate-spin" />
@@ -412,7 +395,7 @@ function Step3Confirm({ targetAddress, selectedReasons, customText, chainId, isD
         <span>
           {isDomain
             ? 'Your report will be saved to our community database to help warn other users. No gas fee required.'
-            : 'Submitting requires a small gas fee on 0G Galileo. If the contract is not yet deployed, you will be asked to approve a deploy transaction first (one-time). Only the hash of your report is stored on-chain — no personal data.'}
+            : 'Submitting requires a small gas fee on 0G Galileo. Only the hash of your report is stored on-chain — no personal data.'}
         </span>
       </div>
 

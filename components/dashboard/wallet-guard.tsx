@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useAccount } from "wagmi";
 import { Loader2 } from "lucide-react";
+import { useApiAuth } from "@/hooks/use-api-auth";
 
 // Pages inside /dashboard that are accessible without a wallet
 const PUBLIC_PATHS = [
@@ -12,6 +13,7 @@ const PUBLIC_PATHS = [
 ];
 
 export function WalletGuard({ children }: { children: React.ReactNode }) {
+  useApiAuth();
   const { isConnected, status } = useAccount();
   const router = useRouter();
   const pathname = usePathname();

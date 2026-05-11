@@ -171,17 +171,19 @@ export function ConnectButton() {
         title="Connect Wallet"
         maxWidth="max-w-md"
       >
-        <div className="space-y-4">
-          <div className="rounded-xl border border-card-border bg-surface p-4">
-            <p className="text-sm text-foreground">Choose your wallet</p>
+        <div className="space-y-5">
+          <div className="rounded-xl border border-card-border bg-surface px-4 py-3">
+            <p className="text-sm font-medium text-foreground">Choose your wallet</p>
             <p className="mt-1 text-xs text-muted">
               Connect to <span className="font-medium text-[#F59E0B]">0G Galileo Testnet</span> for secure access.
             </p>
           </div>
 
+          <div className="border-t border-card-border" />
+
           <div className="space-y-2">
             {availableConnectors.length === 0 && (
-              <div className="rounded-xl border border-card-border bg-surface p-4 text-sm text-muted">
+              <div className="rounded-xl border border-card-border bg-surface px-4 py-3 text-sm text-muted">
                 No wallet connector detected. Please install MetaMask or Rabby extension.
               </div>
             )}

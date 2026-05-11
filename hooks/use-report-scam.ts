@@ -127,9 +127,16 @@ export function useReportScam(): UseReportScamReturn {
 
         // 4. On-chain confirmed — now save off-chain with txHash
         setStep('saving');
+        const token = typeof window !== 'undefined' ? localStorage.getItem('sifix_api_token') : null;
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
         const res = await fetch('/api/v1/threats', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({
             address: targetAddress,
             threatType: reasonText,
@@ -143,6 +150,9 @@ export function useReportScam(): UseReportScamReturn {
         });
 
         if (!res.ok) {
+          if (res.status === 401) {
+            throw new Error('Session expired. Please reconnect your wallet.');
+          }
           const json = await res.json().catch(() => ({}));
           throw new Error(json?.error?.message ?? 'Failed to save report. Please try again.');
         }

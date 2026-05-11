@@ -105,7 +105,12 @@ function WalletButton() {
               {copied ? "Copied!" : "Copy address"}
             </button>
             <button
-              onClick={() => { disconnect(); setOpen(false); }}
+              onClick={() => {
+                localStorage.removeItem('sifix_api_token');
+                localStorage.removeItem('sifix_api_token_expires');
+                disconnect();
+                setOpen(false);
+              }}
               className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-red-400 transition-colors hover:bg-red-950/40"
             >
               <LogOut size={15} />
