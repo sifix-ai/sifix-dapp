@@ -1,7 +1,5 @@
-import { NextRequest } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { apiSuccess, errors, withErrorHandler } from "@/lib/api-response"
-import { isValidEthereumAddress } from "@/lib/address-validation"
 
 // Valid AI provider values
 const VALID_AI_PROVIDERS = [
@@ -13,92 +11,124 @@ const VALID_AI_PROVIDERS = [
   "custom",
 ] as const
 
+// Locked default profile — always maps to 0G Compute
+const DEFAULT_LOCKED_PROVIDER = "0g-compute"
+const DEFAULT_LOCKED_MODEL = "qwen-2.5-7b-instruct"
+
 type AiProvider = (typeof VALID_AI_PROVIDERS)[number]
 
-/**
- * Strip sensitive fields (aiApiKey) from a settings object before returning it.
- */
-function sanitizeSettings<T extends Record<string, unknown>>(settings: T): Omit<T, 'aiApiKey'> & { hasApiKey: boolean } {
+function isValidEth(addr: string): boolean {
+  return /^0x[a-fA-F0-9]{40}$/.test(addr)
+}
+
+function sanitize<T extends Record<string, unknown>>(settings: T) {
   const { aiApiKey, ...rest } = settings
+  return { ...rest, hasApiKey: !!aiApiKey }
+}
+
+function lockedResponse(settings: Record<string, unknown>) {
   return {
-    ...rest,
-    hasApiKey: !!aiApiKey,
+    ...sanitize(settings),
+    effectiveProvider: DEFAULT_LOCKED_PROVIDER,
+    aiModel: DEFAULT_LOCKED_MODEL,
+    aiBaseUrl: process.env.COMPUTE_PROVIDER_ADDRESS || settings.aiBaseUrl || null,
+    isLocked: true,
   }
+}
+
+function json(data: unknown, status = 200) {
+  return NextResponse.json(data, { status })
+}
+
+function errRes(message: string, status = 400, code = "VALIDATION_ERROR") {
+  return json({ success: false, error: { code, message } }, status)
 }
 
 /**
  * GET /api/v1/settings/ai-provider?address=0x...
- * Retrieve AI provider settings for a given address
  */
 export async function GET(request: NextRequest) {
-  return withErrorHandler(async () => {
+  try {
     const { searchParams } = new URL(request.url)
     const address = searchParams.get("address")
 
-    if (!address) {
-      return errors.validation("Missing required query parameter: address")
-    }
+    if (!address) return errRes("Missing required query parameter: address")
+    if (!isValidEth(address)) return errRes("Invalid Ethereum address format", 400, "INVALID_ADDRESS")
 
-    if (!isValidEthereumAddress(address)) {
-      return errors.invalidAddress()
-    }
+    const addr = address.toLowerCase()
 
-    let settings = await prisma.userSettings.findUnique({
-      where: { address },
-    })
+    let settings = await prisma.userSettings.findUnique({ where: { address: addr } })
 
-    // Auto-create default settings if none exist
     if (!settings) {
       settings = await prisma.userSettings.create({
-        data: { address },
+        data: { address: addr, aiProvider: "default", aiModel: DEFAULT_LOCKED_MODEL },
       })
     }
 
-    // Strip aiApiKey before sending to client
-    return apiSuccess(sanitizeSettings(settings))
-  })
+    if (settings.aiProvider === "default") {
+      return json({ success: true, data: lockedResponse(settings) })
+    }
+
+    return json({ success: true, data: sanitize(settings) })
+  } catch (error: unknown) {
+    console.error("[settings/ai-provider GET]", error)
+    const msg = error instanceof Error ? error.message : "Internal server error"
+    return errRes(msg, 500, "INTERNAL_ERROR")
+  }
 }
 
 /**
  * PUT /api/v1/settings/ai-provider
- * Create or update AI provider settings for a given address
- *
  * Body: { address, aiProvider, aiApiKey?, aiBaseUrl?, aiModel? }
  */
 export async function PUT(request: NextRequest) {
-  return withErrorHandler(async () => {
+  try {
     const body = await request.json()
     const { address, aiProvider, aiApiKey, aiBaseUrl, aiModel } = body
 
-    // Validate required fields
-    if (!address) {
-      return errors.validation("Missing required field: address")
-    }
-
-    if (!isValidEthereumAddress(address)) {
-      return errors.invalidAddress()
-    }
+    if (!address) return errRes("Missing required field: address")
+    if (!isValidEth(address)) return errRes("Invalid Ethereum address format", 400, "INVALID_ADDRESS")
 
     if (aiProvider && !VALID_AI_PROVIDERS.includes(aiProvider as AiProvider)) {
-      return errors.validation(
-        `Invalid aiProvider. Must be one of: ${VALID_AI_PROVIDERS.join(", ")}`,
-        { validProviders: VALID_AI_PROVIDERS }
-      )
+      return errRes(`Invalid aiProvider. Must be one of: ${VALID_AI_PROVIDERS.join(", ")}`)
     }
 
-    // Build update data — only include fields that are explicitly provided
+    const addr = address.toLowerCase()
+    const provider = aiProvider || "default"
+
+    // "default" / "0g-compute" → locked profile
+    if (provider === "default" || provider === "0g-compute") {
+      const settings = await prisma.userSettings.upsert({
+        where: { address: addr },
+        update: {
+          aiProvider: "default",
+          aiApiKey: null,
+          aiBaseUrl: process.env.COMPUTE_PROVIDER_ADDRESS || null,
+          aiModel: DEFAULT_LOCKED_MODEL,
+        },
+        create: {
+          address: addr,
+          aiProvider: "default",
+          aiApiKey: null,
+          aiBaseUrl: process.env.COMPUTE_PROVIDER_ADDRESS || null,
+          aiModel: DEFAULT_LOCKED_MODEL,
+        },
+      })
+      return json({ success: true, data: lockedResponse(settings) })
+    }
+
+    // Non-locked provider
     const updateData: Record<string, unknown> = {}
     if (aiProvider !== undefined) updateData.aiProvider = aiProvider
     if (aiApiKey !== undefined) updateData.aiApiKey = aiApiKey || null
     if (aiBaseUrl !== undefined) updateData.aiBaseUrl = aiBaseUrl || null
     if (aiModel !== undefined) updateData.aiModel = aiModel || null
 
-    // Upsert: create if not exists, update if exists
     const settings = await prisma.userSettings.upsert({
-      where: { address },
+      where: { address: addr },
       update: updateData,
       create: {
-        address,
+        address: addr,
         ...(aiProvider && { aiProvider }),
         ...(aiApiKey && { aiApiKey }),
         ...(aiBaseUrl && { aiBaseUrl }),
@@ -106,49 +136,56 @@ export async function PUT(request: NextRequest) {
       },
     })
 
-    // Strip aiApiKey before sending to client
-    return apiSuccess(sanitizeSettings(settings))
-  })
+    return json({ success: true, data: sanitize(settings) })
+  } catch (error: unknown) {
+    console.error("[settings/ai-provider PUT]", error)
+    const msg = error instanceof Error ? error.message : "Internal server error"
+    return errRes(msg, 500, "INTERNAL_ERROR")
+  }
 }
 
 /**
  * DELETE /api/v1/settings/ai-provider?address=0x...
- * Reset AI provider settings to defaults for a given address
+ * Reset to locked defaults.
  */
 export async function DELETE(request: NextRequest) {
-  // Auth check
-  const auth = await verifyApiAuth()
-  if (!auth.authorized) {
-    return errors.unauthorized(auth.error)
-  }
+  try {
+    // Lazy import — avoid loading extension-auth (+ viem chain) at module level
+    const { verifyApiAuth } = await import("@/lib/extension-auth")
+    const auth = await verifyApiAuth()
+    if (!auth.authorized) {
+      return errRes(auth.error || "Unauthorized", 401, "UNAUTHORIZED")
+    }
 
-  return withErrorHandler(async () => {
     const { searchParams } = new URL(request.url)
     const address = searchParams.get("address")
 
-    if (!address) {
-      return errors.validation("Missing required query parameter: address")
-    }
+    if (!address) return errRes("Missing required query parameter: address")
+    if (!isValidEth(address)) return errRes("Invalid Ethereum address format", 400, "INVALID_ADDRESS")
 
-    if (!isValidEthereumAddress(address)) {
-      return errors.invalidAddress()
-    }
+    const addr = address.toLowerCase()
 
-    // Reset to defaults instead of deleting the record entirely
     const settings = await prisma.userSettings.upsert({
-      where: { address },
+      where: { address: addr },
       update: {
         aiProvider: "default",
         aiApiKey: null,
-        aiBaseUrl: null,
-        aiModel: null,
+        aiBaseUrl: process.env.COMPUTE_PROVIDER_ADDRESS || null,
+        aiModel: DEFAULT_LOCKED_MODEL,
       },
       create: {
-        address,
+        address: addr,
+        aiProvider: "default",
+        aiApiKey: null,
+        aiBaseUrl: process.env.COMPUTE_PROVIDER_ADDRESS || null,
+        aiModel: DEFAULT_LOCKED_MODEL,
       },
     })
 
-    // Strip aiApiKey before sending to client
-    return apiSuccess(sanitizeSettings(settings))
-  })
+    return json({ success: true, data: lockedResponse(settings) })
+  } catch (error: unknown) {
+    console.error("[settings/ai-provider DELETE]", error)
+    const msg = error instanceof Error ? error.message : "Internal server error"
+    return errRes(msg, 500, "INTERNAL_ERROR")
+  }
 }
