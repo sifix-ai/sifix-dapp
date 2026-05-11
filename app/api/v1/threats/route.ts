@@ -5,6 +5,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ReportService } from '@/services/report-service';
 import { apiSuccess, apiError } from '@/lib/api-response';
 import { isValidEthereumAddress } from '@/lib/address-validation';
+import { verifyApiAuth } from '@/lib/extension-auth';
+import { uploadThreatEvidence } from '@/lib/zerog-storage';
+import { reportThreatToContract, severityToNumber } from '@/lib/contract';
+import { prisma } from '@/lib/prisma';
 
 /** Maximum number of threat reports a client may request per page */
 const MAX_THREATS_LIMIT = 100;
@@ -60,6 +64,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const {
+      // Canonical fields (service-layer)
       address,
       reporterAddress,
       threatType,
@@ -69,10 +74,108 @@ export async function POST(request: NextRequest) {
       transactionHash,
       confidence,
       simulationData,
+
+      // Legacy /threats/report fields (0G Storage + on-chain)
+      type,
+      description,
+      evidence,
     } = body;
 
-    // Validate addresses
-    if (!address || !isValidEthereumAddress(address)) {
+    // ============================================
+    // Mode A: Threat report with 0G Storage + on-chain
+    // ============================================
+    if (type && description && address && typeof severity === 'string') {
+      // Auth required for on-chain reports
+      const auth = await verifyApiAuth();
+      if (!auth.authorized) {
+        return NextResponse.json({ error: auth.error }, { status: 401 });
+      }
+
+      if (!isValidEthereumAddress(address)) {
+        return apiError('Invalid address format', '400');
+      }
+
+      // 1. Upload evidence to 0G Storage
+      let evidenceCid: string | null = null;
+      try {
+        const storageResult = await uploadThreatEvidence({
+          address,
+          severity,
+          type,
+          description,
+          timestamp: Date.now(),
+          transactionData: evidence?.transactionData,
+          simulationResult: evidence?.simulationResult,
+          aiAnalysis: evidence?.aiAnalysis,
+        });
+        evidenceCid = storageResult.cid;
+      } catch (error) {
+        console.error('[API] 0G Storage upload failed:', error);
+      }
+
+      // 2. Report to smart contract (only for HIGH/CRITICAL)
+      let contractTxHash: string | null = null;
+      if (evidenceCid && (severity === 'HIGH' || severity === 'CRITICAL')) {
+        try {
+          const contractResult = await reportThreatToContract(
+            address as `0x${string}`,
+            severityToNumber(severity),
+            evidenceCid
+          );
+          if (contractResult.success) {
+            contractTxHash = contractResult.txHash;
+          }
+        } catch (error) {
+          console.error('[API] Contract report failed:', error);
+        }
+      }
+
+      // 3. Persist using ReportService
+      const severityScore = severityToNumber(severity);
+      const report = await ReportService.create({
+        address,
+        reporterAddress: auth.walletAddress || '0x0000000000000000000000000000000000000000',
+        threatType: type,
+        severity: severityScore,
+        evidenceHash: evidenceCid || `mock-${Date.now()}`,
+        explanation: description,
+        transactionHash: contractTxHash || undefined,
+        confidence: 85,
+        simulationData: evidence ? JSON.stringify(evidence) : undefined,
+      });
+
+      return NextResponse.json(
+        {
+          success: true,
+          data: {
+            id: report.id,
+            address: report.address.address,
+            threatType: report.threatType,
+            severity: report.severity,
+            riskLevel: report.riskLevel,
+            status: report.status,
+            createdAt: report.createdAt,
+            storageCid: evidenceCid,
+            contractTxHash,
+          },
+        },
+        { status: 201 }
+      );
+    }
+
+    // ============================================
+    // Mode B: Standard threat report (service-layer)
+    // ============================================
+    // Support legacy body with addressId (convert to address)
+    let finalAddress = address as string | undefined;
+    if (!finalAddress && body.addressId) {
+      const addressRecord = await prisma.address.findUnique({
+        where: { id: body.addressId },
+      });
+      if (addressRecord) finalAddress = addressRecord.address;
+    }
+
+    if (!finalAddress || !isValidEthereumAddress(finalAddress)) {
       return apiError('Invalid address format', '400');
     }
 
@@ -80,16 +183,16 @@ export async function POST(request: NextRequest) {
       return apiError('Invalid reporter address format', '400');
     }
 
-    if (!threatType || !severity || !evidenceHash || !explanation || !confidence) {
+    if (!threatType || !severity || !explanation || !confidence) {
       return apiError('Missing required fields', '400');
     }
 
     const report = await ReportService.create({
-      address,
+      address: finalAddress,
       reporterAddress,
       threatType,
       severity,
-      evidenceHash,
+      evidenceHash: evidenceHash || `manual-${Date.now()}`,
       explanation,
       transactionHash,
       confidence,
@@ -107,7 +210,7 @@ export async function POST(request: NextRequest) {
           riskLevel: report.riskLevel,
           status: report.status,
           createdAt: report.createdAt,
-        }
+        },
       },
       { status: 201 }
     );

@@ -145,9 +145,9 @@ export const createReportSchema = z.object({
 });
 
 /**
- * GET /api/v1/reports - Query params
+ * GET /api/v1/threats - Query params
  */
-export const reportsQuerySchema = paginationSchema.partial().extend({
+export const threatsQuerySchema = paginationSchema.partial().extend({
   status: ReportStatusEnum.optional(),
   category: AddressCategoryEnum.optional(),
   reporterAddress: addressSchema.optional(),
@@ -156,9 +156,9 @@ export const reportsQuerySchema = paginationSchema.partial().extend({
 });
 
 /**
- * POST /api/v1/reports/[id]/vote - Request body
+ * POST /api/v1/threats/[id]/vote - Request body
  */
-export const voteSchema = z.object({
+export const threatVoteSchema = z.object({
   vote: VoteTypeEnum,
   voterAddress: addressSchema,
   txHash: txHashSchema.optional().nullable(),
@@ -312,9 +312,9 @@ export type VoteType = z.infer<typeof VoteTypeEnum>;
 export type RiskLevel = z.infer<typeof RiskLevelEnum>;
 
 export type CreateReportInput = z.infer<typeof createReportSchema>;
-export type VoteInput = z.infer<typeof voteSchema>;
+export type VoteInput = z.infer<typeof threatVoteSchema>;
 export type BatchScanInput = z.infer<typeof batchScanSchema>;
 export type SyncRequestInput = z.infer<typeof syncRequestSchema>;
 export type DappsQueryInput = z.infer<typeof dappsQuerySchema>;
-export type ReportsQueryInput = z.infer<typeof reportsQuerySchema>;
+export type ThreatsQueryInput = z.infer<typeof threatsQuerySchema>;
 export type SearchQueryInput = z.infer<typeof searchQuerySchema>;

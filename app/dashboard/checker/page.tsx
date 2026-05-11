@@ -179,15 +179,16 @@ function ReportScamButton({ address }: { address: string }) {
     if (!walletAddress) return
     setLoading(true)
     try {
-      const res = await fetch("/api/v1/reports", {
+      const res = await fetch("/api/v1/threats", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          addressId: address,
+          address: address,
           reporterAddress: walletAddress,
           threatType: "SUSPICIOUS",
           severity: 50,
           explanation: "User-reported via checker page",
+          confidence: 50,
         }),
       })
       if (res.ok) setReported(true)

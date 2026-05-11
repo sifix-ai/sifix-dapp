@@ -18,7 +18,7 @@ export async function fetchThreats(limit = 10) {
 export async function reportThreat(data: ReportThreat) {
   try {
     const validated = reportThreatSchema.parse(data)
-    return await apiCall(`${API_BASE_URL}/api/v1/threats/report`, {
+    return await apiCall(`${API_BASE_URL}/api/v1/threats`, {
       method: 'POST',
       body: JSON.stringify(validated),
     })
