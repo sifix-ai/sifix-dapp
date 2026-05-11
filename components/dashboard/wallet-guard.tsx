@@ -8,7 +8,6 @@ import { useApiAuth } from "@/hooks/use-api-auth";
 
 // Pages inside /dashboard that are accessible without a wallet
 const PUBLIC_PATHS = [
-  "/connect",
   "/dashboard/checker",
 ];
 
@@ -30,8 +29,8 @@ export function WalletGuard({ children }: { children: React.ReactNode }) {
         // Mid-session disconnect → back to marketing home
         router.replace("/");
       } else {
-        // Initial launch without wallet → connect page
-        router.replace("/connect");
+        // Initial launch without wallet → fallback to checker page (public)
+        router.replace("/dashboard/checker");
       }
     }
 
