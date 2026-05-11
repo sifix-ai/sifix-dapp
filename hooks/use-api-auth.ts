@@ -14,7 +14,7 @@ export interface UseApiAuthReturn {
   isLoading: boolean
   /** Error message if authentication failed */
   error: string | null
-  /** Manually trigger authentication (auto-called on mount when wallet connected) */
+  /** Manually trigger authentication */
   authenticate: () => Promise<string | null>
   /** Clear the stored token */
   logout: () => void
@@ -26,7 +26,7 @@ export interface UseApiAuthReturn {
  * Hook for dApp frontend auto-authentication.
  *
  * Uses the existing nonce → sign → verify flow via wagmi's signMessage.
- * Stores the Bearer token in localStorage and auto-refreshes when the wallet connects.
+ * Stores the Bearer token in localStorage and auto-triggers when wallet connects.
  */
 export function useApiAuth(): UseApiAuthReturn {
   const { address, isConnected } = useAccount()
@@ -36,6 +36,8 @@ export function useApiAuth(): UseApiAuthReturn {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const isAuthenticating = useRef(false)
+  // Track the address we last authed for — prevent re-auth on same address
+  const lastAuthedAddress = useRef<string | null>(null)
 
   // Load cached token from localStorage on mount
   useEffect(() => {
@@ -96,9 +98,12 @@ export function useApiAuth(): UseApiAuthReturn {
       })
 
       persistToken(result)
+      lastAuthedAddress.current = address
+      console.log('[Auth] Token obtained for', address)
       return result.token
-    } catch (err: any) {
-      const msg = err?.message || 'Authentication failed'
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Authentication failed'
+      console.error('[Auth] Failed:', msg)
       setError(msg)
       clearToken()
       return null
@@ -110,11 +115,20 @@ export function useApiAuth(): UseApiAuthReturn {
 
   const logout = useCallback(() => {
     clearToken()
+    lastAuthedAddress.current = null
   }, [clearToken])
 
   // Auto-authenticate when wallet connects (if no cached token)
+  // Only trigger once per address change
   useEffect(() => {
-    if (isConnected && address && !token && !isLoading && !isAuthenticating.current) {
+    if (
+      isConnected &&
+      address &&
+      !token &&
+      !isLoading &&
+      !isAuthenticating.current &&
+      lastAuthedAddress.current !== address
+    ) {
       authenticate()
     }
   }, [isConnected, address, token, isLoading, authenticate])
