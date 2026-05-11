@@ -97,12 +97,12 @@ function Step1Form({ selectedReasons, customText, onToggleReason, onCustomTextCh
               />
               <span
                 className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border transition-colors ${
-                  checked ? 'border-accent bg-accent' : 'border-card-border'
+                  checked ? 'border-accent bg-accent text-white' : 'border-card-border'
                 }`}
               >
                 {checked && (
                   <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                    <path d="M2 5l2.5 2.5L8 2.5" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M2 5l2.5 2.5L8 2.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 )}
               </span>

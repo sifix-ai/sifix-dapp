@@ -124,15 +124,12 @@ export function useReportThreat(): UseReportThreatReturn {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             address: targetAddress,
-            type: reasonText,
-            description: reasonText,
-            severity: 'MEDIUM',
+            threatType: reasonText,
+            explanation: reasonText,
+            severity: 50,
+            confidence: 60,
             reporterAddress,
-            reasonHash,
-            reasonData: {
-              selectedReasons: [...reasonData.selectedReasons].sort(),
-              customText: reasonData.customText,
-            },
+            evidenceHash: reasonHash,
           }),
         });
 
