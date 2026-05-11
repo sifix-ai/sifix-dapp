@@ -28,14 +28,10 @@ export default function TagsPage() {
   const [showAdd, setShowAdd] = useState(false)
   const [adding, setAdding] = useState(false)
 
-  useEffect(() => {
-    fetchTags()
-  }, [])
-
   const fetchTags = async () => {
     setLoading(true)
     try {
-      const res = await fetch("/api/v1/address-tags?limit=50")
+      const res = await fetch("/api/v1/tags?limit=50")
       const json = await res.json()
       if (json.success || json.data) {
         setTags((json.data?.data || json.data || []) as TagEntry[])
@@ -43,6 +39,10 @@ export default function TagsPage() {
     } catch {}
     setLoading(false)
   }
+
+  useEffect(() => {
+    fetchTags()
+  }, [])
 
   const filtered = searchQuery
     ? tags.filter(t =>
@@ -56,10 +56,10 @@ export default function TagsPage() {
     if (!tagInput.trim() || !addressInput.trim()) return
     setAdding(true)
     try {
-      await fetch("/api/v1/address-tags", {
+      await fetch(`/api/v1/address/${addressInput.trim()}/tags`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: addressInput.trim(), tag: tagInput.trim() }),
+        body: JSON.stringify({ tag: tagInput.trim(), label: tagInput.trim() }),
       })
       setTagInput("")
       setAddressInput("")
