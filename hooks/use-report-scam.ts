@@ -14,6 +14,7 @@ import {
 } from '@/config/contracts';
 import { wagmiConfig } from '@/lib/wagmi';
 import { isAddress, keccak256, pad, toBytes } from 'viem';
+import { apiFetch } from '@/lib/api-client';
 
 export type ReportStep =
   | 'idle'
@@ -127,16 +128,8 @@ export function useReportScam(): UseReportScamReturn {
 
         // 4. On-chain confirmed — now save off-chain with txHash
         setStep('saving');
-        const token = typeof window !== 'undefined' ? localStorage.getItem('sifix_api_token') : null;
-        const headers: Record<string, string> = {
-          'Content-Type': 'application/json',
-        };
-        if (token) {
-          headers['Authorization'] = `Bearer ${token}`;
-        }
-        const res = await fetch('/api/v1/threats', {
+        const res = await apiFetch('/api/v1/threats', {
           method: 'POST',
-          headers,
           body: JSON.stringify({
             address: targetAddress,
             threatType: reasonText,

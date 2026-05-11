@@ -8,7 +8,12 @@ import { useApiAuth } from "@/hooks/use-api-auth";
 
 // Pages inside /dashboard that are accessible without a wallet
 const PUBLIC_PATHS = [
+  "/dashboard",
   "/dashboard/checker",
+  "/dashboard/threats",
+  "/dashboard/leaderboard",
+  "/dashboard/history",
+  "/dashboard/tags",
 ];
 
 export function WalletGuard({ children }: { children: React.ReactNode }) {
