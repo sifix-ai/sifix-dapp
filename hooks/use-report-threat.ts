@@ -119,13 +119,14 @@ export function useReportThreat(): UseReportThreatReturn {
 
         // 2. Save off-chain first — always succeeds regardless of wallet/chain
         setStep('saving');
-        const res = await fetch('/api/v1/report', {
+        const res = await fetch('/api/v1/threats', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             address: targetAddress,
-            reason: reasonText,
-            category: 'OTHER',
+            type: reasonText,
+            description: reasonText,
+            severity: 'MEDIUM',
             reporterAddress,
             reasonHash,
             reasonData: {

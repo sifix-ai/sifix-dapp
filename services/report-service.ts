@@ -2,6 +2,16 @@
 
 import { prisma } from '@/lib/prisma';
 
+export class DuplicateReportError extends Error {
+  code = 'DUPLICATE_REPORT';
+
+  constructor(message: string = 'You have already reported this address') {
+    super(message);
+    this.name = 'DuplicateReportError';
+  }
+}
+
+
 export interface CreateReportInput {
   address: string;
   reporterAddress: string;
@@ -29,6 +39,17 @@ export class ReportService {
       addressRecord = await prisma.address.create({
         data: { address: input.address }
       });
+    }
+
+    // Duplicate guard: 1 report per reporter per address
+    const existing = await prisma.threatReport.findFirst({
+      where: {
+        addressId: addressRecord.id,
+        reporterAddress: input.reporterAddress.toLowerCase(),
+      },
+    });
+    if (existing) {
+      throw new DuplicateReportError();
     }
 
     // Determine risk level from severity
@@ -83,6 +104,8 @@ export class ReportService {
     status?: string;
     threatType?: string;
     riskLevel?: string;
+    address?: string;
+    reporterAddress?: string;
     limit?: number;
     offset?: number;
   }) {
@@ -91,6 +114,12 @@ export class ReportService {
     if (filters?.status) where.status = filters.status;
     if (filters?.threatType) where.threatType = filters.threatType;
     if (filters?.riskLevel) where.riskLevel = filters.riskLevel;
+    if (filters?.reporterAddress) where.reporterAddress = filters.reporterAddress.toLowerCase();
+    if (filters?.address) {
+      where.address = {
+        address: filters.address.toLowerCase(),
+      };
+    }
 
     const [reports, total] = await Promise.all([
       prisma.threatReport.findMany({

@@ -119,6 +119,9 @@ export const errors = {
   reportAlreadyVoted: () =>
     apiError(ERROR_CODES.REPORT_ALREADY_VOTED, 'You have already voted on this report', undefined, HTTP_STATUS.BAD_REQUEST),
 
+  duplicateReport: () =>
+    apiError(ERROR_CODES.DUPLICATE_REPORT, 'You have already reported this address', undefined, 409),
+
   insufficientReputation: () =>
     apiError(ERROR_CODES.INSUFFICIENT_REPUTATION, 'You need more reputation to vote', undefined, HTTP_STATUS.FORBIDDEN),
 

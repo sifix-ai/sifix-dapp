@@ -2,8 +2,8 @@
 // POST /api/v1/threats - Submit new threat report
 
 import { NextRequest, NextResponse } from 'next/server';
-import { ReportService } from '@/services/report-service';
-import { apiSuccess, apiError } from '@/lib/api-response';
+import { ReportService, DuplicateReportError } from '@/services/report-service';
+import { apiSuccess, apiError, errors } from '@/lib/api-response';
 import { isValidEthereumAddress } from '@/lib/address-validation';
 import { verifyApiAuth } from '@/lib/extension-auth';
 import { uploadThreatEvidence } from '@/lib/zerog-storage';
@@ -27,11 +27,17 @@ export async function GET(request: NextRequest) {
       return apiError('Invalid reporter address format', '400');
     }
 
+    const targetAddress = searchParams.get('address') || undefined;
+    if (targetAddress && !isValidEthereumAddress(targetAddress)) {
+      return apiError('Invalid target address format', '400');
+    }
+
     const filters = {
       status: searchParams.get('status') as any,
       threatType: searchParams.get('threatType') as any,
       riskLevel: searchParams.get('riskLevel') as any,
       reporterAddress,
+      address: targetAddress,
       limit,
       offset,
     };
@@ -132,17 +138,25 @@ export async function POST(request: NextRequest) {
 
       // 3. Persist using ReportService
       const severityScore = severityToNumber(severity);
-      const report = await ReportService.create({
-        address,
-        reporterAddress: auth.walletAddress || '0x0000000000000000000000000000000000000000',
-        threatType: type,
-        severity: severityScore,
-        evidenceHash: evidenceCid || `mock-${Date.now()}`,
-        explanation: description,
-        transactionHash: contractTxHash || undefined,
-        confidence: 85,
-        simulationData: evidence ? JSON.stringify(evidence) : undefined,
-      });
+      let report;
+      try {
+        report = await ReportService.create({
+          address,
+          reporterAddress: auth.walletAddress || '0x0000000000000000000000000000000000000000',
+          threatType: type,
+          severity: severityScore,
+          evidenceHash: evidenceCid || `mock-${Date.now()}`,
+          explanation: description,
+          transactionHash: contractTxHash || undefined,
+          confidence: 85,
+          simulationData: evidence ? JSON.stringify(evidence) : undefined,
+        });
+      } catch (error) {
+        if (error instanceof DuplicateReportError) {
+          return errors.duplicateReport();
+        }
+        throw error;
+      }
 
       return NextResponse.json(
         {
@@ -187,17 +201,25 @@ export async function POST(request: NextRequest) {
       return apiError('Missing required fields', '400');
     }
 
-    const report = await ReportService.create({
-      address: finalAddress,
-      reporterAddress,
-      threatType,
-      severity,
-      evidenceHash: evidenceHash || `manual-${Date.now()}`,
-      explanation,
-      transactionHash,
-      confidence,
-      simulationData,
-    });
+    let report;
+    try {
+      report = await ReportService.create({
+        address: finalAddress,
+        reporterAddress,
+        threatType,
+        severity,
+        evidenceHash: evidenceHash || `manual-${Date.now()}`,
+        explanation,
+        transactionHash,
+        confidence,
+        simulationData,
+      });
+    } catch (error) {
+      if (error instanceof DuplicateReportError) {
+        return errors.duplicateReport();
+      }
+      throw error;
+    }
 
     return NextResponse.json(
       {
