@@ -1,26 +1,50 @@
 "use client"
 
-import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Trophy, Medal, Shield, TrendingUp, Loader2, Activity } from "lucide-react"
+import { Trophy, Medal, Shield, TrendingUp, Loader2 } from "lucide-react"
 import { useLeaderboard } from "@/hooks/use-analytics"
 import { useDashboardStats } from "@/hooks/use-dashboard"
+import { useAccount } from "wagmi"
 
 export default function LeaderboardPage() {
+  const { address, isConnected } = useAccount()
   const { data: leaderboard, isLoading: leaderboardLoading } = useLeaderboard(50)
   const { data: stats, isLoading: statsLoading } = useDashboardStats()
   const loading = leaderboardLoading || statsLoading
+
+  const avgAccuracy = (leaderboard && leaderboard.length > 0)
+    ? Math.round(
+        leaderboard.reduce((sum: number, r: any) => sum + (r.accuracyScore ?? 0), 0) / leaderboard.length
+      )
+    : null
+
+  const myRankIndex = isConnected && address
+    ? (leaderboard || []).findIndex((r: any) => r.address?.toLowerCase() === address.toLowerCase())
+    : -1
+
+  const myRank = myRankIndex >= 0 ? myRankIndex + 1 : null
+  const percentile = myRank && leaderboard?.length
+    ? Math.max(1, Math.round((myRank / leaderboard.length) * 100))
+    : null
+
+  const getReporterTier = (score: number) => {
+    if (score >= 90) return "Elite"
+    if (score >= 75) return "Advanced"
+    if (score >= 50) return "Contributor"
+    return "New"
+  }
 
   const topReporters = (leaderboard || []).map((reporter: any, index: number) => ({
     rank: index + 1,
     address: reporter.address
       ? `${reporter.address.slice(0, 6)}...${reporter.address.slice(-4)}`
       : "Unknown",
-    reports: reporter.reportCount ?? reporter.reportsSubmitted ?? 0,
-    accuracy: reporter.accuracy ?? Math.min(100, 80 + Math.round(reporter.reporterScore / 10)),
-    reputation: reporter.totalScore ?? reporter.reporterScore ?? 0,
-    rewards: reporter.rewards ?? "—",
+    reports: reporter.reportsSubmitted ?? 0,
+    verified: reporter.reportsVerified ?? 0,
+    accuracy: reporter.accuracyScore ?? 0,
+    reputation: reporter.overallScore ?? 0,
+    reporterScore: reporter.reporterScore ?? 0,
   }))
 
   const getRankIcon = (rank: number) => {
@@ -84,7 +108,7 @@ export default function LeaderboardPage() {
                   <TrendingUp className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-white">94.5%</p>
+                  <p className="text-2xl font-bold text-white">{avgAccuracy !== null ? `${avgAccuracy}%` : "—"}</p>
                   <p className="text-sm text-white/60">Avg. Accuracy</p>
                 </div>
               </div>
@@ -100,9 +124,9 @@ export default function LeaderboardPage() {
                     <th className="text-left py-4 px-4 text-sm font-semibold text-white/60">Rank</th>
                     <th className="text-left py-4 px-4 text-sm font-semibold text-white/60">Reporter</th>
                     <th className="text-left py-4 px-4 text-sm font-semibold text-white/60">Reports</th>
+                    <th className="text-left py-4 px-4 text-sm font-semibold text-white/60">Verified</th>
                     <th className="text-left py-4 px-4 text-sm font-semibold text-white/60">Accuracy</th>
                     <th className="text-left py-4 px-4 text-sm font-semibold text-white/60">Reputation</th>
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-white/60">Rewards</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -127,7 +151,7 @@ export default function LeaderboardPage() {
                             </div>
                             <div>
                               <p className="text-white font-medium">{reporter.address}</p>
-                              <p className="text-sm text-white/40">Security Expert</p>
+                              <p className="text-sm text-white/40">{getReporterTier(reporter.reporterScore)}</p>
                             </div>
                           </div>
                         </td>
@@ -135,7 +159,10 @@ export default function LeaderboardPage() {
                           <p className="text-white font-medium">{reporter.reports}</p>
                         </td>
                         <td className="py-4 px-4">
-                          <Badge variant={reporter.accuracy >= 95 ? "safe" : reporter.accuracy >= 90 ? "warning" : "danger"}>
+                          <p className="text-white font-medium">{reporter.verified}</p>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Badge variant={reporter.accuracy >= 90 ? "safe" : reporter.accuracy >= 70 ? "warning" : "danger"}>
                             {reporter.accuracy}%
                           </Badge>
                         </td>
@@ -150,9 +177,6 @@ export default function LeaderboardPage() {
                             <span className="text-sm text-white/80">{reporter.reputation}</span>
                           </div>
                         </td>
-                        <td className="py-4 px-4">
-                          <p className="text-accent-blue font-medium">{reporter.rewards}</p>
-                        </td>
                       </tr>
                     ))
                   )}
@@ -162,18 +186,28 @@ export default function LeaderboardPage() {
           </Card>
 
           {/* Your Stats */}
-          <Card className="bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border-accent-blue/20 backdrop-blur-md">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-white mb-1">Your Position</h3>
-                <p className="text-sm text-white/60">Keep reporting threats to climb the leaderboard!</p>
+          {isConnected && (
+            <Card className="bg-gradient-to-br from-accent-blue/10 to-accent-blue/5 border-accent-blue/20 backdrop-blur-md">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-1">Your Position</h3>
+                  <p className="text-sm text-white/60">
+                    {myRank ? "Keep reporting threats to climb the leaderboard!" : "Start reporting threats to appear on the leaderboard!"}
+                  </p>
+                </div>
+                <div className="text-right">
+                  {myRank ? (
+                    <>
+                      <p className="text-3xl font-bold text-white">#{myRank}</p>
+                      <p className="text-sm text-accent-blue">Top {percentile}% of reporters</p>
+                    </>
+                  ) : (
+                    <p className="text-lg font-medium text-white/40">Not ranked yet</p>
+                  )}
+                </div>
               </div>
-              <div className="text-right">
-                <p className="text-3xl font-bold text-white">#42</p>
-                <p className="text-sm text-accent-blue">Top 4% of reporters</p>
-              </div>
-            </div>
-          </Card>
+            </Card>
+          )}
         </>
       )}
     </div>
