@@ -74,6 +74,8 @@ model ThreatReport {
   chainId       Int?
   contractAddress String?
   relayError    String?
+  relayAttempts Int       @default(0)
+  nextRelayAt   DateTime?
   relayedAt     DateTime?
 
   createdAt DateTime @default(now())
@@ -207,6 +209,17 @@ model SyncLog {
   @@index([source])
   @@index([startedAt])
   @@map("sync_logs")
+}
+
+model SyncState {
+  id               String   @id @default(cuid())
+  key              String   @unique
+  lastIndexedBlock Int      @default(0)
+  lastIndexedTx    String?
+  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now())
+
+  @@map("sync_state")
 }
 
 // ============================================

@@ -14,7 +14,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const reportHash = OnchainRelayerService.buildReportHash(report.id, report.address.address, report.explanation) as `0x${string}`
 
   try {
-    await prisma.threatReport.update({ where: { id }, data: { localStatus: 'QUEUED', reportHash } })
+    const attempts = (report.relayAttempts || 0) + 1
+    await prisma.threatReport.update({ where: { id }, data: { localStatus: 'QUEUED', reportHash, relayAttempts: attempts, nextRelayAt: null } })
     const relayed = await OnchainRelayerService.submitReportVote(report.address.address, reportHash, true)
     const updated = await prisma.threatReport.update({
       where: { id },
@@ -31,10 +32,21 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     })
     return NextResponse.json({ success: true, data: updated })
   } catch (e: any) {
+    const maxRetry = Number(process.env.RELAY_MAX_RETRY || 5)
+    const retryDelayMin = Number(process.env.RELAY_RETRY_DELAY_MINUTES || 10)
+    const nextAttempts = (report.relayAttempts || 0) + 1
+    const hasRetry = nextAttempts < maxRetry
+    const nextRelayAt = hasRetry ? new Date(Date.now() + retryDelayMin * 60_000) : null
+
     const updated = await prisma.threatReport.update({
       where: { id },
-      data: { localStatus: 'RELAY_FAILED', relayError: e?.message || 'relay failed' },
+      data: {
+        localStatus: 'RELAY_FAILED',
+        relayError: e?.message || 'relay failed',
+        relayAttempts: nextAttempts,
+        nextRelayAt,
+      },
     })
-    return NextResponse.json({ success: false, data: updated, error: e?.message || 'relay failed' }, { status: 500 })
+    return NextResponse.json({ success: false, data: updated, error: e?.message || 'relay failed', retryScheduled: Boolean(nextRelayAt) }, { status: 500 })
   }
 }
