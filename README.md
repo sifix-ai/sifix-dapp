@@ -47,6 +47,21 @@
 
 ---
 
+## Latest Progress (May 2026)
+
+- Added **chain-aware address existence validation** in scan flow (`chain` query support, onchain no-activity guard).
+- Added **cron-protected sync endpoint**: `POST /api/v1/sync`.
+- Replaced dummy dashboard wallet guard status with **live system probes** (`online/degraded/offline`).
+- Added safe auto-report policy: AI can create `PENDING` reports only (no direct auto-`VERIFIED`).
+- Added admin override endpoint: `POST /api/v1/threats/[id]/override`.
+- Added community weighted voting endpoint: `GET/POST /api/v1/threats/[id]/vote`.
+- Added onchain relay endpoints:
+  - `POST /api/v1/threats/[id]/relay`
+  - `POST /api/v1/threats/[id]/vote/relay`
+- Added internal reconcile endpoint for indexer integration:
+  - `POST /api/internal/reconcile/onchain`
+- Added dual sync status fields for reports: `localStatus`, `onchainStatus`, `relayAttempts`, `nextRelayAt`, `reportHash`.
+
 ## Overview
 
 **SIFIX** is an AI-powered wallet security platform that protects Web3 users from scams, phishing, and malicious smart contracts. The DApp serves as both a rich web dashboard and a comprehensive REST API backend, running on the **0G Galileo Testnet** (Chain ID: 16602).
