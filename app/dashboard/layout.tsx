@@ -238,7 +238,13 @@ export default function DashboardLayout({
                   </p>
                 </div>
                 <button
-                  onClick={() => disconnect()}
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      localStorage.removeItem('sifix_api_token')
+                      localStorage.removeItem('sifix_api_token_expires')
+                    }
+                    disconnect()
+                  }}
                   className="text-white/40 hover:text-white/60 transition-colors"
                   title="Disconnect"
                 >

@@ -133,6 +133,14 @@ export function useApiAuth(): UseApiAuthReturn {
     }
   }, [isConnected, address, token, isLoading, authenticate])
 
+  // Clear token when wallet disconnects
+  useEffect(() => {
+    if (!isConnected && token) {
+      clearToken()
+      lastAuthedAddress.current = null
+    }
+  }, [isConnected, token, clearToken])
+
   return {
     token,
     isLoading,
