@@ -26,7 +26,7 @@ type ScanState =
 
 function CheckerContent() {
   const searchParams = useSearchParams()
-  const { address: walletAddress } = useAccount()
+  const { address: walletAddress, isConnected } = useAccount()
   const [query, setQuery] = useState(searchParams.get("q") ?? "")
   const [state, setState] = useState<ScanState>({ status: "idle" })
   const [queryError, setQueryError] = useState<string>("")
@@ -162,8 +162,10 @@ function CheckerContent() {
                 className={cn("pl-10", queryError && "border-red-500/50")}
               />
             </div>
-            <Button type="submit" disabled={state.status === "loading"}>
-              {state.status === "loading" ? (
+            <Button type="submit" disabled={state.status === "loading" || !isConnected}>
+              {!isConnected ? (
+                <>Connect to Check</>
+              ) : state.status === "loading" ? (
                 <Loader2 size={16} className="animate-spin" />
               ) : (
                 <>Check <ArrowRight size={16} className="ml-2" /></>

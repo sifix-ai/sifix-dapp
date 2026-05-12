@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useTags, useAddTag } from "@/hooks/use-tags"
-import { Tag, Plus, Search, AlertCircle } from "lucide-react"
+import { Tag, Plus, Search, AlertCircle, Wallet } from "lucide-react"
 import { toast } from "@/store/app-store"
 import { tagFormSchema } from "@/lib/validation"
 import { z } from "zod"
+import { useAccount } from "wagmi"
 
 interface TagEntry {
   id: string
@@ -24,6 +25,7 @@ interface TagEntry {
 }
 
 export default function TagsPage() {
+  const { isConnected } = useAccount()
   const { data: tags = [], isLoading: loading, error } = useTags(100, 'addresses')
   const addTagMutation = useAddTag()
 
@@ -101,9 +103,15 @@ export default function TagsPage() {
           <h1 className="text-2xl font-bold tracking-tight text-white">Community Tags</h1>
           <p className="mt-1 text-sm text-white/50">Human-submitted labels for wallets and contracts</p>
         </div>
-        <Button size="sm" onClick={() => setShowAdd(!showAdd)}>
-          <Plus size={14} className="mr-1" /> Add Tag
-        </Button>
+        {isConnected ? (
+          <Button size="sm" onClick={() => setShowAdd(!showAdd)}>
+            <Plus size={14} className="mr-1" /> Add Tag
+          </Button>
+        ) : (
+          <Button size="sm" variant="outline" className="gap-1.5 text-white/40" disabled>
+            <Wallet size={14} /> Connect to Add
+          </Button>
+        )}
       </div>
 
       {/* Add tag form */}
