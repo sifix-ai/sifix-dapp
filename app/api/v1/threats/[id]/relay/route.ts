@@ -3,50 +3,76 @@ import { prisma } from '@/lib/prisma'
 import { OnchainRelayerService } from '@/services/onchain-relayer-service'
 import { CRON_SECRET } from '@/lib/constants'
 
+/**
+ * POST /api/v1/threats/[id]/relay
+ * Relay a single report to on-chain with retry policy
+ * Protected by CRON_SECRET
+ */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const token = request.headers.get('authorization')?.replace('Bearer ', '')
-  if (!CRON_SECRET || token !== CRON_SECRET) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!CRON_SECRET || token !== CRON_SECRET) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   const { id } = await params
-  const report = await prisma.threatReport.findUnique({ where: { id }, include: { address: true } })
-  if (!report) return NextResponse.json({ error: 'Report not found' }, { status: 404 })
 
-  const reportHash = OnchainRelayerService.buildReportHash(report.id, report.address.address, report.explanation) as `0x${string}`
+  // Get report with address
+  const report = await prisma.threatReport.findUnique({
+    where: { id },
+    include: { address: true },
+  })
+
+  if (!report) {
+    return NextResponse.json({ error: 'Report not found' }, { status: 404 })
+  }
+
+  // Build report hash
+  const reportHash = OnchainRelayerService.buildReportHash(
+    report.id,
+    report.address.address,
+    report.explanation
+  ) as `0x${string}`
 
   try {
-    const attempts = (report.relayAttempts || 0) + 1
-    await prisma.threatReport.update({ where: { id }, data: { localStatus: 'QUEUED', reportHash, relayAttempts: attempts, nextRelayAt: null } })
-    const relayed = await OnchainRelayerService.submitReportVote(report.address.address, reportHash, true)
-    const updated = await prisma.threatReport.update({
-      where: { id },
-      data: {
-        onchainStatus: 'SUBMITTED',
-        localStatus: 'SYNCED',
-        onchainTxHash: relayed.txHash,
-        blockNumber: relayed.blockNumber,
-        chainId: relayed.chainId,
-        contractAddress: relayed.contractAddress,
-        relayedAt: new Date(),
-        relayError: null,
-      },
-    })
-    return NextResponse.json({ success: true, data: updated })
-  } catch (e: any) {
-    const maxRetry = Number(process.env.RELAY_MAX_RETRY || 5)
-    const retryDelayMin = Number(process.env.RELAY_RETRY_DELAY_MINUTES || 10)
-    const nextAttempts = (report.relayAttempts || 0) + 1
-    const hasRetry = nextAttempts < maxRetry
-    const nextRelayAt = hasRetry ? new Date(Date.now() + retryDelayMin * 60_000) : null
+    // Use the new retry-enabled method
+    const result = await OnchainRelayerService.submitReportVoteWithRetry(
+      id,
+      report.address.address,
+      reportHash,
+      true // isScam = true for threats
+    )
 
-    const updated = await prisma.threatReport.update({
+    return NextResponse.json({
+      success: true,
+      data: result,
+      message: 'Report successfully relayed to on-chain',
+    })
+  } catch (e: any) {
+    console.error('[Relay] Error:', e)
+
+    // Get updated report state (includes retry/dead-letter info)
+    const updated = await prisma.threatReport.findUnique({
       where: { id },
-      data: {
-        localStatus: 'RELAY_FAILED',
-        relayError: e?.message || 'relay failed',
-        relayAttempts: nextAttempts,
-        nextRelayAt,
+      select: {
+        id: true,
+        localStatus: true,
+        relayError: true,
+        relayAttempts: true,
+        deadLetter: true,
+        nextRelayAt: true,
       },
     })
-    return NextResponse.json({ success: false, data: updated, error: e?.message || 'relay failed', retryScheduled: Boolean(nextRelayAt) }, { status: 500 })
+
+    return NextResponse.json(
+      {
+        success: false,
+        error: e?.message || 'relay failed',
+        data: updated,
+        isDeadLetter: updated?.deadLetter || false,
+        retryScheduled: !!updated?.nextRelayAt,
+        nextRetryAt: updated?.nextRelayAt,
+      },
+      { status: 500 }
+    )
   }
 }

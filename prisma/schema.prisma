@@ -77,6 +77,7 @@ model ThreatReport {
   relayAttempts Int       @default(0)
   nextRelayAt   DateTime?
   relayedAt     DateTime?
+  deadLetter    Boolean   @default(false) // Permanently failed after max retries
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -90,6 +91,8 @@ model ThreatReport {
   @@index([addressId, status])
   @@index([riskLevel, status])
   @@index([reporterAddress, createdAt])
+  @@index([localStatus])
+  @@index([onchainStatus])
   @@map("threat_reports")
 }
 
@@ -212,13 +215,21 @@ model SyncLog {
 }
 
 model SyncState {
-  id               String   @id @default(cuid())
-  key              String   @unique
-  lastIndexedBlock Int      @default(0)
-  lastIndexedTx    String?
-  updatedAt        DateTime @updatedAt
-  createdAt        DateTime @default(now())
+  id           String   @id @default(cuid())
+  name         String   @unique // e.g., "scam_vote_indexer"
+  lastBlock    Int      @default(0) // Last indexed block number
+  chainId      Int
+  source       String   @default("onchain") // onchain, external, etc
+  status       String   @default("active") // active, paused, error
+  lastSyncAt   DateTime @default(now())
+  errorMessage String?
+  metadata     String?  // JSON for additional sync data
+  updatedAt    DateTime @updatedAt
+  createdAt    DateTime @default(now())
 
+  @@index([name])
+  @@index([chainId])
+  @@index([status])
   @@map("sync_state")
 }
 
