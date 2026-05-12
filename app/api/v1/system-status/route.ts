@@ -7,9 +7,11 @@ async function probe(name: string, fn: () => Promise<void>) {
   const started = Date.now()
   try {
     await fn()
-    return { name, online: true, latencyMs: Date.now() - started }
-  } catch {
-    return { name, online: false, latencyMs: Date.now() - started }
+    return { name, online: true, status: 'online', latencyMs: Date.now() - started }
+  } catch (e: any) {
+    const msg = String(e?.message || '')
+    const degraded = msg.includes('503') || msg.includes('404') || msg.includes('403') || msg.includes('405')
+    return { name, online: false, status: degraded ? 'degraded' : 'offline', latencyMs: Date.now() - started }
   }
 }
 
@@ -35,6 +37,8 @@ export async function GET(request: Request) {
   ])
 
   const systems = [network, ai, storage]
-  const operational = systems.every((s) => s.online)
+  const criticalUp = network.online && ai.online
+  const storageHardDown = storage.status === 'offline'
+  const operational = criticalUp && !storageHardDown
   return NextResponse.json({ success: true, data: { operational, systems, checkedAt: new Date().toISOString() } })
 }

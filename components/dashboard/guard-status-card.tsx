@@ -31,7 +31,9 @@ export function GuardStatusCard() {
             <div key={s.name} className="rounded-lg border border-white/10 bg-white/[0.02] p-3">
               <div className="flex items-center justify-between mb-1.5">
                 <Icon className="w-3.5 h-3.5 text-accent-blue" />
-                <span className={`text-[10px] ${s.online ? 'text-emerald-400' : 'text-red-400'}`}>{s.online ? 'Online' : 'Offline'}</span>
+                <span className={`text-[10px] ${s.status === 'online' ? 'text-emerald-400' : s.status === 'degraded' ? 'text-amber-400' : 'text-red-400'}`}>
+                  {s.status === 'online' ? 'Online' : s.status === 'degraded' ? 'Degraded' : 'Offline'}
+                </span>
               </div>
               <p className="text-xs text-white/70">{s.name}</p>
               <p className="text-[11px] text-white/40">{s.latencyMs}ms</p>
