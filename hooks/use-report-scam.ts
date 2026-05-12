@@ -14,7 +14,6 @@ import {
 } from '@/config/contracts';
 import { wagmiConfig } from '@/lib/wagmi';
 import { isAddress, keccak256, pad, toBytes } from 'viem';
-import { apiFetch } from '@/lib/api-client';
 
 export type ReportStep =
   | 'idle'
@@ -126,30 +125,7 @@ export function useReportScam(): UseReportScamReturn {
           confirmations: 1,
         });
 
-        // 4. On-chain confirmed — now save off-chain with txHash
-        setStep('saving');
-        const res = await apiFetch('/api/v1/threats', {
-          method: 'POST',
-          body: JSON.stringify({
-            address: targetAddress,
-            threatType: reasonText,
-            explanation: reasonText,
-            severity: 50,
-            confidence: 60,
-            reporterAddress,
-            evidenceHash: reasonHash,
-            txHash,
-          }),
-        });
-
-        if (!res.ok) {
-          if (res.status === 401) {
-            throw new Error('Session expired. Please reconnect your wallet.');
-          }
-          const json = await res.json().catch(() => ({}));
-          throw new Error(json?.error?.message ?? 'Failed to save report. Please try again.');
-        }
-
+        // 4. On-chain confirmed — success handled by indexer sync pipeline
         setStep('success');
       } catch (err: unknown) {
         const message =
