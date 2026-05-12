@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Shield, Copy, Check, ArrowLeft, Loader2, Key, CheckCircle2, ArrowRight, Download, Link2, FileSignature } from "lucide-react"
 import { Card } from "@/components/ui/card"
@@ -105,15 +105,37 @@ export default function ExtensionSetupPage() {
     setTimeout(() => setCopied(false), 2000)
   }
 
+  useEffect(() => {
+    if (!isConnected) {
+      setExtensionConnected(false)
+      setExtensionSetupStep(extensionInstalled ? "connect" : "install")
+    }
+  }, [isConnected, extensionInstalled, setExtensionConnected, setExtensionSetupStep])
+
   if (!isConnected) {
     return (
-      <Card className="p-6 bg-white/[0.04] border-white/10">
-        <h3 className="text-white font-semibold mb-2">Extension Setup Locked</h3>
-        <p className="text-white/60 text-sm mb-4">Connect wallet first to access extension setup.</p>
-        <Link href="/dashboard">
-          <Button className="bg-accent-blue text-white">Back to Dashboard</Button>
-        </Link>
-      </Card>
+      <div className="space-y-6">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <Link href="/dashboard">
+              <Button variant="ghost" size="sm" className="text-white/60 hover:text-white">
+                <ArrowLeft className="w-4 h-4 mr-1" />Dashboard
+              </Button>
+            </Link>
+          </div>
+          <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+            <Shield className="w-6 h-6 text-accent-blue" />Extension Setup
+          </h2>
+        </div>
+
+        <Card className="p-6 bg-white/[0.04] border-white/10">
+          <h3 className="text-white font-semibold mb-2">Extension Setup Locked</h3>
+          <p className="text-white/60 text-sm mb-4">Connect wallet first to access extension setup.</p>
+          <Link href="/dashboard">
+            <Button className="bg-accent-blue text-white">Back to Dashboard</Button>
+          </Link>
+        </Card>
+      </div>
     )
   }
 

@@ -265,11 +265,17 @@ export default function DashboardPage() {
               </p>
               <p className="text-[11px] text-white/35 mt-1">Step: {extensionSetupStep}</p>
             </div>
-            <Link href="/dashboard/extension">
-              <Button size="sm" className="bg-accent-blue text-white">
-                {!extensionInstalled || !extensionConnected ? "Complete Setup" : "Manage"}
+            {isConnected ? (
+              <Link href="/dashboard/extension">
+                <Button size="sm" className="bg-accent-blue text-white">
+                  {!extensionInstalled || !extensionConnected ? "Complete Setup" : "Manage"}
+                </Button>
+              </Link>
+            ) : (
+              <Button size="sm" disabled className="bg-white/10 text-white/40 cursor-not-allowed">
+                Connect wallet first
               </Button>
-            </Link>
+            )}
           </div>
         </Card>
       </div>
