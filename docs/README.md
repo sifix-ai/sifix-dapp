@@ -26,6 +26,29 @@
 - `AUTO_REPORT_ADDRESS_COOLDOWN_HOURS`
 - `AUTO_REPORT_SYSTEM_REPORTER`
 
+## Community Verifier Voting
+
+Endpoint baru:
+- `POST /api/v1/threats/{id}/vote`
+- `GET /api/v1/threats/{id}/vote`
+
+Rule:
+- Vote: `FOR` atau `AGAINST`
+- 1 wallet 1 vote per report (bisa update vote)
+- Wajib minimum reputasi (`VOTE_REPUTATION_MIN`, default 50)
+- Bobot vote: `max(1, floor(overallScore/50))`
+
+Consensus:
+- VERIFIED jika unique voter >= `VOTE_MIN_UNIQUE_VOTERS` dan net score >= `VOTE_VERIFY_THRESHOLD`
+- REJECTED jika unique voter >= `VOTE_MIN_UNIQUE_VOTERS` dan net score <= -`VOTE_REJECT_THRESHOLD`
+- Selain itu tetap `PENDING`
+
+Env:
+- `VOTE_VERIFY_THRESHOLD`
+- `VOTE_REJECT_THRESHOLD`
+- `VOTE_MIN_UNIQUE_VOTERS`
+- `VOTE_REPUTATION_MIN`
+
 ## System Status
 
 Endpoint `GET /api/v1/system-status` sekarang live probe:

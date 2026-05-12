@@ -43,6 +43,7 @@ model ThreatReport {
   id        String  @id @default(cuid())
   addressId String
   address   Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  votes     ReportVote[]
 
   reporterAddress String
   threatType      String // PHISHING, MALICIOUS_CONTRACT, etc
@@ -311,4 +312,20 @@ model ScanHistory {
   @@index([riskLevel])
   @@index([analyzedAt])
   @@map("scan_history")
+}
+
+model ReportVote {
+  id           String       @id @default(cuid())
+  reportId     String
+  report       ThreatReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  voterAddress String
+  voteType     String       // FOR | AGAINST
+  weight       Int          @default(1)
+  reason       String?
+  createdAt    DateTime     @default(now())
+
+  @@unique([reportId, voterAddress])
+  @@index([reportId])
+  @@index([voterAddress])
+  @@map("report_votes")
 }
