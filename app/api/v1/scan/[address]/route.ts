@@ -11,6 +11,7 @@ import { NextRequest } from 'next/server'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { isValidEthereumAddress } from '@/lib/address-validation'
 import { prisma } from '@/lib/prisma'
+import { validateAddressOnChain, type ChainKey } from '@/lib/chain-validation'
 
 export async function GET(
   request: NextRequest,
@@ -20,6 +21,7 @@ export async function GET(
     const { address: rawInput } = await params
     const input = decodeURIComponent(rawInput).trim()
     const checker = request.nextUrl.searchParams.get('checker') ?? undefined
+    const chain = (request.nextUrl.searchParams.get('chain') as ChainKey) || '0g-galileo'
 
     if (!input || input.length < 2) {
       return apiError('Input must be at least 2 characters', '400')
@@ -33,6 +35,23 @@ export async function GET(
 
     // ─── Address scan ───
     if (isAddress) {
+      const chainCheck = await validateAddressOnChain(input, chain)
+      if (!chainCheck.existsOnChain) {
+        return apiSuccess({
+          address: input.toLowerCase(),
+          inputType: 'address',
+          chain,
+          riskScore: 0,
+          riskLevel: 'SAFE',
+          isVerified: false,
+          reportCount: 0,
+          tags: [],
+          lastScanned: null,
+          chainValidation: chainCheck,
+          warning: 'Address format valid but no on-chain activity/code found on selected chain',
+        })
+      }
+
       const addressData = await prisma.address.findUnique({
         where: { address: input.toLowerCase() },
         include: {
@@ -65,10 +84,12 @@ export async function GET(
       return apiSuccess({
         address: addressData.address,
         inputType: 'address',
+        chain,
         riskScore: addressData.riskScore,
         riskLevel: addressData.riskLevel,
         isVerified: addressData.totalReports > 0,
         reportCount: addressData._count.reports,
+        chainValidation: chainCheck,
         tags: addressData.tags.map(t => ({
           id: t.id,
           tag: t.tag,
