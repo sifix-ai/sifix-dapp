@@ -15,12 +15,14 @@ import { useLeaderboard } from "@/hooks/use-analytics"
 import { ThreatTicker } from "@/components/dashboard/threat-ticker"
 import { GuardStatusCard } from "@/components/dashboard/guard-status-card"
 import { ActionGateCard } from "@/components/dashboard/action-gate-card"
+import { useAppStore } from "@/store/app-store"
 
 // ─── Stagger animation helper ────────────────────────────
 const stagger = (i: number) => ({ animationDelay: `${i * 80}ms` })
 
 export default function DashboardPage() {
   const { address, isConnected } = useAccount()
+  const { extensionInstalled, extensionConnected, extensionSetupStep } = useAppStore()
   const { data: statsData, isLoading: statsLoading } = useDashboardStats()
   const { data: threats, isLoading: threatsLoading } = useRecentThreats(10)
   const { data: leaderboard } = useLeaderboard(5)
@@ -252,8 +254,28 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* ─── Wallet Guard Status (visible to all) ─────────── */}
+      {/* ─── Extension Status (visible to all) ────────────── */}
       <div className="animate-fade-in" style={stagger(5)}>
+        <Card className="bg-white/[0.03] border-white/10 backdrop-blur-md p-4">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs text-white/40 uppercase tracking-wider">Extension Status</p>
+              <p className="text-sm text-white mt-1">
+                {!extensionInstalled ? "Not Installed" : !extensionConnected ? "Installed, not verified" : "Connected & Verified"}
+              </p>
+              <p className="text-[11px] text-white/35 mt-1">Step: {extensionSetupStep}</p>
+            </div>
+            <Link href="/dashboard/extension">
+              <Button size="sm" className="bg-accent-blue text-white">
+                {!extensionInstalled || !extensionConnected ? "Complete Setup" : "Manage"}
+              </Button>
+            </Link>
+          </div>
+        </Card>
+      </div>
+
+      {/* ─── Wallet Guard Status (visible to all) ─────────── */}
+      <div className="animate-fade-in" style={stagger(6)}>
         <GuardStatusCard />
       </div>
     </div>

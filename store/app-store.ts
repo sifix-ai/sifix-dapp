@@ -14,10 +14,21 @@ export interface Toast {
   timestamp: number
 }
 
+type ExtensionSetupStep = 'install' | 'connect' | 'signing' | 'verify' | 'done'
+
 interface AppState {
   // User state
   user: User | null
   setUser: (user: User | null) => void
+
+  // Extension onboarding state (persisted)
+  extensionInstalled: boolean
+  extensionConnected: boolean
+  extensionSetupStep: ExtensionSetupStep
+  setExtensionInstalled: (installed: boolean) => void
+  setExtensionConnected: (connected: boolean) => void
+  setExtensionSetupStep: (step: ExtensionSetupStep) => void
+  resetExtensionSetup: () => void
   
   // UI state
   isSidebarOpen: boolean
@@ -50,6 +61,19 @@ export const useAppStore = create<AppState>()(
       user: null,
       setUser: (user) => set({ user }),
       
+      // Extension onboarding state
+      extensionInstalled: false,
+      extensionConnected: false,
+      extensionSetupStep: 'install',
+      setExtensionInstalled: (installed) => set({ extensionInstalled: installed }),
+      setExtensionConnected: (connected) => set({ extensionConnected: connected }),
+      setExtensionSetupStep: (step) => set({ extensionSetupStep: step }),
+      resetExtensionSetup: () => set({
+        extensionInstalled: false,
+        extensionConnected: false,
+        extensionSetupStep: 'install',
+      }),
+
       // UI state
       isSidebarOpen: true,
       toggleSidebar: () => set((state) => ({ isSidebarOpen: !state.isSidebarOpen })),
@@ -96,7 +120,12 @@ export const useAppStore = create<AppState>()(
     }),
     {
       name: 'sifix-storage',
-      partialize: (state) => ({ user: state.user }),
+      partialize: (state) => ({
+        user: state.user,
+        extensionInstalled: state.extensionInstalled,
+        extensionConnected: state.extensionConnected,
+        extensionSetupStep: state.extensionSetupStep,
+      }),
     }
   )
 )
