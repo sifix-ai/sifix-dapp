@@ -13,7 +13,7 @@ async function probe(name: string, fn: () => Promise<void>) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const [network, ai, storage] = await Promise.all([
     probe('0G Network', async () => {
       const r = await fetch(ZERO_G_RPC_URL, {
@@ -24,12 +24,13 @@ export async function GET() {
       if (!r.ok) throw new Error('rpc down')
     }),
     probe('AI Analysis', async () => {
-      const r = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || ''}/api/health`)
+      const base = process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin
+      const r = await fetch(`${base}/api/health`)
       if (!r.ok) throw new Error('ai down')
     }),
     probe('0G Storage', async () => {
-      const r = await fetch(ZERO_G_STORAGE_URL, { method: 'HEAD' })
-      if (!r.ok) throw new Error('storage down')
+      const r = await fetch(ZERO_G_STORAGE_URL, { method: 'GET' })
+      if (!(r.ok || r.status === 405 || r.status === 403)) throw new Error('storage down')
     }),
   ])
 

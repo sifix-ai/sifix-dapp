@@ -72,7 +72,7 @@ export class ReportService {
         aiModel: input.aiModel || 'gpt-4',
         confidence: input.confidence,
         simulationData: input.simulationData,
-        status: input.confidence >= 90 ? 'VERIFIED' : 'PENDING',
+        status: 'PENDING',
       },
       include: {
         address: true,

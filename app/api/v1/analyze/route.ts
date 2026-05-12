@@ -5,6 +5,9 @@ import { prisma } from "@/lib/prisma"
 import { verifyApiAuth } from "@/lib/extension-auth"
 import { PrismaThreatIntel } from "@/lib/threat-intel"
 import { isValidEthereumAddress } from "@/lib/address-validation"
+import { shouldAutoReport, AUTO_REPORT_POLICY } from "@/lib/auto-report-policy"
+import { ReportService } from "@/services/report-service"
+import { validateAddressOnChain } from "@/lib/chain-validation"
 
 // Singleton threat intel provider
 const threatIntel = new PrismaThreatIntel()
@@ -245,7 +248,41 @@ export async function POST(request: NextRequest) {
         storageUrl = `${explorerBaseUrl}/file/${result.storageRootHash}`
       }
 
+      const chainCheck = await validateAddressOnChain(to, '0g-galileo')
+      const autoReportEligible = shouldAutoReport({
+        riskScore,
+        confidence: Math.round(result.analysis.confidence || 0),
+        isAddress: true,
+        existsOnChain: chainCheck.existsOnChain,
+      })
+
+      let autoReported = false
+      if (autoReportEligible) {
+        try {
+          await ReportService.create({
+            address: to.toLowerCase(),
+            reporterAddress: AUTO_REPORT_POLICY.systemReporter,
+            threatType: 'AUTO_DETECTED_SCAM',
+            severity: riskScore,
+            evidenceHash: result.storageRootHash || `auto-${Date.now()}`,
+            explanation: `[AUTO] ${result.analysis.reasoning || 'High risk detected by analyzer'}`,
+            transactionHash: undefined,
+            confidence: Math.round(result.analysis.confidence || 0),
+            simulationData: JSON.stringify({
+              source: 'analyze-route',
+              recommendation: result.analysis.recommendation,
+              threats: result.analysis.threats || [],
+              storageHash: result.storageRootHash || null,
+            }),
+          })
+          autoReported = true
+        } catch {
+          autoReported = false
+        }
+      }
+
       return NextResponse.json({
+
         success: true,
         analysisType: "transaction",
         riskLevel,
@@ -254,6 +291,7 @@ export async function POST(request: NextRequest) {
         reasoning: result.analysis.reasoning,
         threats: result.analysis.threats,
         recommendation: result.analysis.recommendation,
+        autoReported,
         provider: result.computeProvider || provider,
         simulation: {
           success: result.simulation.success,
