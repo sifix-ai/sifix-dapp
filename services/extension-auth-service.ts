@@ -56,7 +56,7 @@ export async function verifySignature(payload: {
  */
 export async function authenticateExtension(params: {
   walletAddress: string
-  signMessage: (message: string) => Promise<string>
+  signMessage: (message: string, walletAddress: string) => Promise<string>
 }): Promise<VerifyResponse> {
   const { walletAddress, signMessage } = params
 
@@ -64,7 +64,7 @@ export async function authenticateExtension(params: {
   const nonceData = await fetchNonce(walletAddress)
 
   // 2. Request signature from wallet
-  const signature = await signMessage(nonceData.message)
+  const signature = await signMessage(nonceData.message, walletAddress)
 
   // 3. Verify signature
   return verifySignature({

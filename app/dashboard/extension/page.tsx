@@ -6,6 +6,7 @@ import { Shield, Copy, Check, ArrowLeft, Loader2, Key, CheckCircle2, ArrowRight,
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useAppStore } from "@/store/app-store"
+import { useAccount } from "wagmi"
 
 declare global {
   interface Window {
@@ -18,6 +19,7 @@ const STEP_ORDER = ["install", "connect", "signing", "verify", "done"] as const
 type Step = typeof STEP_ORDER[number]
 
 export default function ExtensionSetupPage() {
+  const { isConnected } = useAccount()
   const {
     extensionInstalled,
     extensionConnected,
@@ -101,6 +103,18 @@ export default function ExtensionSetupPage() {
     await navigator.clipboard.writeText(token)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
+  }
+
+  if (!isConnected) {
+    return (
+      <Card className="p-6 bg-white/[0.04] border-white/10">
+        <h3 className="text-white font-semibold mb-2">Extension Setup Locked</h3>
+        <p className="text-white/60 text-sm mb-4">Connect wallet first to access extension setup.</p>
+        <Link href="/dashboard">
+          <Button className="bg-accent-blue text-white">Back to Dashboard</Button>
+        </Link>
+      </Card>
+    )
   }
 
   return (
