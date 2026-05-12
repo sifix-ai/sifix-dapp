@@ -4,10 +4,11 @@
  * POST /api/v1/watchlist — Add an address to the watchlist (upsert)
  */
 
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { isValidEthereumAddress } from '@/lib/address-validation'
 import { prisma } from '@/lib/prisma'
+import { verifyApiAuth } from '@/lib/extension-auth'
 
 /**
  * GET — List watchlist entries for a user
@@ -39,6 +40,12 @@ export async function GET(request: NextRequest) {
  * Body: { userAddress, watchedAddress, label? }
  */
 export async function POST(request: NextRequest) {
+  // Auth check
+  const auth = await verifyApiAuth()
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error || 'Authentication required' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { userAddress, watchedAddress, label } = body

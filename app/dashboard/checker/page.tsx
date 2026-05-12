@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { ReportScamModal } from "@/components/dashboard/report-scam-modal"
+import { useCheckerScan, useAddressThreats } from "@/hooks/use-checker"
 import {
   Search, Shield, ArrowRight,
   Loader2, Flag, CheckCircle2,
@@ -27,50 +28,27 @@ function CheckerContent() {
   const [state, setState] = useState<ScanState>({ status: "idle" })
   const didAutoRun = useRef(false)
 
+  const checkerScan = useCheckerScan()
+
   /* ── Reported By data ── */
   const [reports, setReports] = useState<any[]>([])
-  const [reportsLoading, setReportsLoading] = useState(false)
   const [reportsTotal, setReportsTotal] = useState(0)
+  const [reportsAddress, setReportsAddress] = useState("")
+  const { data: reportsData, isLoading: reportsLoading } = useAddressThreats(reportsAddress, 5)
 
   const runCheck = useCallback(async (input: string) => {
     if (!input.trim()) return
     setState({ status: "loading" })
     try {
-      const url = new URL(`/api/v1/scan/${encodeURIComponent(input.trim())}`, window.location.origin)
-      if (walletAddress) url.searchParams.set("checker", walletAddress)
-      const res = await fetch(url.toString())
-      const json = await res.json()
-      if (json.success || json.data) {
-        setState({ status: "done", data: json.data || json })
-      } else {
-        setState({ status: "error", message: json.error?.message ?? "Scan failed" })
-      }
+      const data = await checkerScan.mutateAsync({ input, walletAddress })
+      setState({ status: "done", data })
     } catch {
       setState({ status: "error", message: "Network error. Please try again." })
     }
-  }, [walletAddress])
+  }, [walletAddress, checkerScan])
 
-  const fetchReports = useCallback(async (addr: string) => {
-    setReportsLoading(true)
-    try {
-      const url = new URL("/api/v1/threats", window.location.origin)
-      url.searchParams.set("address", addr)
-      url.searchParams.set("limit", "5")
-      const res = await fetch(url.toString())
-      const json = await res.json()
-      if (json.data?.reports) {
-        setReports(json.data.reports)
-        setReportsTotal(json.data.total ?? json.data.reports.length)
-      } else {
-        setReports([])
-        setReportsTotal(0)
-      }
-    } catch {
-      setReports([])
-      setReportsTotal(0)
-    } finally {
-      setReportsLoading(false)
-    }
+  const fetchReports = useCallback((addr: string) => {
+    setReportsAddress(addr)
   }, [])
 
   const truncateAddress = (addr?: string) => {
@@ -112,6 +90,17 @@ function CheckerContent() {
     }
   }, [searchParams, runCheck])
 
+  // Sync reports from query
+  useEffect(() => {
+    if (reportsData?.reports) {
+      setReports(reportsData.reports)
+      setReportsTotal(reportsData.total ?? reportsData.reports.length)
+    } else if (reportsAddress && !reportsLoading) {
+      setReports([])
+      setReportsTotal(0)
+    }
+  }, [reportsData, reportsLoading, reportsAddress])
+
   // Fetch reports when scan completes
   useEffect(() => {
     if (state.status === "done") {
@@ -120,6 +109,7 @@ function CheckerContent() {
       else {
         setReports([])
         setReportsTotal(0)
+        setReportsAddress("")
       }
     }
   }, [state, fetchReports])
@@ -128,6 +118,7 @@ function CheckerContent() {
     e.preventDefault()
     setReports([])
     setReportsTotal(0)
+    setReportsAddress("")
     runCheck(query)
   }
 

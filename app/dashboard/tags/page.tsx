@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { useTags, useAddTag } from "@/hooks/use-tags"
 import { Tag, Plus, Search } from "lucide-react"
 
 interface TagEntry {
@@ -20,29 +21,15 @@ interface TagEntry {
 }
 
 export default function TagsPage() {
-  const [tags, setTags] = useState<TagEntry[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: tagsData, isLoading: loading } = useTags(50)
+  const addTagMutation = useAddTag()
+
+  const tags: TagEntry[] = (tagsData?.data || tagsData || []) as TagEntry[]
+
   const [searchQuery, setSearchQuery] = useState("")
   const [tagInput, setTagInput] = useState("")
   const [addressInput, setAddressInput] = useState("")
   const [showAdd, setShowAdd] = useState(false)
-  const [adding, setAdding] = useState(false)
-
-  const fetchTags = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch("/api/v1/tags?limit=50")
-      const json = await res.json()
-      if (json.success || json.data) {
-        setTags((json.data?.data || json.data || []) as TagEntry[])
-      }
-    } catch {}
-    setLoading(false)
-  }
-
-  useEffect(() => {
-    fetchTags()
-  }, [])
 
   const filtered = searchQuery
     ? tags.filter(t =>
@@ -54,19 +41,16 @@ export default function TagsPage() {
   const handleAddTag = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!tagInput.trim() || !addressInput.trim()) return
-    setAdding(true)
     try {
-      await fetch(`/api/v1/address/${addressInput.trim()}/tags`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ tag: tagInput.trim(), label: tagInput.trim() }),
+      await addTagMutation.mutateAsync({
+        address: addressInput.trim(),
+        tag: tagInput.trim(),
+        label: tagInput.trim(),
       })
       setTagInput("")
       setAddressInput("")
       setShowAdd(false)
-      await fetchTags()
     } catch {}
-    setAdding(false)
   }
 
   const riskColor = (risk: string) => {
@@ -106,8 +90,8 @@ export default function TagsPage() {
               placeholder="Tag name (e.g. scammer, verified)"
               className="flex-1"
             />
-            <Button type="submit" disabled={adding} size="sm">
-              {adding ? "Adding..." : "Add"}
+            <Button type="submit" disabled={addTagMutation.isPending} size="sm">
+              {addTagMutation.isPending ? "Adding..." : "Add"}
             </Button>
           </form>
         </Card>

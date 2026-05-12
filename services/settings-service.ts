@@ -1,5 +1,7 @@
 // Settings Service – Client-side API calls for user settings (BYOAI provider)
 
+import { apiFetch } from '@/lib/api-client'
+
 const API_BASE = '/api/v1'
 
 export interface AISettings {
@@ -21,7 +23,7 @@ export interface SettingsResponse {
  * Fetch AI provider settings for a given wallet address
  */
 export async function fetchAISettings(address: string): Promise<SettingsResponse['data']> {
-  const res = await fetch(`${API_BASE}/settings/ai-provider?address=${address}`)
+  const res = await apiFetch(`${API_BASE}/settings/ai-provider?address=${address}`)
   if (!res.ok) {
     const json = await res.json().catch(() => ({}))
     throw new Error(json?.error?.message || 'Failed to fetch settings')
@@ -40,7 +42,7 @@ export async function saveAISettings(payload: {
   aiBaseUrl?: string
   aiModel?: string
 }): Promise<SettingsResponse['data']> {
-  const res = await fetch(`${API_BASE}/settings/ai-provider`, {
+  const res = await apiFetch(`${API_BASE}/settings/ai-provider`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -57,7 +59,7 @@ export async function saveAISettings(payload: {
  * Reset AI provider settings to defaults
  */
 export async function resetAISettings(address: string): Promise<SettingsResponse['data']> {
-  const res = await fetch(`${API_BASE}/settings/ai-provider?address=${address}`, {
+  const res = await apiFetch(`${API_BASE}/settings/ai-provider?address=${address}`, {
     method: 'DELETE',
   })
   if (!res.ok) {

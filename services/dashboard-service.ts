@@ -1,5 +1,7 @@
 // Dashboard Service – Client-side API calls for dashboard/analytics/leaderboard data
 
+import { apiFetch } from '@/lib/api-client'
+
 const API_BASE = '/api/v1'
 
 export interface PlatformStats {
@@ -28,7 +30,7 @@ export interface DashboardData {
  * Fetch platform statistics
  */
 export async function fetchPlatformStats(): Promise<PlatformStats> {
-  const res = await fetch(`${API_BASE}/stats`)
+  const res = await apiFetch(`${API_BASE}/stats`)
   if (!res.ok) {
     throw new Error('Failed to fetch stats')
   }
@@ -40,7 +42,7 @@ export async function fetchPlatformStats(): Promise<PlatformStats> {
  * Fetch leaderboard entries
  */
 export async function fetchLeaderboard(limit = 10): Promise<LeaderboardEntry[]> {
-  const res = await fetch(`${API_BASE}/leaderboard?limit=${limit}`)
+  const res = await apiFetch(`${API_BASE}/leaderboard?limit=${limit}`)
   if (!res.ok) {
     throw new Error('Failed to fetch leaderboard')
   }
@@ -65,7 +67,7 @@ export async function fetchLeaderboard(limit = 10): Promise<LeaderboardEntry[]> 
  * Fetch recent threats for dashboard activity feed
  */
 export async function fetchRecentThreats(limit = 5): Promise<any[]> {
-  const res = await fetch(`${API_BASE}/threats?limit=${limit}`)
+  const res = await apiFetch(`${API_BASE}/threats?limit=${limit}`)
   if (!res.ok) {
     throw new Error('Failed to fetch threats')
   }

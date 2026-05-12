@@ -4,10 +4,11 @@
  * POST /api/v1/tags — Create a tag for an address
  */
 
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { apiSuccess, apiError } from '@/lib/api-response'
 import { isValidEthereumAddress } from '@/lib/address-validation'
 import { prisma } from '@/lib/prisma'
+import { verifyApiAuth } from '@/lib/extension-auth'
 
 /**
  * GET — List all unique tags with counts
@@ -55,6 +56,12 @@ export async function GET(request: NextRequest) {
  * Body: { address, tag, taggedBy? }
  */
 export async function POST(request: NextRequest) {
+  // Auth check
+  const auth = await verifyApiAuth()
+  if (!auth.authorized) {
+    return NextResponse.json({ error: auth.error || 'Authentication required' }, { status: 401 })
+  }
+
   try {
     const body = await request.json()
     const { address, tag, taggedBy } = body

@@ -1,5 +1,7 @@
 // Extension Auth Service – Client-side API calls for extension wallet-based auth
 
+import { apiFetch } from '@/lib/api-client'
+
 const API_BASE = '/api/v1'
 
 export interface NonceResponse {
@@ -18,7 +20,7 @@ export interface VerifyResponse {
  * Request a sign-in nonce for the given wallet address
  */
 export async function fetchNonce(walletAddress: string): Promise<NonceResponse> {
-  const res = await fetch(`${API_BASE}/auth/nonce?walletAddress=${walletAddress}`)
+  const res = await apiFetch(`${API_BASE}/auth/nonce?walletAddress=${walletAddress}`)
   const json = await res.json()
   if (!json.message) {
     throw new Error('Failed to obtain nonce')
@@ -34,7 +36,7 @@ export async function verifySignature(payload: {
   signature: string
   message: string
 }): Promise<VerifyResponse> {
-  const res = await fetch(`${API_BASE}/auth/verify`, {
+  const res = await apiFetch(`${API_BASE}/auth/verify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),

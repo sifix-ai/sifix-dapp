@@ -1,3 +1,5 @@
+import { apiFetch } from '@/lib/api-client'
+
 const API_BASE = '/api/v1'
 
 export interface AgenticIdConfig {
@@ -40,14 +42,14 @@ export interface AuthorizeResult {
 }
 
 export async function fetchAgenticIdConfig(): Promise<AgenticIdConfig> {
-  const res = await fetch(`${API_BASE}/agentic-id`)
+  const res = await apiFetch(`${API_BASE}/agentic-id`)
   const data = await res.json()
   if (!data.success) throw new Error(data.error || 'Failed to fetch config')
   return data.data
 }
 
 export async function checkAuthorization(user: string): Promise<AuthCheckResult> {
-  const res = await fetch(`${API_BASE}/agentic-id`, {
+  const res = await apiFetch(`${API_BASE}/agentic-id`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'check', user }),
@@ -58,7 +60,7 @@ export async function checkAuthorization(user: string): Promise<AuthCheckResult>
 }
 
 export async function requestAccess(user: string): Promise<AuthorizeResult> {
-  const res = await fetch(`${API_BASE}/agentic-id`, {
+  const res = await apiFetch(`${API_BASE}/agentic-id`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'authorize', user }),

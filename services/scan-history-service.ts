@@ -1,5 +1,7 @@
 // Scan History Service – Client-side API calls for scan history
 
+import { apiFetch } from '@/lib/api-client'
+
 const API_BASE = '/api/v1'
 
 export interface ScanRecord {
@@ -45,7 +47,7 @@ export async function fetchScanHistory(params: {
   limit?: number
 }): Promise<ScanHistoryResponse> {
   const { address, page = 1, limit = 20 } = params
-  const res = await fetch(
+  const res = await apiFetch(
     `${API_BASE}/scan-history?address=${address}&page=${page}&limit=${limit}`
   )
   if (!res.ok) {

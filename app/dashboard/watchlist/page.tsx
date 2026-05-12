@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState } from "react"
 import { useAccount } from "wagmi"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { useWatchlist, useAddToWatchlist, useRemoveFromWatchlist } from "@/hooks/use-watchlist"
 import { Eye, Trash2, ArrowUpRight, ArrowDownRight, Plus, Shield } from "lucide-react"
 
 interface WatchlistEntry {
@@ -21,55 +22,35 @@ interface WatchlistEntry {
 
 export default function WatchlistPage() {
   const { address: walletAddress, isConnected } = useAccount()
-  const [entries, setEntries] = useState<WatchlistEntry[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: watchlistData, isLoading: loading } = useWatchlist(walletAddress)
+  const addMutation = useAddToWatchlist()
+  const removeMutation = useRemoveFromWatchlist()
+
+  const entries: WatchlistEntry[] = (watchlistData?.data || watchlistData || []) as WatchlistEntry[]
+
   const [showAdd, setShowAdd] = useState(false)
   const [newAddress, setNewAddress] = useState("")
   const [newLabel, setNewLabel] = useState("")
-  const [adding, setAdding] = useState(false)
-
-  const fetchWatchlist = useCallback(async () => {
-    if (!walletAddress) { setLoading(false); return }
-    setLoading(true)
-    try {
-      const res = await fetch(`/api/v1/watchlist?userAddress=${walletAddress}`)
-      const json = await res.json()
-      if (json.success || json.data) {
-        setEntries(json.data?.data || json.data || [])
-      }
-    } catch {}
-    setLoading(false)
-  }, [walletAddress])
-
-  useEffect(() => { fetchWatchlist() }, [fetchWatchlist])
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!newAddress.trim() || !walletAddress) return
-    setAdding(true)
     try {
-      await fetch("/api/v1/watchlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userAddress: walletAddress,
-          watchedAddress: newAddress.trim().toLowerCase(),
-          label: newLabel.trim() || undefined,
-        }),
+      await addMutation.mutateAsync({
+        userAddress: walletAddress,
+        watchedAddress: newAddress.trim().toLowerCase(),
+        label: newLabel.trim() || undefined,
       })
       setNewAddress("")
       setNewLabel("")
       setShowAdd(false)
-      await fetchWatchlist()
     } catch {}
-    setAdding(false)
   }
 
   const handleRemove = async (watchedAddress: string) => {
     if (!walletAddress) return
     try {
-      await fetch(`/api/v1/watchlist/${watchedAddress}?userAddress=${walletAddress}`, { method: "DELETE" })
-      setEntries(prev => prev.filter(e => e.watchedAddress !== watchedAddress))
+      await removeMutation.mutateAsync({ watchedAddress, userAddress: walletAddress })
     } catch {}
   }
 
@@ -108,8 +89,8 @@ export default function WatchlistPage() {
                   placeholder="Label (optional)"
                   className="sm:w-48"
                 />
-                <Button type="submit" disabled={adding} size="sm">
-                  {adding ? "Adding..." : "Add"}
+                <Button type="submit" disabled={addMutation.isPending} size="sm">
+                  {addMutation.isPending ? "Adding..." : "Add"}
                 </Button>
               </form>
             </Card>
