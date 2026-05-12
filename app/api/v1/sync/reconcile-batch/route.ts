@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { CRON_SECRET } from '@/lib/constants'
 
-/**
- * POST /api/v1/sync/reconcile-batch
- * Internal endpoint for indexer to sync batch of onchain votes
- * Protected by CRON_SECRET
- */
 export async function POST(request: NextRequest) {
   const token = request.headers.get('authorization')?.replace('Bearer ', '')
   if (!CRON_SECRET || token !== CRON_SECRET) {
@@ -15,11 +10,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const {
-      votes,
-      lastBlock,
-      chainId = 16602,
-    } = body
+    const { votes, lastBlock, chainId = 16602 } = body
 
     if (!Array.isArray(votes) || !votes.length) {
       return NextResponse.json(
@@ -30,27 +21,72 @@ export async function POST(request: NextRequest) {
 
     let synced = 0
     let notFound = 0
+    let autoCreated = 0
+    let skipped = 0
     let errors: Array<{ vote: any; error: string }> = []
 
     for (const vote of votes) {
       try {
-        const { reasonHash, isScam, reporter, blockNumber, txHash } = vote
+        const { reasonHash, isScam, reporter, blockNumber, txHash, logIndex, targetId } = vote
 
-        // Find report by reportHash (reasonHash)
-        const report = await prisma.threatReport.findFirst({
+        const existingByTx = await prisma.threatReport.findFirst({
+          where: { onchainTxHash: txHash, blockNumber: blockNumber || undefined },
+        })
+        if (existingByTx && typeof logIndex === 'number') {
+          skipped++
+          continue
+        }
+
+        let report: Awaited<ReturnType<typeof prisma.threatReport.findFirst<{ include: { address: true } }>>> | null = null
+
+        report = await prisma.threatReport.findFirst({
           where: {
             reportHash: reasonHash?.toLowerCase?.() || reasonHash,
-            deadLetter: false, // Skip dead letters
+            deadLetter: false,
           },
           include: { address: true },
         })
 
         if (!report) {
           notFound++
+          const targetAddress = (targetId || reporter || '').toLowerCase()
+          if (!targetAddress) {
+            skipped++
+            continue
+          }
+
+          const addressRecord = await prisma.address.upsert({
+            where: { address: targetAddress },
+            create: { address: targetAddress, chain: '0g-galileo', addressType: 'EOA' },
+            update: {},
+          })
+
+          await prisma.threatReport.create({
+            data: {
+              addressId: addressRecord.id,
+              reporterAddress: reporter?.toLowerCase() || '',
+              threatType: 'COMMUNITY_REPORT',
+              severity: isScam ? 80 : 20,
+              riskLevel: isScam ? 'HIGH' : 'LOW',
+              evidenceHash: reasonHash || '',
+              explanation: 'On-chain vote via ScamReporter contract',
+              confidence: 70,
+              reportHash: reasonHash?.toLowerCase(),
+              onchainTxHash: txHash,
+              blockNumber: blockNumber,
+              chainId: chainId,
+              contractAddress: '0x544a39149d5169E4e1bDf7F8492804224CB70152',
+              onchainStatus: 'VERIFIED',
+              localStatus: 'SYNCED_ONCHAIN',
+              status: 'VERIFIED',
+              relayedAt: new Date(),
+            },
+          })
+          autoCreated++
+          synced++
           continue
         }
 
-        // Update report with onchain status
         await prisma.threatReport.update({
           where: { id: report.id },
           data: {
@@ -58,8 +94,8 @@ export async function POST(request: NextRequest) {
             localStatus: 'SYNCED_ONCHAIN',
             onchainTxHash: txHash || report.onchainTxHash,
             blockNumber: blockNumber || report.blockNumber,
-            chainId: chainId,
-            contractAddress: '0x544a39149d5169E4e1bDf7F8492804224CB70152', // ScamReporter
+            chainId,
+            contractAddress: '0x544a39149d5169E4e1bDf7F8492804224CB70152',
             relayError: null,
             relayedAt: report.relayedAt || new Date(),
           },
@@ -71,7 +107,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Update sync state cursor
     if (lastBlock) {
       await prisma.syncState.upsert({
         where: { name: 'scam_vote_indexer' },
@@ -93,21 +128,23 @@ export async function POST(request: NextRequest) {
       })
     }
 
+    await prisma.syncLog.create({
+      data: {
+        source: 'onchain',
+        status: errors.length ? 'failed' : 'success',
+        recordsAdded: autoCreated,
+        recordsUpdated: synced - autoCreated,
+        error: errors.length ? JSON.stringify(errors.slice(0, 10)) : null,
+        completedAt: new Date(),
+      },
+    })
+
     return NextResponse.json({
       success: true,
-      data: {
-        synced,
-        notFound,
-        errors: errors.length,
-        errorDetails: errors.slice(0, 10), // Limit error details
-        lastBlock,
-      },
+      data: { synced, notFound, autoCreated, skipped, errors: errors.length, errorDetails: errors.slice(0, 10), lastBlock },
     })
   } catch (e: any) {
     console.error('[Reconcile Batch] Error:', e)
-    return NextResponse.json(
-      { error: e?.message || 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: e?.message || 'Internal server error' }, { status: 500 })
   }
 }

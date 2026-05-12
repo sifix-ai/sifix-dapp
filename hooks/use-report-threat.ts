@@ -106,6 +106,16 @@ export function useReportThreat(): UseReportThreatReturn {
           throw new Error('Unsupported chain. Please connect to 0G Galileo testnet.');
         }
 
+        // Validate target address exists on-chain
+        if (isAddress(targetAddress.trim())) {
+          const { validateAddressOnChain } = await import('@/lib/chain-validation')
+          const chainKey = chainId === 16602 ? '0g-galileo' : 'ethereum'
+          const check = await validateAddressOnChain(targetAddress, chainKey)
+          if (check.validFormat && !check.existsOnChain && !check.rpcUnavailable) {
+            throw new Error('Address not found on-chain. Please check the address and try again.')
+          }
+        }
+
         // 2. Trigger wallet for on-chain submission FIRST
         setStep('wallet');
         const txHash = await writeContractAsync({

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
 import { apiSuccess, errors, withErrorHandler } from '@/lib/api-response'
-import { runAllSyncs, syncDefiLlama, syncScamSniffer, syncCryptoScamDB } from '@/services/sync-service'
+import { runAllSyncs, syncDefiLlama, syncScamSniffer, syncCryptoScamDB, syncOnchainEvents } from '@/services/sync-service'
 import { CRON_SECRET } from '@/lib/constants'
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
@@ -14,10 +14,11 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   if (source === 'defillama') return apiSuccess(await syncDefiLlama())
   if (source === 'scamsniffer') return apiSuccess(await syncScamSniffer())
   if (source === 'cryptoscamdb') return apiSuccess(await syncCryptoScamDB())
+  if (source === 'onchain') return apiSuccess(await syncOnchainEvents())
   if (source === 'all') {
     const batch = await runAllSyncs()
     return apiSuccess({ success: true, source: 'all', recordsAdded: batch.totalAdded, recordsUpdated: batch.totalUpdated, duration: batch.totalDuration, details: batch.results })
   }
 
-  return errors.validation('Invalid sync source', { validSources: ['defillama', 'scamsniffer', 'cryptoscamdb', 'all'] })
+  return errors.validation('Invalid sync source', { validSources: ['defillama', 'scamsniffer', 'cryptoscamdb', 'onchain', 'all'] })
 })
