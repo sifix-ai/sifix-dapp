@@ -30,6 +30,7 @@ import { ConnectButton } from "@/components/connect-button"
 import { WalletGuard } from "@/components/dashboard/wallet-guard"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { ToastContainer } from "@/components/ui/toast"
 
 
 const navigation = [
@@ -113,6 +114,7 @@ export default function DashboardLayout({
   return (
     <WalletGuard>
     <div className="min-h-screen bg-canvas">
+      <ToastContainer />
       {/* Mobile sidebar backdrop */}
       {mobileMenuOpen && (
         <div

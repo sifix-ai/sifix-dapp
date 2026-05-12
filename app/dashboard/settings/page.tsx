@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useAIProviderSettings, useUpdateAIProviderSettings } from '@/hooks/use-settings';
+import { toast } from '@/store/app-store';
 
 // ─── AI Provider Types ───────────────────────────────────────────────────────
 
@@ -148,10 +149,12 @@ export default function SettingsPage() {
       })
       setSaveStatus('success');
       setSaveMessage('AI provider settings saved successfully');
+      toast.success('AI provider settings saved successfully!')
     } catch (err: any) {
       const errMsg = err?.message || 'Failed to save settings';
       setSaveStatus('error');
       setSaveMessage(errMsg);
+      // Error already shown by api-client, but we can add custom message
     } finally {
       setTimeout(() => {
         setSaveStatus('idle');

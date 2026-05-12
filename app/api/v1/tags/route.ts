@@ -11,37 +11,73 @@ import { prisma } from '@/lib/prisma'
 import { verifyApiAuth } from '@/lib/extension-auth'
 
 /**
- * GET — List all unique tags with counts
- * Query: ?search=...&limit=20
+ * GET — List all address tags with details
+ * Query: ?search=...&limit=50&view=addresses (default) or view=tags
  */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const search = searchParams.get('search') || ''
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100)
+    const limit = Math.min(parseInt(searchParams.get('limit') || '50'), 100)
+    const view = searchParams.get('view') || 'addresses' // 'addresses' or 'tags'
 
-    // Build where clause for filtering tags
-    const where: any = {}
-    if (search) {
-      where.tag = { contains: search }
+    // If view=tags, return aggregated tag counts (old behavior)
+    if (view === 'tags') {
+      const where: any = {}
+      if (search) {
+        where.tag = { contains: search }
+      }
+
+      const tags = await prisma.addressTag.groupBy({
+        by: ['tag'],
+        where,
+        _count: { tag: true },
+        _sum: { upvotes: true, downvotes: true },
+        orderBy: { _count: { tag: 'desc' } },
+        take: limit,
+      })
+
+      const data = tags.map((t) => ({
+        tag: t.tag,
+        count: t._count.tag,
+        upvotes: t._sum.upvotes ?? 0,
+        downvotes: t._sum.downvotes ?? 0,
+        score: (t._sum.upvotes ?? 0) - (t._sum.downvotes ?? 0),
+      }))
+
+      return apiSuccess(data)
     }
 
-    // Group tags by name with counts
-    const tags = await prisma.addressTag.groupBy({
-      by: ['tag'],
+    // Default: return addresses with their tags
+    const where: any = {}
+    if (search) {
+      where.OR = [
+        { tag: { contains: search } },
+        { address: { address: { contains: search } } },
+      ]
+    }
+
+    const addressTags = await prisma.addressTag.findMany({
       where,
-      _count: { tag: true },
-      _sum: { upvotes: true, downvotes: true },
-      orderBy: { _count: { tag: 'desc' } },
+      include: {
+        address: true,
+      },
+      orderBy: [
+        { createdAt: 'desc' },
+      ],
       take: limit,
     })
 
-    const data = tags.map((t) => ({
+    const data = addressTags.map((t) => ({
+      id: t.id,
       tag: t.tag,
-      count: t._count.tag,
-      upvotes: t._sum.upvotes ?? 0,
-      downvotes: t._sum.downvotes ?? 0,
-      score: (t._sum.upvotes ?? 0) - (t._sum.downvotes ?? 0),
+      taggedBy: t.taggedBy,
+      upvotes: t.upvotes,
+      downvotes: t.downvotes,
+      score: t.upvotes - t.downvotes,
+      createdAt: t.createdAt.toISOString(),
+      address: t.address.address,
+      addressRisk: t.address.riskLevel || 'UNKNOWN',
     }))
 
     return apiSuccess(data)

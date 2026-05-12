@@ -20,11 +20,14 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
   if (!isValidEthereumAddress(address)) {
     return errors.invalidAddress()
   }
+  
+  // Normalize address to lowercase for case-insensitive comparison
+  const normalizedAddress = address.toLowerCase()
 
   const where = {
     OR: [
-      { fromAddress: { equals: address, mode: "insensitive" as const } },
-      { toAddress: { equals: address, mode: "insensitive" as const } },
+      { fromAddress: normalizedAddress },
+      { toAddress: normalizedAddress },
     ],
   }
 

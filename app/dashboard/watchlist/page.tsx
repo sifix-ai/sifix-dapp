@@ -8,6 +8,9 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 import { useWatchlist, useAddToWatchlist, useRemoveFromWatchlist } from "@/hooks/use-watchlist"
 import { Eye, Trash2, ArrowUpRight, ArrowDownRight, Plus, Shield } from "lucide-react"
+import { toast } from "@/store/app-store"
+import { watchlistFormSchema } from "@/lib/validation"
+import { z } from "zod"
 
 interface WatchlistEntry {
   id: string
@@ -31,27 +34,56 @@ export default function WatchlistPage() {
   const [showAdd, setShowAdd] = useState(false)
   const [newAddress, setNewAddress] = useState("")
   const [newLabel, setNewLabel] = useState("")
+  const [formErrors, setFormErrors] = useState<{ address?: string; label?: string }>({})
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!newAddress.trim() || !walletAddress) return
+    setFormErrors({})
+
+    if (!walletAddress) {
+      toast.error("Please connect your wallet")
+      return
+    }
+
+    // Validate with Zod
     try {
-      await addMutation.mutateAsync({
-        userAddress: walletAddress,
-        watchedAddress: newAddress.trim().toLowerCase(),
+      const validated = watchlistFormSchema.parse({
+        address: newAddress.trim(),
         label: newLabel.trim() || undefined,
       })
+
+      await addMutation.mutateAsync({
+        userAddress: walletAddress,
+        watchedAddress: validated.address.toLowerCase(),
+        label: validated.label,
+      })
+      
+      toast.success("Address added to watchlist")
       setNewAddress("")
       setNewLabel("")
       setShowAdd(false)
-    } catch {}
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const errors: { address?: string; label?: string } = {}
+        err.errors.forEach((error) => {
+          const field = error.path[0] as 'address' | 'label'
+          errors[field] = error.message
+        })
+        setFormErrors(errors)
+        toast.error("Please fix the form errors")
+      }
+      // API errors already handled by api-client
+    }
   }
 
   const handleRemove = async (watchedAddress: string) => {
     if (!walletAddress) return
     try {
       await removeMutation.mutateAsync({ watchedAddress, userAddress: walletAddress })
-    } catch {}
+      toast.success("Address removed from watchlist")
+    } catch {
+      // Error already handled by api-client
+    }
   }
 
   return (
@@ -76,22 +108,58 @@ export default function WatchlistPage() {
         <>
           {showAdd && (
             <Card>
-              <form onSubmit={handleAdd} className="flex flex-col gap-3 sm:flex-row">
-                <Input
-                  value={newAddress}
-                  onChange={(e) => setNewAddress(e.target.value)}
-                  placeholder="0x... wallet or contract address"
-                  className="flex-1"
-                />
-                <Input
-                  value={newLabel}
-                  onChange={(e) => setNewLabel(e.target.value)}
-                  placeholder="Label (optional)"
-                  className="sm:w-48"
-                />
-                <Button type="submit" disabled={addMutation.isPending} size="sm">
-                  {addMutation.isPending ? "Adding..." : "Add"}
-                </Button>
+              <form onSubmit={handleAdd} className="space-y-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
+                  <div className="flex-1">
+                    <Input
+                      value={newAddress}
+                      onChange={(e) => {
+                        setNewAddress(e.target.value)
+                        setFormErrors((prev) => ({ ...prev, address: undefined }))
+                      }}
+                      placeholder="0x... wallet or contract address"
+                      className={cn(formErrors.address && "border-red-500/50")}
+                      disabled={addMutation.isPending}
+                    />
+                    {formErrors.address && (
+                      <p className="mt-1 text-xs text-red-400">{formErrors.address}</p>
+                    )}
+                  </div>
+                  <div className="sm:w-48">
+                    <Input
+                      value={newLabel}
+                      onChange={(e) => {
+                        setNewLabel(e.target.value)
+                        setFormErrors((prev) => ({ ...prev, label: undefined }))
+                      }}
+                      placeholder="Label (optional)"
+                      className={cn(formErrors.label && "border-red-500/50")}
+                      disabled={addMutation.isPending}
+                    />
+                    {formErrors.label && (
+                      <p className="mt-1 text-xs text-red-400">{formErrors.label}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button type="submit" disabled={addMutation.isPending} size="sm">
+                      {addMutation.isPending ? "Adding..." : "Add"}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setShowAdd(false)
+                        setNewAddress("")
+                        setNewLabel("")
+                        setFormErrors({})
+                      }}
+                      disabled={addMutation.isPending}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
               </form>
             </Card>
           )}
@@ -132,6 +200,7 @@ export default function WatchlistPage() {
                         <button
                           onClick={() => handleRemove(item.watchedAddress)}
                           className="rounded-lg p-1.5 text-white/30 transition-colors hover:bg-white/5 hover:text-red-400"
+                          disabled={removeMutation.isPending}
                         >
                           <Trash2 size={14} />
                         </button>
@@ -141,7 +210,7 @@ export default function WatchlistPage() {
                       <div className="flex items-center gap-3">
                         <div className={cn(
                           "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold",
-                          item.lastScore < 40 ? "bg-green-500/10 text-green-400 border border-green-500/20" :
+                          item.lastScore < 40 ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" :
                           item.lastScore < 70 ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" :
                           "bg-red-500/10 text-red-400 border border-red-500/20"
                         )}>
@@ -149,7 +218,7 @@ export default function WatchlistPage() {
                           {100 - item.lastScore} Trust
                         </div>
                         {isChanged && (
-                          <span className={cn("flex items-center gap-0.5 text-xs", isUp ? "text-red-400" : "text-green-400")}>
+                          <span className={cn("flex items-center gap-0.5 text-xs", isUp ? "text-red-400" : "text-emerald-400")}>
                             {isUp ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
                             {Math.abs(diff)}
                           </span>

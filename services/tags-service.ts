@@ -1,9 +1,9 @@
 import { apiFetch } from '@/lib/api-client'
 
-export async function fetchTags(limit = 50) {
-  const res = await apiFetch(`/api/v1/tags?limit=${limit}`)
+export async function fetchTags(limit = 50, view: 'addresses' | 'tags' = 'addresses') {
+  const res = await apiFetch(`/api/v1/tags?limit=${limit}&view=${view}`)
   const result = await res.json()
-  return result.success ? result.data : result
+  return result.data || []
 }
 
 export async function addTag(address: string, tag: string, label?: string) {
@@ -13,5 +13,5 @@ export async function addTag(address: string, tag: string, label?: string) {
     body: JSON.stringify({ tag, label: label ?? tag }),
   })
   const result = await res.json()
-  return result.success ? result.data : result
+  return result.data
 }

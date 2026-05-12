@@ -267,6 +267,52 @@ export const syncResponseSchema = z.object({
 });
 
 // ============================================
+// FORM VALIDATION SCHEMAS
+// ============================================
+
+/**
+ * Watchlist form validation
+ */
+export const watchlistFormSchema = z.object({
+  address: addressSchema,
+  label: z.string().trim().min(1, 'Label is required').max(50, 'Label must be 50 characters or less').optional(),
+});
+
+/**
+ * Tag form validation
+ */
+export const tagFormSchema = z.object({
+  address: addressSchema,
+  tag: z.string()
+    .trim()
+    .min(1, 'Tag is required')
+    .max(50, 'Tag must be 50 characters or less')
+    .regex(/^[a-z0-9_-]+$/, 'Tag must contain only lowercase letters, numbers, hyphens, and underscores'),
+});
+
+/**
+ * Checker/Search form validation
+ */
+export const checkerFormSchema = z.object({
+  query: z.string()
+    .trim()
+    .min(1, 'Please enter an address, ENS name, or domain')
+    .max(253, 'Input is too long'),
+});
+
+/**
+ * Settings form validation
+ */
+export const settingsFormSchema = z.object({
+  aiProvider: z.enum(['openai', 'anthropic', 'local'], {
+    errorMap: () => ({ message: 'Please select a valid AI provider' }),
+  }),
+  apiKey: z.string().trim().optional(),
+  notifications: z.boolean().default(true),
+  autoScan: z.boolean().default(false),
+});
+
+// ============================================
 // API RESPONSE WRAPPERS
 // ============================================
 

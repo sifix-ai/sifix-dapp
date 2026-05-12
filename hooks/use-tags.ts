@@ -5,15 +5,15 @@ import { fetchTags, addTag } from '@/services/tags-service'
 
 export const tagKeys = {
   all: ['tags'] as const,
-  list: (limit?: number) => [...tagKeys.all, 'list', limit] as const,
+  list: (limit?: number, view?: 'addresses' | 'tags') => [...tagKeys.all, 'list', limit, view] as const,
 } as const
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 
-export function useTags(limit = 50) {
+export function useTags(limit = 50, view: 'addresses' | 'tags' = 'addresses') {
   return useQuery({
-    queryKey: tagKeys.list(limit),
-    queryFn: () => fetchTags(limit),
+    queryKey: tagKeys.list(limit, view),
+    queryFn: () => fetchTags(limit, view),
   })
 }
 

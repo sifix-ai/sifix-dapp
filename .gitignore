@@ -60,3 +60,5 @@ prisma/*.db-*
 test-*.mjs
 
 .agents/*
+.kiro/*
+.vscode/*

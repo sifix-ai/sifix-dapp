@@ -14,6 +14,9 @@ import {
   Loader2, Flag, CheckCircle2,
   Users, Clock,
 } from "lucide-react"
+import { toast } from "@/store/app-store"
+import { checkerFormSchema } from "@/lib/validation"
+import { z } from "zod"
 
 type ScanState =
   | { status: "idle" }
@@ -26,6 +29,7 @@ function CheckerContent() {
   const { address: walletAddress } = useAccount()
   const [query, setQuery] = useState(searchParams.get("q") ?? "")
   const [state, setState] = useState<ScanState>({ status: "idle" })
+  const [queryError, setQueryError] = useState<string>("")
   const didAutoRun = useRef(false)
 
   const checkerScan = useCheckerScan()
@@ -37,13 +41,26 @@ function CheckerContent() {
   const { data: reportsData, isLoading: reportsLoading } = useAddressThreats(reportsAddress, 5)
 
   const runCheck = useCallback(async (input: string) => {
-    if (!input.trim()) return
-    setState({ status: "loading" })
+    setQueryError("")
+    
+    // Validate with Zod
     try {
-      const data = await checkerScan.mutateAsync({ input, walletAddress })
-      setState({ status: "done", data })
-    } catch {
-      setState({ status: "error", message: "Network error. Please try again." })
+      const validated = checkerFormSchema.parse({ query: input })
+      setState({ status: "loading" })
+      
+      try {
+        const data = await checkerScan.mutateAsync({ input: validated.query, walletAddress })
+        setState({ status: "done", data })
+        toast.success("Scan completed successfully!")
+      } catch {
+        setState({ status: "error", message: "Network error. Please try again." })
+      }
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        const error = err.errors[0]
+        setQueryError(error.message)
+        toast.error(error.message)
+      }
     }
   }, [walletAddress, checkerScan])
 
@@ -119,6 +136,7 @@ function CheckerContent() {
     setReports([])
     setReportsTotal(0)
     setReportsAddress("")
+    setQueryError("")
     runCheck(query)
   }
 
@@ -130,23 +148,31 @@ function CheckerContent() {
       </div>
 
       <Card>
-        <form onSubmit={handleCheck} className="flex gap-3">
-          <div className="relative flex-1">
-            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
-            <Input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="0x... address, ENS name, or domain"
-              className="pl-10"
-            />
+        <form onSubmit={handleCheck} className="space-y-3">
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+              <Input
+                value={query}
+                onChange={(e) => {
+                  setQuery(e.target.value)
+                  setQueryError("")
+                }}
+                placeholder="0x... address, ENS name, or domain"
+                className={cn("pl-10", queryError && "border-red-500/50")}
+              />
+            </div>
+            <Button type="submit" disabled={state.status === "loading"}>
+              {state.status === "loading" ? (
+                <Loader2 size={16} className="animate-spin" />
+              ) : (
+                <>Check <ArrowRight size={16} className="ml-2" /></>
+              )}
+            </Button>
           </div>
-          <Button type="submit" disabled={state.status === "loading"}>
-            {state.status === "loading" ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              <>Check <ArrowRight size={16} className="ml-2" /></>
-            )}
-          </Button>
+          {queryError && (
+            <p className="text-xs text-red-400">{queryError}</p>
+          )}
         </form>
       </Card>
 

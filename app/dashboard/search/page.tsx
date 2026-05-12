@@ -4,7 +4,7 @@ import { AuthGuard } from '@/components/auth-guard'
 import { useScanAddress, useAddressReputation } from '@/hooks/use-scan'
 import { useAppStore } from '@/store/app-store'
 import { useState } from 'react'
-import { addressSchema } from '@/lib/validations'
+import { addressSchema } from '@/lib/validation'
 import { ConnectButton } from '@/components/connect-button'
 import { useAccount } from 'wagmi'
 import { Search, Shield, AlertTriangle, TrendingUp, Sparkles, Clock, CheckCircle2, XCircle } from 'lucide-react'
@@ -12,11 +12,12 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { LoadingSpinner } from '@/components/ui/loading-spinner'
 import { EmptyState } from '@/components/ui/empty-state'
 import { Card } from '@/components/ui/card'
+import { toast } from '@/store/app-store'
+import { z } from 'zod'
 
 export default function SearchPage() {
   const [address, setAddress] = useState('')
   const [error, setError] = useState('')
-  const { addNotification } = useAppStore()
   const { isConnected } = useAccount()
 
   const scanMutation = useScanAddress()
@@ -29,17 +30,16 @@ export default function SearchPage() {
       setError('')
       addressSchema.parse(address)
       await scanMutation.mutateAsync({ address })
-      addNotification({
-        type: 'success',
-        message: 'Address scanned successfully',
-      })
+      toast.success('Address scanned successfully!')
     } catch (err: any) {
-      const errorMsg = err.message || 'Invalid address format'
-      setError(errorMsg)
-      addNotification({
-        type: 'error',
-        message: errorMsg,
-      })
+      if (err instanceof z.ZodError) {
+        const errorMsg = err.errors[0].message
+        setError(errorMsg)
+        toast.error(errorMsg)
+      } else {
+        const errorMsg = err.message || 'Failed to scan address'
+        setError(errorMsg)
+      }
     }
   }
 

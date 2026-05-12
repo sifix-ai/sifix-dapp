@@ -7,6 +7,13 @@ interface User {
   isConnected: boolean
 }
 
+export interface Toast {
+  id: string
+  type: 'success' | 'error' | 'warning' | 'info'
+  message: string
+  timestamp: number
+}
+
 interface AppState {
   // User state
   user: User | null
@@ -20,7 +27,12 @@ interface AppState {
   searchQuery: string
   setSearchQuery: (query: string) => void
   
-  // Notification state
+  // Toast state (global notifications)
+  toasts: Toast[]
+  addToast: (toast: Omit<Toast, 'id' | 'timestamp'>) => void
+  removeToast: (id: string) => void
+  
+  // Legacy notification state (deprecated, use toasts instead)
   notifications: Array<{
     id: string
     type: 'success' | 'error' | 'warning' | 'info'
@@ -46,7 +58,25 @@ export const useAppStore = create<AppState>()(
       searchQuery: '',
       setSearchQuery: (query) => set({ searchQuery: query }),
       
-      // Notification state
+      // Toast state
+      toasts: [],
+      addToast: (toast) =>
+        set((state) => ({
+          toasts: [
+            ...state.toasts,
+            {
+              ...toast,
+              id: Math.random().toString(36).slice(2, 11),
+              timestamp: Date.now(),
+            },
+          ],
+        })),
+      removeToast: (id) =>
+        set((state) => ({
+          toasts: state.toasts.filter((t) => t.id !== id),
+        })),
+      
+      // Legacy notification state
       notifications: [],
       addNotification: (notification) =>
         set((state) => ({
@@ -70,3 +100,19 @@ export const useAppStore = create<AppState>()(
     }
   )
 )
+
+// Global toast helper functions
+export const toast = {
+  success: (message: string) => {
+    useAppStore.getState().addToast({ type: 'success', message })
+  },
+  error: (message: string) => {
+    useAppStore.getState().addToast({ type: 'error', message })
+  },
+  warning: (message: string) => {
+    useAppStore.getState().addToast({ type: 'warning', message })
+  },
+  info: (message: string) => {
+    useAppStore.getState().addToast({ type: 'info', message })
+  },
+}
