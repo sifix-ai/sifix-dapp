@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
           where: { id: report.id },
           data: {
             onchainStatus: 'VERIFIED',
-            localStatus: 'SYNCED',
+            localStatus: 'SYNCED_ONCHAIN',
             onchainTxHash: txHash || report.onchainTxHash,
             blockNumber: blockNumber || report.blockNumber,
             chainId: chainId,
