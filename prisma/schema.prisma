@@ -61,13 +61,20 @@ model ThreatReport {
   simulationData String? // JSON simulation results (stored as string for SQLite)
 
   // Status
-  status     String    @default("PENDING") // PENDING, VERIFIED, REJECTED, DISPUTED
-  verifiedBy String?
-  verifiedAt DateTime?
+  status        String    @default("PENDING") // PENDING, VERIFIED, REJECTED, DISPUTED
+  localStatus   String    @default("PENDING_LOCAL") // PENDING_LOCAL, QUEUED, RELAY_FAILED, SYNCED
+  onchainStatus String    @default("NONE") // NONE, SUBMITTED, VERIFIED, REJECTED, DISPUTED
+  verifiedBy    String?
+  verifiedAt    DateTime?
 
   // On-chain
+  reportHash    String?
   onchainTxHash String? // Transaction hash when reported on-chain
   blockNumber   Int?
+  chainId       Int?
+  contractAddress String?
+  relayError    String?
+  relayedAt     DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

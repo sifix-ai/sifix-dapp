@@ -73,6 +73,8 @@ export class ReportService {
         confidence: input.confidence,
         simulationData: input.simulationData,
         status: 'PENDING',
+        localStatus: 'PENDING_LOCAL',
+        onchainStatus: 'NONE',
       },
       include: {
         address: true,
