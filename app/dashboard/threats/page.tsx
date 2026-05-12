@@ -247,11 +247,22 @@ export default function ThreatsPage() {
                   <span>Severity: <span className="text-white/80 font-medium">{threat.severity}/100</span></span>
                 </div>
 
-                <div className={`px-2 py-1 rounded text-xs font-medium ${threat.status === 'VERIFIED' ? 'bg-green-500/20 text-green-400' :
-                  threat.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
-                    'bg-white/10 text-white/60'
-                  }`}>
-                  {threat.status}
+                <div className="flex items-center gap-2">
+                  <div className={`px-2 py-1 rounded text-xs font-medium ${threat.status === 'VERIFIED' ? 'bg-green-500/20 text-green-400' :
+                    threat.status === 'PENDING' ? 'bg-yellow-500/20 text-yellow-400' :
+                      'bg-white/10 text-white/60'
+                    }`}>
+                    {threat.status}
+                  </div>
+                  <div className={`px-2 py-1 rounded text-[11px] font-medium ${threat.localStatus === 'SYNCED' ? 'bg-blue-500/20 text-blue-300' :
+                    threat.localStatus === 'RELAY_FAILED' ? 'bg-red-500/20 text-red-300' :
+                      'bg-white/10 text-white/60'
+                    }`}>
+                    {threat.localStatus || 'PENDING_LOCAL'}
+                  </div>
+                  <div className="px-2 py-1 rounded text-[11px] font-medium bg-purple-500/20 text-purple-300">
+                    {threat.onchainStatus || 'NONE'}
+                  </div>
                 </div>
               </div>
             </Card>
