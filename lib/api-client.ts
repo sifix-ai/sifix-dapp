@@ -50,10 +50,25 @@ export async function apiFetch(input: string, init: RequestInit = {}): Promise<R
 
     // Handle 401 Unauthorized
     if (res.status === 401 && typeof window !== 'undefined') {
-      localStorage.removeItem('sifix_api_token');
-      localStorage.removeItem('sifix_api_token_expires');
-      toast.error('Session expired. Please reconnect your wallet.');
-      throw new ApiError('Unauthorized', 401, 'UNAUTHORIZED');
+      let payload: any = null;
+      try {
+        payload = await res.clone().json();
+      } catch {}
+
+      const msg = String(payload?.error?.message || payload?.message || payload?.error || '').toLowerCase();
+      const isSessionAuthFailure =
+        msg.includes('missing authorization token') ||
+        msg.includes('invalid or expired token') ||
+        msg.includes('auth verification failed') ||
+        msg.includes('unauthorized');
+
+      if (isSessionAuthFailure) {
+        localStorage.removeItem('sifix_api_token');
+        localStorage.removeItem('sifix_api_token_expires');
+        toast.error('Session expired. Please reconnect your wallet.');
+      }
+
+      throw new ApiError('Unauthorized', 401, 'UNAUTHORIZED', payload);
     }
 
     // Handle other error status codes

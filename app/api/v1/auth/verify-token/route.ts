@@ -6,7 +6,7 @@ import { verifyApiAuth } from "@/lib/extension-auth"
  * Check if the current Bearer token is valid
  */
 export async function GET() {
-  const auth = await verifyApiAuth()
+  const auth = await verifyApiAuth({ enforceAgenticAuthorization: false })
 
   if (!auth.authorized) {
     return NextResponse.json(
