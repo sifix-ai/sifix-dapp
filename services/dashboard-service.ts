@@ -30,6 +30,45 @@ export interface LeaderboardEntry {
   reportsVerified: number
 }
 
+export interface PredictionItem {
+  id: string
+  targetAddress: string
+  analysisType: string
+  predictedRiskScore: number
+  predictedRiskLevel: string
+  predictedConfidence: number
+  predictedRecommendation: string
+  predictedThreats: string[]
+  provider: string
+  actualOutcome: string | null
+  isCorrect: boolean | null
+  groundTruthSource: string | null
+  goPlusRiskScore: number | null
+  communityRiskLevel: string | null
+  resolvedAt: string | null
+  createdAt: string
+  updatedAt: string
+  tags: {
+    falsePositive: boolean
+    falseNegative: boolean
+    status: 'pending' | 'correct' | 'wrong'
+  }
+}
+
+export interface RecentPredictionsResponse {
+  filter: 'all' | 'resolved' | 'unresolved' | 'false_positive' | 'false_negative'
+  limit: number
+  summary: {
+    total: number
+    pending: number
+    correct: number
+    wrong: number
+    falsePositive: number
+    falseNegative: number
+  }
+  predictions: PredictionItem[]
+}
+
 export interface DashboardData {
   stats: PlatformStats | null
   recentThreats: any[]
@@ -75,6 +114,18 @@ export async function fetchLeaderboard(limit = 10): Promise<LeaderboardEntry[]> 
 /**
  * Fetch recent threats for dashboard activity feed
  */
+export async function fetchRecentPredictions(
+  filter: 'all' | 'resolved' | 'unresolved' | 'false_positive' | 'false_negative' = 'all',
+  limit = 25,
+): Promise<RecentPredictionsResponse> {
+  const res = await apiFetch(`${API_BASE}/predictions/recent?filter=${filter}&limit=${limit}`)
+  if (!res.ok) {
+    throw new Error('Failed to fetch recent predictions')
+  }
+  const json = await res.json()
+  return json.data
+}
+
 export async function fetchRecentThreats(limit = 5): Promise<any[]> {
   const res = await apiFetch(`${API_BASE}/threats?limit=${limit}`)
   if (!res.ok) {

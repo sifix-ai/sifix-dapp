@@ -286,8 +286,27 @@ export class AccuracyService {
   /**
    * Get recent predictions for display.
    */
-  static async getRecent(limit = 50) {
+  static async getRecent(options?: {
+    limit?: number
+    filter?: 'all' | 'resolved' | 'unresolved' | 'false_positive' | 'false_negative'
+  }) {
+    const limit = options?.limit || 50
+    const filter = options?.filter || 'all'
+
+    const where: any = {}
+    if (filter === 'resolved') where.isCorrect = { not: null }
+    if (filter === 'unresolved') where.isCorrect = null
+    if (filter === 'false_positive') {
+      where.isCorrect = false
+      where.predictedRiskLevel = { in: ['HIGH', 'CRITICAL'] }
+    }
+    if (filter === 'false_negative') {
+      where.isCorrect = false
+      where.predictedRiskLevel = { in: ['SAFE', 'LOW'] }
+    }
+
     return prisma.predictionAccuracy.findMany({
+      where,
       orderBy: { createdAt: 'desc' },
       take: limit,
     })
