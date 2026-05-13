@@ -130,10 +130,15 @@ export function useReportScam(): UseReportScamReturn {
         setStep('confirming');
 
         // 3. Wait for on-chain confirmation
-        await waitForTransactionReceipt(wagmiConfig, {
+        const receipt = await waitForTransactionReceipt(wagmiConfig, {
+          chainId,
           hash: txHash,
           confirmations: 1,
         });
+
+        if (receipt.status !== 'success') {
+          throw new Error('Transaction reverted on-chain. Contract rejected this report.')
+        }
 
         // 4. On-chain confirmed — success handled by indexer sync pipeline
         setStep('success');
