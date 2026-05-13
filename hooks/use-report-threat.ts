@@ -5,7 +5,7 @@ import {
   useWriteContract,
   useWaitForTransactionReceipt,
 } from 'wagmi';
-import { waitForTransactionReceipt } from 'wagmi/actions';
+import { readContract, waitForTransactionReceipt } from 'wagmi/actions';
 import { hashReasonData, type ReasonData } from '@/lib/hash';
 import {
   SCAM_REPORTER_ABI,
@@ -114,6 +114,23 @@ export function useReportThreat(): UseReportThreatReturn {
           if (check.validFormat && !check.existsOnChain && !check.rpcUnavailable) {
             throw new Error('Address not found on-chain. Please check the address and try again.')
           }
+        }
+
+        if (!isAddress(reporterAddress)) {
+          throw new Error('Invalid reporter wallet address. Please reconnect wallet and try again.')
+        }
+
+        // Preflight: prevent duplicate on-chain vote and wasted gas
+        const alreadyVoted = await readContract(wagmiConfig, {
+          address: SIFIX_REPUTATION_ADDRESS,
+          abi: SCAM_REPORTER_ABI,
+          functionName: 'hasVoted',
+          args: [targetId, reporterAddress as `0x${string}`],
+          chainId,
+        })
+
+        if (alreadyVoted) {
+          throw new Error('You have already voted for this target on-chain.')
         }
 
         // 2. Trigger wallet for on-chain submission FIRST
