@@ -45,9 +45,9 @@ export default function Home() {
 
       {/* Footer - Resend Style */}
       <footer className="border-t border-hairline py-16 bg-canvas">
-        <div className="container mx-auto px-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+            <div className="mb-12 grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
               <div>
                 <h3 className="text-sm font-medium text-ink mb-4">Product</h3>
                 <ul className="space-y-3">
@@ -78,7 +78,7 @@ export default function Home() {
               </div>
             </div>
             
-            <div className="border-t border-divider-soft pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col items-start justify-between gap-4 border-t border-divider-soft pt-8 text-left sm:flex-row sm:items-center">
               <div className="flex items-center gap-2">
                 <Shield className="w-4 h-4 text-ash" />
                 <span className="text-sm text-ash">

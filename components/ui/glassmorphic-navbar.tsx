@@ -32,13 +32,13 @@ export function GlassmorphicNavbar() {
             : "bg-transparent backdrop-blur-md"
         }`}
       >
-        <div className="container mx-auto flex items-center justify-between px-8 py-6">
+        <div className="container mx-auto flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-3 group">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-glow-violet transition-all duration-300 group-hover:shadow-glow-pink group-hover:scale-110">
               <Shield className="w-4 h-4 text-primary-on" strokeWidth={2.5} />
             </div>
-            <span className="text-base font-semibold text-ink tracking-tight">
+            <span className="text-sm font-semibold text-ink tracking-tight sm:text-base">
               SIFIX
             </span>
           </Link>
@@ -98,7 +98,7 @@ export function GlassmorphicNavbar() {
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
           transition={{ duration: 0.2 }}
-          className="fixed inset-0 z-50 flex flex-col p-8 bg-canvas/95 backdrop-blur-2xl md:hidden"
+          className="fixed inset-0 z-50 flex flex-col overflow-y-auto px-5 py-6 bg-canvas/95 backdrop-blur-2xl md:hidden safe-top safe-bottom"
         >
           <div className="flex items-center justify-between mb-12">
             <Link href="/" className="flex items-center gap-3">

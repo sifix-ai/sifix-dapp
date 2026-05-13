@@ -139,6 +139,22 @@ html {
   scroll-behavior: smooth;
 }
 
+.safe-top {
+  padding-top: max(env(safe-area-inset-top), 0px);
+}
+
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+
+.safe-left {
+  padding-left: max(env(safe-area-inset-left), 0px);
+}
+
+.safe-right {
+  padding-right: max(env(safe-area-inset-right), 0px);
+}
+
 /* Custom scrollbar - Resend style */
 ::-webkit-scrollbar {
   width: 8px;

@@ -17,7 +17,7 @@ export function Hero2() {
     <AuroraBackground>
       <div className="relative z-10 w-full h-full">
         {/* Hero Content - Resend Style with Playfair Display-inspired typography */}
-        <div className="container mx-auto px-8 pt-40 pb-32 min-h-screen flex items-center">
+        <div className="container mx-auto px-4 pt-28 pb-20 min-h-[100svh] flex items-center sm:px-6 sm:pt-32 sm:pb-24 lg:px-8 lg:pt-40 lg:pb-32">
           <motion.div
             initial={{ opacity: 0.0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -33,10 +33,10 @@ export function Hero2() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-white/[0.04] border border-white/15 rounded-full mb-12 backdrop-blur-md"
+              className="inline-flex max-w-full items-center gap-2 rounded-full border border-white/15 bg-white/[0.04] px-3 py-2 mb-8 backdrop-blur-md sm:px-4 sm:mb-12"
             >
               <div className="w-2 h-2 bg-accent-green rounded-full shadow-[0_0_8px_rgba(17,255,153,0.6)]" />
-              <span className="text-xs font-medium text-white tracking-wide">
+              <span className="text-center text-[11px] font-medium leading-tight tracking-wide text-white sm:text-xs">
                 AI-POWERED SECURITY ON 0G CHAIN
               </span>
             </motion.div>
@@ -46,7 +46,7 @@ export function Hero2() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-display text-4xl md:text-5xl lg:text-[64px] leading-[1.1] tracking-tight text-ink mb-8 font-normal"
+              className="font-display text-[2.4rem] leading-[1.05] tracking-tight text-ink mb-6 font-normal sm:text-5xl sm:mb-8 lg:text-[64px]"
               style={{ maxWidth: '900px' }}
             >
               Wallet security
@@ -59,7 +59,7 @@ export function Hero2() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-lg leading-relaxed text-body max-w-2xl mb-12"
+              className="max-w-2xl text-base leading-relaxed text-body mb-8 sm:text-lg sm:mb-12"
             >
               AI-powered transaction analysis with verifiable Agentic ID that intercepts, analyzes, and blocks malicious transactions before they drain your wallet. Powered by 0G Compute with BYOAI flexibility.
             </motion.p>
@@ -69,16 +69,16 @@ export function Hero2() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row items-start gap-4"
+              className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-start sm:gap-4"
             >
-              <Link href="/dashboard">
-                <button className="group h-10 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:border-white/30 hover:bg-white/[0.08] flex items-center gap-2">
+              <Link href="/dashboard" className="w-full sm:w-auto">
+                <button className="group flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:border-white/30 hover:bg-white/[0.08] sm:h-10 sm:w-auto">
                   Launch Dashboard
                   <ArrowRight className="w-4 h-4" strokeWidth={2} />
                 </button>
               </Link>
-              <a href="https://github.com/sifix-ai" target="_blank" rel="noopener noreferrer">
-                <button className="group h-10 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:border-white/30 hover:bg-white/[0.08] flex items-center gap-2">
+              <a href="https://github.com/sifix-ai" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto">
+                <button className="group flex h-11 w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/[0.04] px-4 text-sm font-medium text-white shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition hover:border-white/30 hover:bg-white/[0.08] sm:h-10 sm:w-auto">
                   View on GitHub
                 </button>
               </a>
@@ -89,7 +89,7 @@ export function Hero2() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4 text-xs text-charcoal"
+              className="mt-12 grid grid-cols-1 gap-3 text-xs text-charcoal sm:mt-16 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4"
             >
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 bg-accent-green rounded-full shadow-[0_0_6px_rgba(17,255,153,0.5)]" />
