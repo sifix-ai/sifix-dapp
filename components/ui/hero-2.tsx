@@ -17,7 +17,7 @@ export function Hero2() {
     <AuroraBackground>
       <div className="relative z-10 w-full h-full">
         {/* Hero Content - Resend Style with Playfair Display-inspired typography */}
-        <div className="container mx-auto px-4 pt-28 pb-20 min-h-[100svh] flex items-center sm:px-6 sm:pt-32 sm:pb-24 lg:px-8 lg:pt-40 lg:pb-32">
+        <div className="px-4 pt-28 pb-20 min-h-[100svh] flex items-center sm:px-6 sm:pt-32 sm:pb-24 lg:px-8 lg:pt-40 lg:pb-32">
           <motion.div
             initial={{ opacity: 0.0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -89,23 +89,23 @@ export function Hero2() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="mt-12 grid grid-cols-1 gap-3 text-xs text-charcoal sm:mt-16 sm:grid-cols-2 lg:grid-cols-4 sm:gap-4"
+              className="mt-12 grid grid-cols-2 gap-3 text-xs text-charcoal sm:mt-16 lg:grid-cols-4 sm:gap-4"
             >
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-accent-green rounded-full shadow-[0_0_6px_rgba(17,255,153,0.5)]" />
-                <span>Live on 0G Galileo</span>
+                <div className="w-1.5 h-1.5 bg-accent-green rounded-full shadow-[0_0_6px_rgba(17,255,153,0.5)] flex-shrink-0" />
+                <span className="whitespace-nowrap">Live on 0G Galileo</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-accent-blue rounded-full shadow-[0_0_6px_rgba(59,158,255,0.5)]" />
-                <span>Verifiable Agentic ID</span>
+                <div className="w-1.5 h-1.5 bg-accent-blue rounded-full shadow-[0_0_6px_rgba(59,158,255,0.5)] flex-shrink-0" />
+                <span className="whitespace-nowrap">Verifiable Agentic ID</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-accent-orange rounded-full shadow-[0_0_6px_rgba(255,128,31,0.5)]" />
-                <span>0G Compute Powered</span>
+                <div className="w-1.5 h-1.5 bg-accent-orange rounded-full shadow-[0_0_6px_rgba(255,128,31,0.5)] flex-shrink-0" />
+                <span className="whitespace-nowrap">0G Compute Powered</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-accent-yellow rounded-full shadow-[0_0_6px_rgba(255,197,61,0.5)]" />
-                <span>0G Storage Enabled</span>
+                <div className="w-1.5 h-1.5 bg-accent-yellow rounded-full shadow-[0_0_6px_rgba(255,197,61,0.5)] flex-shrink-0" />
+                <span className="whitespace-nowrap">0G Storage Enabled</span>
               </div>
             </motion.div>
 

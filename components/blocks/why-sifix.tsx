@@ -35,7 +35,7 @@ export function WhySifixSection() {
         <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 w-[1200px] h-[1200px] bg-primary-glow rounded-full blur-3xl opacity-10" />
       </div>
 
-      <div className="container mx-auto px-8 relative z-10">
+      <div className="px-8 relative z-10">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <motion.div

@@ -37,7 +37,7 @@ export function PartnersSection() {
       {/* Background gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-accent-blue/5 to-transparent" />
       
-      <div className="container mx-auto px-4 relative z-10">
+      <div className="px-4 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}

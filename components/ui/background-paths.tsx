@@ -69,7 +69,7 @@ export function BackgroundPaths({
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[1200px] h-[1200px] bg-accent-blue-glow rounded-full blur-3xl opacity-18" />
       </div>
 
-      <div className="relative z-10 container mx-auto px-8 text-center">
+      <div className="relative z-10 px-8 text-center">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

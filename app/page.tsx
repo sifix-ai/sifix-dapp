@@ -45,7 +45,7 @@ export default function Home() {
 
       {/* Footer - Resend Style */}
       <footer className="border-t border-hairline py-16 bg-canvas">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="max-w-7xl mx-auto">
             <div className="mb-12 grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-4">
               <div>

@@ -69,7 +69,7 @@ export function StatsSection() {
         <div className="absolute top-1/2 -translate-y-1/2 right-0 w-[1000px] h-[1000px] bg-accent-green-glow rounded-full blur-3xl opacity-15" />
       </div>
 
-      <div className="container mx-auto px-8 relative z-10">
+      <div className="px-8 relative z-10">
         <div className="max-w-6xl mx-auto">
           {/* Section Header - Resend Style */}
           <motion.div
