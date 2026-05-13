@@ -36,19 +36,24 @@ export const POST = withErrorHandler(async (req: NextRequest) => {
     tokenId?: string
   }
 
-  // All POST actions require auth
-  const auth = await verifyApiAuth()
-  if (!auth.authorized) {
-    return errors.unauthorized(auth.error)
-  }
-
   if (action === 'check') {
+    // Keep check flow usable for wallets without Agentic-ID access.
+    // Require valid session, but do NOT enforce Agentic-ID authorization here.
+    const auth = await verifyApiAuth({ enforceAgenticAuthorization: false })
+    if (!auth.authorized) {
+      return errors.unauthorized(auth.error)
+    }
+
     if (!user) return errors.validation('Missing field: user')
     if (!isValidEthereumAddress(user)) return errors.invalidAddress()
     const result = await isAuthorizedForSifixAgent(user as Address)
     return apiSuccess(result)
   }
   if (action === 'authorize') {
+    const auth = await verifyApiAuth()
+    if (!auth.authorized) {
+      return errors.unauthorized(auth.error)
+    }
     const tokenId = bodyTokenId
       ? BigInt(bodyTokenId)
       : getConfiguredAgenticTokenId()
