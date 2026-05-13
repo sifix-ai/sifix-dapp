@@ -6,7 +6,7 @@ import { isAuthorizedForSifixAgent } from "@/lib/agentic-id"
  * Verify API auth token from Authorization header
  * Used by all authenticated API routes (extension & dApp)
  */
-export async function verifyApiAuth(options?: { enforceAgenticAuthorization?: boolean }): Promise<{
+export async function verifyApiAuth(): Promise<{
   authorized: boolean
   walletAddress?: string
   agenticId?: {
@@ -50,8 +50,7 @@ export async function verifyApiAuth(options?: { enforceAgenticAuthorization?: bo
       session.walletAddress as `0x${string}`
     )
 
-    const enforceAgenticAuthorization = options?.enforceAgenticAuthorization ?? true
-    if (enforceAgenticAuthorization && agenticId.enabled && !agenticId.authorized) {
+    if (agenticId.enabled && !agenticId.authorized) {
       return {
         authorized: false,
         walletAddress: session.walletAddress,
