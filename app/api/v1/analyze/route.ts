@@ -174,26 +174,23 @@ export async function POST(request: NextRequest) {
       // Message signature analysis
       console.log(`[API] Analyzing message signature: ${from} (method: ${method}, wallet: ${walletAddress}, provider: ${provider})`)
 
-      // Check if agent supports analyzeMessageSignature
-      if (typeof (agent as any).analyzeMessageSignature !== "function") {
-        return NextResponse.json(
-          {
-            error: "Message signature analysis not yet supported by SecurityAgent",
-            note: "Please use transaction analysis or update SecurityAgent package",
-          },
-          { status: 501 }
-        )
+      // Map method names from extension format to agent format
+      let agentMethod: 'personalSign' | 'eth_signTypedData' = 'personalSign'
+      if (method === 'personal_sign' || method === 'eth_sign') {
+        agentMethod = 'personalSign'
+      } else if (method === 'eth_signTypedData_v3' || method === 'eth_signTypedData_v4' || method === 'eth_signTypedData') {
+        agentMethod = 'eth_signTypedData'
       }
 
       // Call message signature analysis
       const result = await (agent as any).analyzeMessageSignature({
         from: from as Address,
-        method,
+        method: agentMethod,
         message: data,
         typedData,
       })
 
-      const riskScore = result.analysis.riskScore
+      const riskScore = result.riskScore
       let riskLevel: string
       if (riskScore >= 80) riskLevel = "CRITICAL"
       else if (riskScore >= 60) riskLevel = "HIGH"
@@ -207,12 +204,12 @@ export async function POST(request: NextRequest) {
         method,
         riskLevel,
         riskScore,
-        confidence: result.analysis.confidence,
-        recommendation: riskScore >= 60 ? "BLOCK" : riskScore >= 40 ? "WARN" : "PROCEED",
-        reasoning: result.analysis.reasoning,
-        threats: result.analysis.threats || [],
-        provider: result.computeProvider || provider,
-        timestamp: result.timestamp,
+        confidence: result.confidence,
+        recommendation: result.recommendation || (riskScore >= 60 ? "BLOCK" : riskScore >= 40 ? "WARN" : "PROCEED"),
+        reasoning: result.reasoning,
+        threats: result.threats || [],
+        provider: result.provider || provider,
+        timestamp: new Date().toISOString(),
       })
     } else {
       // Transaction analysis
