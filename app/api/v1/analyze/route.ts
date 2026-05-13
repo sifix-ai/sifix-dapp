@@ -8,6 +8,7 @@ import { isValidEthereumAddress } from "@/lib/address-validation"
 import { shouldAutoReport, AUTO_REPORT_POLICY } from "@/lib/auto-report-policy"
 import { ReportService } from "@/services/report-service"
 import { validateAddressOnChain } from "@/lib/chain-validation"
+import { enrichWithGoPlus } from "@/lib/goplus"
 
 // Singleton threat intel provider
 const threatIntel = new PrismaThreatIntel()
@@ -230,13 +231,41 @@ export async function POST(request: NextRequest) {
         value: value ? BigInt(value) : undefined,
       })
 
-      const riskScore = result.analysis.riskScore
+      // Step 3: Enrich with GoPlus address intel (best-effort, non-blocking)
+      const goplus = await enrichWithGoPlus(to as Address, 16602).catch(() => null)
+      const goplusThreats = goplus?.flags || []
+      const mergedThreats = Array.from(new Set([...(result.analysis.threats || []), ...goplusThreats]))
+      const riskScore = Math.max(result.analysis.riskScore, goplus?.riskScore || 0)
+
       let riskLevel: string
       if (riskScore >= 80) riskLevel = "CRITICAL"
       else if (riskScore >= 60) riskLevel = "HIGH"
       else if (riskScore >= 40) riskLevel = "MEDIUM"
       else if (riskScore >= 20) riskLevel = "LOW"
       else riskLevel = "SAFE"
+
+      const recommendation = riskScore >= 80
+        ? "BLOCK"
+        : riskScore >= 40
+          ? "WARN"
+          : result.analysis.recommendation
+
+      const reasoning = goplus && goplus.riskScore > 0
+        ? `${result.analysis.reasoning} | GoPlus risk=${goplus.riskScore} labels=${goplus.labels.join(',') || 'none'}`
+        : result.analysis.reasoning
+
+      const confidence = Math.max(result.analysis.confidence || 0, goplus ? 85 : 0)
+
+      const finalAnalysis = {
+        ...result.analysis,
+        riskScore,
+        threats: mergedThreats,
+        recommendation,
+        reasoning,
+        confidence,
+      }
+
+      result.analysis = finalAnalysis
 
       // Generate storage URL if we have a hash but no explorer URL
       let storageUrl = result.storageExplorer || null
