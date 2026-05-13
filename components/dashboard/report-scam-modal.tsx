@@ -2,14 +2,12 @@
 
 import { useState } from 'react';
 import { useAccount, useConnect, useSwitchChain, useChainId } from 'wagmi';
-import Link from 'next/link';
-import { AlertTriangle, CheckCircle2, Loader2, ExternalLink, Wallet, RefreshCw, Shield } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Loader2, ExternalLink, Wallet, RefreshCw } from 'lucide-react';
 import { Modal } from '@/components/ui/modal';
 import { Steps } from '@/components/ui/steps';
 import { Button } from '@/components/ui/button';
 import { hashReasonData, type ReasonData } from '@/lib/hash';
 import { useReportScam } from '@/hooks/use-report-scam';
-import { useAgenticIdAuth, useRequestAccess } from '@/hooks/use-agentic-id';
 import { SUPPORTED_CHAIN_IDS, CONTRACT_ADDRESSES, ZEROG_CHAIN_ID } from '@/config/contracts';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -264,16 +262,12 @@ interface Step3Props {
 function Step3Confirm({ targetAddress, selectedReasons, customText, chainId, isDomain, onBack, onClose }: Step3Props) {
   const { address: walletAddress, isConnected } = useAccount();
   const { connect, connectors } = useConnect();
-  const { data: authCheck, isLoading: authLoading, error: authError } = useAgenticIdAuth(!isDomain ? walletAddress : undefined);
-  const requestAccessMutation = useRequestAccess();
   const { step, txHash, error, isLoading, submit, reset } = useReportScam();
 
   const txExplorerUrl = txHash ? `${BLOCK_EXPLORER[chainId] ?? 'https://explorer.0g.ai/tx/'}${txHash}` : null;
 
-  const needsAuthorization = !isDomain && isConnected && !!walletAddress && authCheck?.enabled && !authCheck.authorized;
-
   const handleSubmit = () => {
-    if (!walletAddress || needsAuthorization) return;
+    if (!walletAddress) return;
     const reasonData: ReasonData = {
       selectedReasons: selectedReasons.map((id) => REASONS.find((r) => r.id === id)!.label),
       customText,
@@ -357,69 +351,11 @@ function Step3Confirm({ targetAddress, selectedReasons, customText, chainId, isD
           </div>
         </div>
       ) : (
-        <div className="space-y-3">
-          <div className="rounded-xl border border-card-border bg-surface px-4 py-3 text-sm">
-            <span className="text-muted">Connected as </span>
-            <span className="font-mono text-xs">
-              {walletAddress?.slice(0, 6)}…{walletAddress?.slice(-4)}
-            </span>
-          </div>
-
-          {!isDomain && authLoading && (
-            <div className="flex items-center gap-2 rounded-xl border border-card-border bg-surface px-4 py-3 text-xs text-muted">
-              <Loader2 size={13} className="animate-spin" />
-              Checking Agentic ID authorization...
-            </div>
-          )}
-
-          {!isDomain && needsAuthorization && (
-            <div className="space-y-3 rounded-xl border border-red-500/30 bg-red-950/20 px-4 py-3">
-              <div className="flex items-start gap-2 text-xs text-red-300">
-                <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-                <span>
-                  Wallet not authorized for Agentic ID token #{authCheck?.tokenId || '99'}. Request access first, then retry submit.
-                </span>
-              </div>
-
-              <div className="flex flex-col gap-2 sm:flex-row">
-                <Button
-                  onClick={() => walletAddress && requestAccessMutation.mutate(walletAddress)}
-                  disabled={requestAccessMutation.isPending}
-                  variant="secondary"
-                  size="sm"
-                  className="border border-accent/30"
-                >
-                  {requestAccessMutation.isPending ? (
-                    <>
-                      <Loader2 size={13} className="mr-1.5 animate-spin" />
-                      Requesting Access...
-                    </>
-                  ) : (
-                    <>
-                      <Shield size={13} className="mr-1.5" />
-                      Request Access
-                    </>
-                  )}
-                </Button>
-
-                <Button asChild variant="ghost" size="sm">
-                  <Link href="/dashboard/agent">Open Agent Access Page</Link>
-                </Button>
-              </div>
-
-              {requestAccessMutation.isError && (
-                <p className="text-xs text-red-300">
-                  {requestAccessMutation.error?.message || 'Failed to request access'}
-                </p>
-              )}
-            </div>
-          )}
-
-          {!isDomain && authError && (
-            <div className="rounded-xl border border-yellow-500/30 bg-yellow-950/20 px-4 py-3 text-xs text-yellow-300">
-              Authorization check failed: {authError.message}
-            </div>
-          )}
+        <div className="rounded-xl border border-card-border bg-surface px-4 py-3 text-sm">
+          <span className="text-muted">Connected as </span>
+          <span className="font-mono text-xs">
+            {walletAddress?.slice(0, 6)}…{walletAddress?.slice(-4)}
+          </span>
         </div>
       )}
 
@@ -469,7 +405,7 @@ function Step3Confirm({ targetAddress, selectedReasons, customText, chainId, isD
           onClick={handleSubmit}
           variant="primary"
           size="sm"
-          disabled={!isConnected || isLoading || authLoading || needsAuthorization || requestAccessMutation.isPending}
+          disabled={!isConnected || isLoading}
         >
           {isLoading ? <Loader2 size={14} className="animate-spin" /> : '🚨 Submit Report'}
         </Button>
