@@ -49,18 +49,15 @@
 
 ## Latest Progress (May 2026)
 
-- Added **chain-aware address existence validation** in scan flow (`chain` query support, onchain no-activity guard).
-- Added **cron-protected sync endpoint**: `POST /api/v1/sync`.
-- Replaced dummy dashboard wallet guard status with **live system probes** (`online/degraded/offline`).
+- Added **GoPlus-enriched analysis merge** in `POST /api/v1/analyze` for stronger transaction risk scoring.
+- Added **prediction accuracy tracking runtime wiring** across analyze + community resolution flows.
+- Added **recent predictions review API**: `GET /api/v1/predictions/recent` with filters for `resolved`, `unresolved`, `false_positive`, and `false_negative`.
+- Upgraded **analytics dashboard** with live prediction review table, detail drawer, provider/type accuracy breakdown, and action-protection matrix for demo flow.
 - Added safe auto-report policy: AI can create `PENDING` reports only (no direct auto-`VERIFIED`).
 - Added admin override endpoint: `POST /api/v1/threats/[id]/override`.
 - Added community weighted voting endpoint: `GET/POST /api/v1/threats/[id]/vote`.
-- Added onchain relay endpoints:
-  - `POST /api/v1/threats/[id]/relay`
-  - `POST /api/v1/threats/[id]/vote/relay`
-- Added internal reconcile endpoint for indexer integration:
-  - `POST /api/internal/reconcile/onchain`
-- Added dual sync status fields for reports: `localStatus`, `onchainStatus`, `relayAttempts`, `nextRelayAt`, `reportHash`.
+- Added internal reconcile endpoint for indexer integration: `POST /api/internal/reconcile/onchain`.
+- Standardized network references to **0G Galileo Testnet (Chain ID: 16602)**.
 
 ## Overview
 
