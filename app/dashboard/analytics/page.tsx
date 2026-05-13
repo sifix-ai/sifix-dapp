@@ -282,6 +282,34 @@ export default function AnalyticsPage() {
                 )}
               </div>
 
+              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 shadow-[0_20px_40px_-25px_rgba(0,0,0,0.6)] space-y-6">
+                <div>
+                  <h3 className="text-xl font-semibold text-white">Action Protection Matrix</h3>
+                  <p className="mt-1 text-sm text-white/55">Fast narrative for judges: risky actions get blocked or warned before wallet confirmation.</p>
+                </div>
+
+                <div className="space-y-3">
+                  {[
+                    { action: 'Permit / Unlimited Approval', outcome: 'BLOCK', reason: 'Most dangerous drain pattern. High-severity action path.' },
+                    { action: 'signTypedData', outcome: 'WARN', reason: 'High phishing risk. Needs domain + contract context review.' },
+                    { action: 'approve', outcome: 'WARN', reason: 'Suspicious spender or unknown contract should pause user.' },
+                    { action: 'Standard transfer', outcome: 'ALLOW', reason: 'Safe only when AI + intel + community remain low risk.' },
+                  ].map((item) => (
+                    <div key={item.action} className="rounded-xl border border-white/[0.05] bg-white/[0.02] p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-sm font-medium text-white">{item.action}</div>
+                          <div className="mt-1 text-xs text-white/50">{item.reason}</div>
+                        </div>
+                        <span className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${item.outcome === 'BLOCK' ? 'border-red-500/20 bg-red-500/10 text-red-300' : item.outcome === 'WARN' ? 'border-yellow-500/20 bg-yellow-500/10 text-yellow-300' : 'border-green-500/20 bg-green-500/10 text-green-300'}`}>
+                          {item.outcome}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-6 shadow-[0_20px_40px_-25px_rgba(0,0,0,0.6)]">
                 <h3 className="text-xl font-semibold text-white mb-6">Demo Narrative</h3>
                 <div className="space-y-4">
