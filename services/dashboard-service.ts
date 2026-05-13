@@ -10,6 +10,13 @@ export interface PlatformStats {
   totalScans: number
   criticalThreats: number
   recentReports: number
+  accuracy?: {
+    totalPredictions: number
+    resolvedPredictions: number
+    correctPredictions: number
+    accuracy: number
+    rollingAccuracy7d: number
+  }
 }
 
 export interface LeaderboardEntry {

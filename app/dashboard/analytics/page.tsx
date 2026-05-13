@@ -132,17 +132,39 @@ export default function AnalyticsPage() {
                 </div>
                 <div className="text-sm text-white/60">Critical</div>
               </div>
-              <div className="p-4 bg-orange-500/5 border border-orange-500/10 rounded-lg">
-                <div className="text-2xl font-bold text-orange-400 mb-1">0</div>
-                <div className="text-sm text-white/60">High</div>
+              <div className="p-4 bg-[#55b3ff]/5 border border-[#55b3ff]/10 rounded-lg">
+                <div className="text-2xl font-bold text-[#55b3ff] mb-1">{stats?.accuracy?.accuracy || 0}%</div>
+                <div className="text-sm text-white/60">Accuracy</div>
+              </div>
+              <div className="p-4 bg-[#5fc992]/5 border border-[#5fc992]/10 rounded-lg">
+                <div className="text-2xl font-bold text-[#5fc992] mb-1">{stats?.accuracy?.resolvedPredictions || 0}</div>
+                <div className="text-sm text-white/60">Resolved Predictions</div>
               </div>
               <div className="p-4 bg-yellow-500/5 border border-yellow-500/10 rounded-lg">
-                <div className="text-2xl font-bold text-yellow-400 mb-1">0</div>
-                <div className="text-sm text-white/60">Medium</div>
+                <div className="text-2xl font-bold text-yellow-400 mb-1">{stats?.accuracy?.rollingAccuracy7d || 0}%</div>
+                <div className="text-sm text-white/60">7d Rolling Accuracy</div>
               </div>
-              <div className="p-4 bg-green-500/5 border border-green-500/10 rounded-lg">
-                <div className="text-2xl font-bold text-green-400 mb-1">0</div>
-                <div className="text-sm text-white/60">Low</div>
+            </div>
+          </div>
+
+          <div className="p-6 bg-white/[0.03] border border-white/[0.08] rounded-xl">
+            <div className="flex items-center gap-2 mb-6">
+              <TrendingUp className="w-5 h-5 text-white" />
+              <h2 className="text-xl font-semibold text-white">Prediction Quality</h2>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-lg">
+                <div className="text-2xl font-bold text-white mb-1">{stats?.accuracy?.totalPredictions || 0}</div>
+                <div className="text-sm text-white/60">Total Predictions</div>
+              </div>
+              <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-lg">
+                <div className="text-2xl font-bold text-white mb-1">{stats?.accuracy?.correctPredictions || 0}</div>
+                <div className="text-sm text-white/60">Correct Predictions</div>
+              </div>
+              <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-lg">
+                <div className="text-2xl font-bold text-white mb-1">{stats?.accuracy?.resolvedPredictions || 0}</div>
+                <div className="text-sm text-white/60">Resolved Predictions</div>
               </div>
             </div>
           </div>
