@@ -9,6 +9,7 @@ import { shouldAutoReport, AUTO_REPORT_POLICY } from "@/lib/auto-report-policy"
 import { ReportService } from "@/services/report-service"
 import { validateAddressOnChain } from "@/lib/chain-validation"
 import { enrichWithGoPlus } from "@/lib/goplus"
+import { AccuracyService } from "@/services/accuracy-service"
 
 // Singleton threat intel provider
 const threatIntel = new PrismaThreatIntel()
@@ -199,10 +200,22 @@ export async function POST(request: NextRequest) {
       else if (riskScore >= 20) riskLevel = "LOW"
       else riskLevel = "SAFE"
 
+      const predictionId = await AccuracyService.recordPrediction({
+        targetAddress: from.toLowerCase(),
+        analysisType: 'signature',
+        predictedRiskScore: riskScore,
+        predictedRiskLevel: riskLevel,
+        predictedConfidence: Math.round((result.confidence || 0) * 100),
+        predictedRecommendation: result.recommendation || (riskScore >= 60 ? "BLOCK" : riskScore >= 40 ? "WARN" : "PROCEED"),
+        predictedThreats: result.threats || [],
+        provider: result.provider || provider,
+      })
+
       return NextResponse.json({
         success: true,
         analysisType: "signature",
         method,
+        predictionId,
         riskLevel,
         riskScore,
         confidence: result.confidence,
@@ -267,6 +280,23 @@ export async function POST(request: NextRequest) {
 
       result.analysis = finalAnalysis
 
+      const predictionId = await AccuracyService.recordPrediction({
+        targetAddress: to.toLowerCase(),
+        analysisType: 'transaction',
+        predictedRiskScore: riskScore,
+        predictedRiskLevel: riskLevel,
+        predictedConfidence: Math.round(confidence),
+        predictedRecommendation: recommendation,
+        predictedThreats: mergedThreats,
+        provider: provider,
+        goPlusRiskScore: goplus?.riskScore ?? null,
+        communityRiskLevel: goplus ? riskLevel : null,
+      })
+
+      if (goplus && goplus.riskScore > 0) {
+        await AccuracyService.resolveWithGoPlus(to.toLowerCase(), riskLevel, goplus.riskScore)
+      }
+
       // Generate storage URL if we have a hash but no explorer URL
       let storageUrl = result.storageExplorer || null
       if (!storageUrl && result.storageRootHash) {
@@ -311,6 +341,7 @@ export async function POST(request: NextRequest) {
 
         success: true,
         analysisType: "transaction",
+        predictionId,
         riskLevel,
         riskScore,
         confidence: result.analysis.confidence,

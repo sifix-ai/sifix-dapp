@@ -360,3 +360,34 @@ model ReportVote {
   @@index([voterAddress])
   @@map("report_votes")
 }
+
+model PredictionAccuracy {
+  id                      String   @id @default(cuid())
+  targetAddress           String
+  analysisType            String   // transaction | signature | address_scan
+  predictedRiskScore      Int
+  predictedRiskLevel      String
+  predictedConfidence     Int
+  predictedRecommendation String
+  predictedThreats        String?  // JSON array serialized
+  provider                String   @default("default")
+
+  // Ground truth / resolution
+  actualOutcome      String?   // e.g. goplus:HIGH, community:malicious
+  isCorrect          Boolean?
+  groundTruthSource  String?   // goplus | community | manual
+  goPlusRiskScore    Int?
+  communityRiskLevel String?
+  resolvedAt         DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([targetAddress])
+  @@index([analysisType])
+  @@index([predictedRiskLevel])
+  @@index([provider])
+  @@index([isCorrect])
+  @@index([createdAt])
+  @@map("prediction_accuracy")
+}
