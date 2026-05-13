@@ -166,6 +166,14 @@ export function useReportScam(): UseReportScamReturn {
               ? 'Transaction cancelled.'
               : err.message.includes('AlreadyVoted')
                 ? 'You have already voted for this target on-chain.'
+              : err.message.includes('EmptyReasonHash')
+                ? 'Report reason is empty. Please choose reason or add detail first.'
+              : err.message.includes('EmptyTargetId')
+                ? 'Reported target is invalid. Please recheck target and try again.'
+              : err.message.includes('InvalidTargetType')
+                ? 'Reported target type is invalid. Please re-enter target and try again.'
+              : err.message.includes('Transaction reverted on-chain')
+                ? 'Transaction reverted on-chain. Contract rejected this report.'
               : err.message
             : 'An unexpected error occurred.';
         setError(message);
