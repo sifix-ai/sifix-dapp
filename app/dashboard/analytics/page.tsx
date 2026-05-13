@@ -147,8 +147,8 @@ export default function AnalyticsPage() {
             </div>
           </div>
 
-          <div className="p-6 bg-white/[0.03] border border-white/[0.08] rounded-xl">
-            <div className="flex items-center gap-2 mb-6">
+          <div className="p-6 bg-white/[0.03] border border-white/[0.08] rounded-xl space-y-6">
+            <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-white" />
               <h2 className="text-xl font-semibold text-white">Prediction Quality</h2>
             </div>
@@ -165,6 +165,32 @@ export default function AnalyticsPage() {
               <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-lg">
                 <div className="text-2xl font-bold text-white mb-1">{stats?.accuracy?.resolvedPredictions || 0}</div>
                 <div className="text-sm text-white/60">Resolved Predictions</div>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-lg">
+                <h3 className="text-sm text-white/70 mb-3">By Analysis Type</h3>
+                <div className="space-y-2">
+                  {Object.entries(stats?.accuracy?.byAnalysisType || {}).map(([k, v]: any) => (
+                    <div key={k} className="flex items-center justify-between text-sm">
+                      <span className="text-white/70">{k}</span>
+                      <span className="text-white font-medium">{v.accuracy}% ({v.correct}/{v.total})</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="p-4 bg-white/[0.02] border border-white/[0.05] rounded-lg">
+                <h3 className="text-sm text-white/70 mb-3">By Provider</h3>
+                <div className="space-y-2">
+                  {Object.entries(stats?.accuracy?.byProvider || {}).map(([k, v]: any) => (
+                    <div key={k} className="flex items-center justify-between text-sm">
+                      <span className="text-white/70">{k}</span>
+                      <span className="text-white font-medium">{v.accuracy}% ({v.correct}/{v.total})</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

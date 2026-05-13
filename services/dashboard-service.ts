@@ -16,6 +16,8 @@ export interface PlatformStats {
     correctPredictions: number
     accuracy: number
     rollingAccuracy7d: number
+    byAnalysisType?: Record<string, { total: number; correct: number; accuracy: number }>
+    byProvider?: Record<string, { total: number; correct: number; accuracy: number }>
   }
 }
 
