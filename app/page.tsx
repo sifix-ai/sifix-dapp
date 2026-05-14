@@ -8,6 +8,7 @@ import { ProblemSection } from '@/components/blocks/problem-section'
 import { SolutionSection } from '@/components/blocks/solution-section'
 import { PipelineSection } from '@/components/blocks/pipeline-flowchart'
 import { WhySifixSection } from '@/components/blocks/why-sifix'
+import { ExtensionSection } from '@/components/blocks/extension-section'
 import { BackgroundPaths } from "@/components/ui/background-paths"
 
 // Dynamic import to avoid SSR hydration issues with motion hooks
@@ -36,6 +37,9 @@ export default function Home() {
 
       {/* Features Section - Unified Grid & Advanced */}
       <FeaturesGrid />
+
+      {/* Extension AI Agent Section */}
+      <ExtensionSection />
 
       {/* Why Choose SIFIX Section */}
       <WhySifixSection />
