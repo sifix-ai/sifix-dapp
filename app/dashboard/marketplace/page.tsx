@@ -143,14 +143,14 @@ export default function MarketplacePage() {
             Threat Intelligence Marketplace
           </h2>
           <Badge className="bg-accent-blue/10 text-accent-blue border-accent-blue/20 text-xs">
-            Dummy Preview
+            Preview
           </Badge>
         </div>
         <p className="text-white/60">
           Integrate SIFIX threat data into your protocol. Choose a tier and apply below.
         </p>
         <p className="mt-2 text-sm text-white/40">
-          Dummy page for now. Form flow and pricing are preview content.
+          Integration flow in progress. Form and pricing shown as early preview.
         </p>
       </div>
 

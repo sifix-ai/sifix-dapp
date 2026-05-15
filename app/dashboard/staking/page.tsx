@@ -100,14 +100,14 @@ export default function StakingPage() {
                 Reputation Staking Economy
               </h2>
               <Badge className="bg-accent-blue/10 text-accent-blue border-accent-blue/20 text-xs">
-                Dummy Preview
+                Preview
               </Badge>
             </div>
             <p className="text-white/60">
               Stake SIFIX tokens to unlock reporting rights and earn rewards for verified threat intelligence.
             </p>
             <p className="mt-2 text-sm text-white/40">
-              Dummy page for now. Metrics and actions still placeholder.
+              Feature in progress. Metrics and actions update as modules go live.
             </p>
           </div>
           <Button
@@ -115,7 +115,7 @@ export default function StakingPage() {
             className="bg-accent-blue text-white hover:opacity-90 gap-2 font-medium"
           >
             <Zap className="w-4 h-4" />
-            View Dummy Flow
+            View Flow
           </Button>
         </div>
 
