@@ -23,6 +23,9 @@ export const metadata: Metadata = {
   title: "SIFIX - AI-Powered Wallet Security on 0G Chain",
   description: "Protect your crypto assets with AI-powered transaction analysis on 0G Galileo Testnet",
   keywords: ["0G", "blockchain", "security", "AI", "wallet", "threat detection"],
+  icons: {
+    icon: "/sifix-favicon.png",
+  },
 };
 
 export default function RootLayout({

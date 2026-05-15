@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Menu, X, Shield } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { ConnectButton } from "@/components/connect-button";
 import { useAccount } from "wagmi";
 import { motion } from "framer-motion";
@@ -34,13 +35,15 @@ export function GlassmorphicNavbar() {
       >
         <div className="container mx-auto flex items-center justify-between px-4 py-4 sm:px-6 sm:py-5 lg:px-8 lg:py-6">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-accent shadow-glow-violet transition-all duration-300 group-hover:shadow-glow-pink group-hover:scale-110">
-              <Shield className="w-4 h-4 text-primary-on" strokeWidth={2.5} />
-            </div>
-            <span className="text-sm font-semibold text-ink tracking-tight sm:text-base">
-              SIFIX
-            </span>
+          <Link href="/" className="flex items-center gap-2 group">
+            <Image
+              src="/sifix-white.png"
+              alt="SIFIX Logo"
+              width={100}
+              height={100}
+              className="rounded-lg transition-transform duration-300 group-hover:scale-110"
+              priority
+            />
           </Link>
 
           {/* Desktop Navigation */}

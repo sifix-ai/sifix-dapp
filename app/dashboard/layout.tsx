@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import {
   Shield,
   Search,
@@ -154,10 +155,13 @@ export default function DashboardLayout({
           {/* Logo */}
           <div className="flex h-16 items-center justify-between px-6 border-b border-white/15">
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-accent-blue to-accent-blue rounded-lg flex items-center justify-center">
-                <Shield className="w-5 h-5 text-white" />
-              </div>
-              <span className="font-semibold text-white tracking-tight">SIFIX</span>
+              <Image
+                src="/sifix-white.png"
+                alt="SIFIX Logo"
+                width={100}
+                height={100}
+                className="rounded-lg"
+              />
             </Link>
             <button
               onClick={() => setMobileMenuOpen(false)}
