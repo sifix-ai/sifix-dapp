@@ -10,14 +10,32 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { votes, lastBlock, chainId = 16602 } = body
+    const { events, votes, lastBlock, chainId = 16602 } = body
 
-    if (!Array.isArray(votes) || !votes.length) {
+    const normalizedEvents = Array.isArray(events)
+      ? events
+      : Array.isArray(votes)
+        ? votes.map((v: any) => ({
+            txHash: v.txHash,
+            logIndex: v.logIndex,
+            blockNumber: v.blockNumber,
+            reporter: v.reporter,
+            target: v.targetId || v.reporter,
+            targetId: v.targetId || '',
+            evidenceHash: v.reasonHash,
+            severity: v.isScam ? 80 : 20,
+            threatType: 0,
+          }))
+        : []
+
+    if (!normalizedEvents.length) {
       return NextResponse.json(
-        { error: 'Invalid body: votes must be a non-empty array' },
+        { error: 'Invalid body: events must be a non-empty array' },
         { status: 400 }
       )
     }
+
+    const activeContractAddress = process.env.NEXT_PUBLIC_SIFIX_CONTRACT || '0xBBa8b030D80113e50271a2bbEeDBE109D9f1C42e'
 
     let synced = 0
     let notFound = 0
@@ -25,9 +43,10 @@ export async function POST(request: NextRequest) {
     let skipped = 0
     let errors: Array<{ vote: any; error: string }> = []
 
-    for (const vote of votes) {
+    for (const event of normalizedEvents) {
       try {
-        const { reasonHash, isScam, reporter, blockNumber, txHash, logIndex, targetId } = vote
+        const { evidenceHash, severity, reporter, blockNumber, txHash, logIndex, targetId, target, threatType } = event
+        const isScam = Number(severity || 0) >= 60 || Number(threatType || 0) > 0
 
         const existingByTx = await prisma.threatReport.findFirst({
           where: { onchainTxHash: txHash, blockNumber: blockNumber || undefined },
@@ -41,7 +60,7 @@ export async function POST(request: NextRequest) {
 
         report = await prisma.threatReport.findFirst({
           where: {
-            reportHash: reasonHash?.toLowerCase?.() || reasonHash,
+            reportHash: evidenceHash?.toLowerCase?.() || evidenceHash,
             deadLetter: false,
           },
           include: { address: true },
@@ -49,7 +68,7 @@ export async function POST(request: NextRequest) {
 
         if (!report) {
           notFound++
-          const targetAddress = (targetId || reporter || '').toLowerCase()
+          const targetAddress = (target || targetId || reporter || '').toLowerCase()
           if (!targetAddress) {
             skipped++
             continue
@@ -68,14 +87,14 @@ export async function POST(request: NextRequest) {
               threatType: 'COMMUNITY_REPORT',
               severity: isScam ? 80 : 20,
               riskLevel: isScam ? 'HIGH' : 'LOW',
-              evidenceHash: reasonHash || '',
-              explanation: 'On-chain vote via ScamReporter contract',
+              evidenceHash: evidenceHash || '',
+              explanation: 'On-chain report via SifixReputation contract',
               confidence: 70,
-              reportHash: reasonHash?.toLowerCase(),
+              reportHash: evidenceHash?.toLowerCase(),
               onchainTxHash: txHash,
               blockNumber: blockNumber,
               chainId: chainId,
-              contractAddress: '0x544a39149d5169E4e1bDf7F8492804224CB70152',
+              contractAddress: activeContractAddress,
               onchainStatus: 'VERIFIED',
               localStatus: 'SYNCED_ONCHAIN',
               status: 'VERIFIED',
@@ -95,7 +114,7 @@ export async function POST(request: NextRequest) {
             onchainTxHash: txHash || report.onchainTxHash,
             blockNumber: blockNumber || report.blockNumber,
             chainId,
-            contractAddress: '0x544a39149d5169E4e1bDf7F8492804224CB70152',
+            contractAddress: activeContractAddress,
             relayError: null,
             relayedAt: report.relayedAt || new Date(),
           },
@@ -103,15 +122,15 @@ export async function POST(request: NextRequest) {
 
         synced++
       } catch (e: any) {
-        errors.push({ vote, error: e?.message || 'unknown error' })
+        errors.push({ vote: event, error: e?.message || 'unknown error' })
       }
     }
 
     if (lastBlock) {
       await prisma.syncState.upsert({
-        where: { name: 'scam_vote_indexer' },
+        where: { name: 'sifix_reputation_indexer' },
         create: {
-          name: 'scam_vote_indexer',
+          name: 'sifix_reputation_indexer',
           lastBlock,
           chainId,
           source: 'onchain',

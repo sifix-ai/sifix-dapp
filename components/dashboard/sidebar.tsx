@@ -10,6 +10,7 @@ import {
   Tag,
   Settings,
   Shield,
+  Puzzle,
   Menu,
   X,
 } from "lucide-react";
@@ -19,6 +20,7 @@ const navItems = [
   { label: "Search", href: "/dashboard/search", icon: Search },
   { label: "Threats", href: "/dashboard/threats", icon: Shield },
   { label: "Analytics", href: "/dashboard/analytics", icon: LayoutDashboard },
+  { label: "Extension", href: "/dashboard/extension", icon: Puzzle },
 ];
 
 export function Sidebar() {

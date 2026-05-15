@@ -76,6 +76,11 @@ export default function ExtensionSetupPage() {
 
       setToken(verifyData.token)
       setExpiresAt(verifyData.expiresAt)
+      if (typeof window !== "undefined") {
+        localStorage.setItem("sifix_api_token", verifyData.token)
+        localStorage.setItem("sifix_api_token_expires", verifyData.expiresAt)
+        localStorage.setItem("sifix_api_token_wallet", verifyData.walletAddress.toLowerCase())
+      }
       setExtensionSetupStep("verify")
 
       if (typeof window !== "undefined") {
