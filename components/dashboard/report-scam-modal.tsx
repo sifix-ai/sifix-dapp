@@ -162,15 +162,15 @@ function Step2Preview({ targetAddress, selectedReasons, customText, chainId, isD
   };
   const hash = hashReasonData(reasonData);
   // On an unsupported chain, show a prompt to switch
-  const needsChainSwitch = !isDomain && !(SUPPORTED_CHAIN_IDS as readonly number[]).includes(chainId);
-  const isSupported = isDomain || ((SUPPORTED_CHAIN_IDS as readonly number[]).includes(chainId));
+  const needsChainSwitch = !(SUPPORTED_CHAIN_IDS as readonly number[]).includes(chainId);
+  const isSupported = (SUPPORTED_CHAIN_IDS as readonly number[]).includes(chainId) && !isDomain;
 
   return (
     <div className="space-y-5">
       <p className="text-sm text-muted">
         {isDomain
-          ? 'Review your report before submitting to our community database.'
-          : 'Review your report before submitting to the blockchain.'}
+          ? 'SIFIX on-chain reporting now supports wallet/contract addresses only. Domain targets must be converted to address before submit.'
+          : 'Review your report before submitting to SIFIX on-chain reputation contract.'}
       </p>
 
       {/* Report summary */}
@@ -199,43 +199,45 @@ function Step2Preview({ targetAddress, selectedReasons, customText, chainId, isD
             <p className="mt-0.5 text-xs text-foreground">{customText}</p>
           </div>
         )}
-        {!isDomain && (
-          <div>
-            <p className="text-xs text-muted">Reason hash (bytes32)</p>
-            <p className="mt-0.5 font-mono text-[10px] break-all text-muted">{hash}</p>
-          </div>
-        )}
+        <div>
+          <p className="text-xs text-muted">Evidence hash (bytes32)</p>
+          <p className="mt-0.5 font-mono text-[10px] break-all text-muted">{hash}</p>
+        </div>
       </div>
 
       {/* Network check — address only */}
-      {!isDomain && (
-        <div className="space-y-2">
-          <div className="flex items-center justify-between rounded-xl border border-card-border bg-surface px-4 py-3">
-            <div className="flex items-center gap-2 text-sm">
-              <span className="text-muted">Network</span>
-              <NetworkBadge chainId={chainId} />
-            </div>
-            {(needsChainSwitch) && (
-              <Button
-                onClick={() => switchChain({ chainId: ZEROG_CHAIN_ID })}
-                disabled={isSwitching}
-                variant="secondary"
-                size="sm"
-              >
-                {isSwitching ? <Loader2 size={12} className="animate-spin" /> : 'Switch to 0G Galileo'}
-              </Button>
-            )}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between rounded-xl border border-card-border bg-surface px-4 py-3">
+          <div className="flex items-center gap-2 text-sm">
+            <span className="text-muted">Network</span>
+            <NetworkBadge chainId={chainId} />
           </div>
           {needsChainSwitch && (
-            <div className="flex items-start gap-2 rounded-xl border border-yellow-900 bg-yellow-950/20 px-4 py-3 text-xs text-yellow-400">
-              <AlertTriangle size={13} className="mt-0.5 shrink-0" />
-              <span>
-                Please switch to <strong>0G Galileo Testnet</strong> to submit on-chain reports.
-              </span>
-            </div>
+            <Button
+              onClick={() => switchChain({ chainId: ZEROG_CHAIN_ID })}
+              disabled={isSwitching}
+              variant="secondary"
+              size="sm"
+            >
+              {isSwitching ? <Loader2 size={12} className="animate-spin" /> : 'Switch to 0G Galileo'}
+            </Button>
           )}
         </div>
-      )}
+        {isDomain && (
+          <div className="flex items-start gap-2 rounded-xl border border-red-900 bg-red-950/20 px-4 py-3 text-xs text-red-400">
+            <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+            <span>SIFIX contract accepts address targets only. Domain report cannot be submitted on-chain.</span>
+          </div>
+        )}
+        {needsChainSwitch && (
+          <div className="flex items-start gap-2 rounded-xl border border-yellow-900 bg-yellow-950/20 px-4 py-3 text-xs text-yellow-400">
+            <AlertTriangle size={13} className="mt-0.5 shrink-0" />
+            <span>
+              Please switch to <strong>0G Galileo Testnet</strong> to submit on-chain reports.
+            </span>
+          </div>
+        )}
+      </div>
 
       <div className="flex justify-between">
         <Button onClick={onBack} variant="ghost" size="sm">← Back</Button>

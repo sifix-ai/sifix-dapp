@@ -1,94 +1,75 @@
 // SIFIX Smart Contract Configuration
 
-// 0G Chain Testnet
+// 0G Galileo Testnet
 export const ZEROG_CHAIN_ID = 16602;
-
 export const SUPPORTED_CHAIN_IDS = [ZEROG_CHAIN_ID] as const;
+
+/**
+ * SIFIX Reputation contract address on 0G Galileo.
+ * TODO: replace with freshly deployed address when migration deploy runs.
+ */
+export const SIFIX_REPUTATION_ADDRESS = '0xBBa8b030D80113e50271a2bbEeDBE109D9f1C42e' as const;
 
 export const CONTRACT_ADDRESSES = {
   [ZEROG_CHAIN_ID]: {
-    ScamReporter: '0x544a39149d5169E4e1bDf7F8492804224CB70152',
+    SifixReputation: SIFIX_REPUTATION_ADDRESS,
   },
 } as const;
 
-export const SIFIX_REPUTATION_ADDRESS = '0x544a39149d5169E4e1bDf7F8492804224CB70152' as const;
-
 /**
- * ScamReporter ABI — full ABI from ThreatReporter.json (ScamReporter contract).
- * Includes submitVote, submitReport (deprecated), hasVoted, addressToTargetId,
- * events (ScamVoteSubmitted, ScamReportSubmitted), and custom errors.
+ * SifixReputation ABI (minimal integration surface for dApp/reporting/indexer)
  */
-export const SCAM_REPORTER_ABI = [
-  {
-    type: 'function',
-    name: 'addressToTargetId',
-    inputs: [
-      { name: 'target', type: 'address', internalType: 'address' },
-    ],
-    outputs: [
-      { name: '', type: 'bytes32', internalType: 'bytes32' },
-    ],
-    stateMutability: 'pure',
-  },
-  {
-    type: 'function',
-    name: 'hasVoted',
-    inputs: [
-      { name: 'targetId', type: 'bytes32', internalType: 'bytes32' },
-      { name: 'reporterAddr', type: 'address', internalType: 'address' },
-    ],
-    outputs: [
-      { name: '', type: 'bool', internalType: 'bool' },
-    ],
-    stateMutability: 'view',
-  },
+export const SIFIX_REPUTATION_ABI = [
   {
     type: 'function',
     name: 'submitReport',
     inputs: [
-      { name: 'reasonHash', type: 'bytes32', internalType: 'bytes32' },
-      { name: 'isScam', type: 'bool', internalType: 'bool' },
+      { name: 'target', type: 'address', internalType: 'address' },
+      { name: 'threatType', type: 'uint8', internalType: 'enum SifixReputation.ThreatType' },
+      { name: 'evidenceHash', type: 'bytes32', internalType: 'bytes32' },
+      { name: 'severity', type: 'uint8', internalType: 'uint8' },
     ],
     outputs: [],
     stateMutability: 'nonpayable',
   },
   {
     type: 'function',
-    name: 'submitVote',
+    name: 'hasReportedTarget',
     inputs: [
-      { name: 'targetType', type: 'uint8', internalType: 'uint8' },
-      { name: 'targetId', type: 'bytes32', internalType: 'bytes32' },
-      { name: 'reasonHash', type: 'bytes32', internalType: 'bytes32' },
-      { name: 'isScam', type: 'bool', internalType: 'bool' },
+      { name: 'target', type: 'address', internalType: 'address' },
+      { name: 'reporter', type: 'address', internalType: 'address' },
     ],
-    outputs: [],
-    stateMutability: 'nonpayable',
+    outputs: [{ name: '', type: 'bool', internalType: 'bool' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'getReputation',
+    inputs: [{ name: 'target', type: 'address', internalType: 'address' }],
+    outputs: [
+      { name: 'score', type: 'int256', internalType: 'int256' },
+      { name: 'totalReports', type: 'uint256', internalType: 'uint256' },
+    ],
+    stateMutability: 'view',
   },
   {
     type: 'event',
-    name: 'ScamReportSubmitted',
+    name: 'SecurityReportSubmitted',
     inputs: [
-      { name: 'reporter', type: 'address', indexed: true, internalType: 'address' },
-      { name: 'reasonHash', type: 'bytes32', indexed: true, internalType: 'bytes32' },
-      { name: 'isScam', type: 'bool', indexed: false, internalType: 'bool' },
-    ],
-    anonymous: false,
-  },
-  {
-    type: 'event',
-    name: 'ScamVoteSubmitted',
-    inputs: [
+      { name: 'reportId', type: 'uint256', indexed: true, internalType: 'uint256' },
       { name: 'reporter', type: 'address', indexed: true, internalType: 'address' },
       { name: 'targetId', type: 'bytes32', indexed: true, internalType: 'bytes32' },
-      { name: 'targetType', type: 'uint8', indexed: false, internalType: 'uint8' },
-      { name: 'reasonHash', type: 'bytes32', indexed: false, internalType: 'bytes32' },
-      { name: 'isScam', type: 'bool', indexed: false, internalType: 'bool' },
+      { name: 'target', type: 'address', indexed: false, internalType: 'address' },
+      { name: 'threatType', type: 'uint8', indexed: false, internalType: 'enum SifixReputation.ThreatType' },
+      { name: 'evidenceHash', type: 'bytes32', indexed: false, internalType: 'bytes32' },
+      { name: 'severity', type: 'uint8', indexed: false, internalType: 'uint8' },
+      { name: 'timestamp', type: 'uint256', indexed: false, internalType: 'uint256' },
     ],
     anonymous: false,
   },
   {
     type: 'error',
-    name: 'AlreadyVoted',
+    name: 'AlreadyReported',
     inputs: [
       { name: 'targetId', type: 'bytes32', internalType: 'bytes32' },
       { name: 'reporter', type: 'address', internalType: 'address' },
@@ -96,117 +77,37 @@ export const SCAM_REPORTER_ABI = [
   },
   {
     type: 'error',
-    name: 'EmptyReasonHash',
-    inputs: [],
+    name: 'InvalidSeverity',
+    inputs: [{ name: 'severity', type: 'uint8', internalType: 'uint8' }],
   },
   {
     type: 'error',
-    name: 'EmptyTargetId',
-    inputs: [],
-  },
-  {
-    type: 'error',
-    name: 'InvalidTargetType',
+    name: 'InvalidTarget',
     inputs: [],
   },
 ] as const;
 
 export const CONTRACTS = {
-  ScamReporter: {
+  SifixReputation: {
     address: SIFIX_REPUTATION_ADDRESS,
-    abi: SCAM_REPORTER_ABI,
+    abi: SIFIX_REPUTATION_ABI,
   },
 } as const;
 
 // ============================================
 // 0G Agentic ID (ERC-7857)
 // ============================================
-
-/**
- * Official Agentic ID contract used in 0G examples (Galileo testnet).
- * Source: https://github.com/0gfoundation/agenticID-examples
- */
 export const AGENTIC_ID_CONTRACT_ADDRESS =
   (process.env.NEXT_PUBLIC_AGENTIC_ID_CONTRACT_ADDRESS ||
     '0x2700F6A3e505402C9daB154C5c6ab9cAEC98EF1F') as `0x${string}`;
 
-/**
- * Base SIFIX Agent token ID (minted once by project owner).
- * Set this after minting, e.g. NEXT_PUBLIC_AGENTIC_ID_TOKEN_ID=1
- */
 export const AGENTIC_ID_TOKEN_ID = process.env.NEXT_PUBLIC_AGENTIC_ID_TOKEN_ID;
 
-/**
- * Minimal ABI needed for SIFIX integration
- */
 export const AGENTIC_ID_ABI = [
-  {
-    type: 'function',
-    name: 'mintFee',
-    inputs: [],
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'iMint',
-    inputs: [
-      { name: 'to', type: 'address' },
-      {
-        name: 'datas',
-        type: 'tuple[]',
-        components: [
-          { name: 'dataDescription', type: 'string' },
-          { name: 'dataHash', type: 'bytes32' },
-        ],
-      },
-    ],
-    outputs: [{ name: '', type: 'uint256' }],
-    stateMutability: 'payable',
-  },
-  {
-    type: 'function',
-    name: 'authorizeUsage',
-    inputs: [
-      { name: 'tokenId', type: 'uint256' },
-      { name: 'user', type: 'address' },
-    ],
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    name: 'revokeAuthorization',
-    inputs: [
-      { name: 'tokenId', type: 'uint256' },
-      { name: 'user', type: 'address' },
-    ],
-    outputs: [],
-    stateMutability: 'nonpayable',
-  },
-  {
-    type: 'function',
-    name: 'isAuthorizedUser',
-    inputs: [
-      { name: 'tokenId', type: 'uint256' },
-      { name: 'user', type: 'address' },
-    ],
-    outputs: [{ name: '', type: 'bool' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'function',
-    name: 'ownerOf',
-    inputs: [{ name: 'tokenId', type: 'uint256' }],
-    outputs: [{ name: '', type: 'address' }],
-    stateMutability: 'view',
-  },
-  {
-    type: 'event',
-    name: 'UsageAuthorized',
-    inputs: [
-      { name: 'tokenId', type: 'uint256', indexed: false },
-      { name: 'user', type: 'address', indexed: false },
-    ],
-  },
+  { type: 'function', name: 'mintFee', inputs: [], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'view' },
+  { type: 'function', name: 'iMint', inputs: [{ name: 'to', type: 'address' }, { name: 'datas', type: 'tuple[]', components: [{ name: 'dataDescription', type: 'string' }, { name: 'dataHash', type: 'bytes32' }] }], outputs: [{ name: '', type: 'uint256' }], stateMutability: 'payable' },
+  { type: 'function', name: 'authorizeUsage', inputs: [{ name: 'tokenId', type: 'uint256' }, { name: 'user', type: 'address' }], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'revokeAuthorization', inputs: [{ name: 'tokenId', type: 'uint256' }, { name: 'user', type: 'address' }], outputs: [], stateMutability: 'nonpayable' },
+  { type: 'function', name: 'isAuthorizedUser', inputs: [{ name: 'tokenId', type: 'uint256' }, { name: 'user', type: 'address' }], outputs: [{ name: '', type: 'bool' }], stateMutability: 'view' },
+  { type: 'function', name: 'ownerOf', inputs: [{ name: 'tokenId', type: 'uint256' }], outputs: [{ name: '', type: 'address' }], stateMutability: 'view' },
 ] as const;

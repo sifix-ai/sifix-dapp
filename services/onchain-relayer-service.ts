@@ -1,6 +1,6 @@
-import { createPublicClient, createWalletClient, defineChain, http, keccak256, stringToHex } from 'viem'
+import { createPublicClient, createWalletClient, defineChain, http, keccak256, stringToHex, isAddress } from 'viem'
 import { privateKeyToAccount } from 'viem/accounts'
-import { CONTRACT_ADDRESSES, SCAM_REPORTER_ABI, ZEROG_CHAIN_ID } from '@/config/contracts'
+import { SIFIX_REPUTATION_ABI, SIFIX_REPUTATION_ADDRESS, ZEROG_CHAIN_ID } from '@/config/contracts'
 
 const chain = defineChain({
   id: ZEROG_CHAIN_ID,
@@ -58,20 +58,20 @@ export class OnchainRelayerService {
     for (let attempt = 0; attempt < RELAY_RETRY_POLICY.MAX_ATTEMPTS; attempt++) {
       try {
         const wallet = getWalletClient()
-        const contract = CONTRACT_ADDRESSES[ZEROG_CHAIN_ID].ScamReporter as `0x${string}`
+        const contract = SIFIX_REPUTATION_ADDRESS as `0x${string}`
 
-        const targetId = await publicClient.readContract({
-          address: contract,
-          abi: SCAM_REPORTER_ABI,
-          functionName: 'addressToTargetId',
-          args: [targetAddress as `0x${string}`],
-        }) as `0x${string}`
+        if (!isAddress(targetAddress)) {
+          throw new Error('SIFIX relayer requires address target')
+        }
+
+        const severity = isScam ? 8 : 6
+        const threatType = isScam ? 4 : 4 // SUSPICIOUS default for relayed payload
 
         const txHash = await wallet.writeContract({
           address: contract,
-          abi: SCAM_REPORTER_ABI,
-          functionName: 'submitVote',
-          args: [0, targetId, reportHash, isScam],
+          abi: SIFIX_REPUTATION_ABI,
+          functionName: 'submitReport',
+          args: [targetAddress as `0x${string}`, threatType, reportHash, severity],
         })
 
         const receipt = await publicClient.waitForTransactionReceipt({ hash: txHash })

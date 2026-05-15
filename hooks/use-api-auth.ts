@@ -6,6 +6,7 @@ import { authenticateExtension, type VerifyResponse } from '@/services/extension
 
 const TOKEN_STORAGE_KEY = 'sifix_api_token'
 const TOKEN_EXPIRY_KEY = 'sifix_api_token_expires'
+const TOKEN_WALLET_KEY = 'sifix_api_token_wallet'
 
 export interface UseApiAuthReturn {
   /** The current Bearer token, or null if not authenticated */
@@ -35,6 +36,7 @@ export function useApiAuth(): UseApiAuthReturn {
   const [token, setToken] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [hasRestoredToken, setHasRestoredToken] = useState(false)
   const isAuthenticating = useRef(false)
   // Track the address we last authed for — prevent re-auth on same address
   const lastAuthedAddress = useRef<string | null>(null)
@@ -45,14 +47,21 @@ export function useApiAuth(): UseApiAuthReturn {
     try {
       const cached = localStorage.getItem(TOKEN_STORAGE_KEY)
       const expiry = localStorage.getItem(TOKEN_EXPIRY_KEY)
+      const wallet = localStorage.getItem(TOKEN_WALLET_KEY)
       if (cached && expiry && new Date(expiry) > new Date()) {
         setToken(cached)
+        if (wallet) {
+          lastAuthedAddress.current = wallet.toLowerCase()
+        }
       } else {
         localStorage.removeItem(TOKEN_STORAGE_KEY)
         localStorage.removeItem(TOKEN_EXPIRY_KEY)
+        localStorage.removeItem(TOKEN_WALLET_KEY)
       }
     } catch {
       // Ignore localStorage errors
+    } finally {
+      setHasRestoredToken(true)
     }
   }, [])
 
@@ -61,6 +70,7 @@ export function useApiAuth(): UseApiAuthReturn {
     try {
       localStorage.setItem(TOKEN_STORAGE_KEY, response.token)
       localStorage.setItem(TOKEN_EXPIRY_KEY, response.expiresAt)
+      localStorage.setItem(TOKEN_WALLET_KEY, response.walletAddress.toLowerCase())
     } catch {
       // Ignore localStorage errors
     }
@@ -72,6 +82,7 @@ export function useApiAuth(): UseApiAuthReturn {
     try {
       localStorage.removeItem(TOKEN_STORAGE_KEY)
       localStorage.removeItem(TOKEN_EXPIRY_KEY)
+      localStorage.removeItem(TOKEN_WALLET_KEY)
     } catch {
       // Ignore
     }
@@ -84,6 +95,8 @@ export function useApiAuth(): UseApiAuthReturn {
     }
 
     if (isAuthenticating.current) return token
+
+    const normalizedAddress = address.toLowerCase()
 
     setIsLoading(true)
     setError(null)
@@ -98,7 +111,7 @@ export function useApiAuth(): UseApiAuthReturn {
       })
 
       persistToken(result)
-      lastAuthedAddress.current = address
+      lastAuthedAddress.current = normalizedAddress
       console.log('[Auth] Token obtained for', address)
       return result.token
     } catch (err: unknown) {
@@ -118,20 +131,46 @@ export function useApiAuth(): UseApiAuthReturn {
     lastAuthedAddress.current = null
   }, [clearToken])
 
-  // Auto-authenticate when wallet connects (if no cached token)
-  // Only trigger once per address change
+  // Keep token tied to current wallet address across reloads
   useEffect(() => {
+    if (!hasRestoredToken || typeof window === 'undefined') return
+
+    if (!isConnected || !address) {
+      return
+    }
+
+    const normalizedAddress = address.toLowerCase()
+    const tokenWallet = localStorage.getItem(TOKEN_WALLET_KEY)?.toLowerCase()
+
+    if (token && tokenWallet && tokenWallet !== normalizedAddress) {
+      clearToken()
+      lastAuthedAddress.current = null
+      return
+    }
+
+    if (token && !tokenWallet) {
+      localStorage.setItem(TOKEN_WALLET_KEY, normalizedAddress)
+      lastAuthedAddress.current = normalizedAddress
+    }
+  }, [address, clearToken, hasRestoredToken, isConnected, token])
+
+  // Auto-authenticate when wallet connects (if no cached token)
+  // Only trigger once per address change, after token restore check finished
+  useEffect(() => {
+    const normalizedAddress = address?.toLowerCase()
+
     if (
+      hasRestoredToken &&
       isConnected &&
-      address &&
+      normalizedAddress &&
       !token &&
       !isLoading &&
       !isAuthenticating.current &&
-      lastAuthedAddress.current !== address
+      lastAuthedAddress.current !== normalizedAddress
     ) {
       authenticate()
     }
-  }, [isConnected, address, token, isLoading, authenticate])
+  }, [isConnected, address, token, isLoading, authenticate, hasRestoredToken])
 
   // Clear token when wallet disconnects
   useEffect(() => {

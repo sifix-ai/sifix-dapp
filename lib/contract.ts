@@ -35,7 +35,7 @@ const zgChain = defineChain({
 
 // Contract address
 const CONTRACT_ADDRESS = (process.env.NEXT_PUBLIC_SIFIX_CONTRACT ||
-  "0x544a39149d5169E4e1bDf7F8492804224CB70152") as Address
+  "0xBBa8b030D80113e50271a2bbEeDBE109D9f1C42e") as Address
 
 // Contract ABI (simplified)
 const CONTRACT_ABI = [

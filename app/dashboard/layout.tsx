@@ -21,7 +21,8 @@ import {
   History,
   ExternalLink,
   Eye,
-  Tag
+  Tag,
+  Puzzle
 } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { cn } from "@/lib/utils"
@@ -85,6 +86,11 @@ const navigation = [
 ]
 
 const secondaryNavigation = [
+  {
+    name: "Extension Setup",
+    href: "/dashboard/extension",
+    icon: Puzzle,
+  },
   {
     name: "Settings",
     href: "/dashboard/settings",
