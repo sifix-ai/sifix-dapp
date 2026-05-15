@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { usePathname, useRouter } from "next/navigation"
+import { useState } from "react"
+import { usePathname } from "next/navigation"
 import Link from "next/link"
 import {
   Shield,
@@ -24,6 +24,7 @@ import {
   Tag,
   Store,
   Coins,
+  Puzzle,
 } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { cn } from "@/lib/utils"
@@ -111,17 +112,17 @@ const secondaryNavigation = [
   },
 ]
 
+const allNavigation = [...navigation, ...secondaryNavigation]
+
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   const pathname = usePathname()
-  const router = useRouter()
   const { address, isConnected } = useAccount()
   const { disconnect } = useDisconnect()
   const { formattedBalance } = useBalance()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const faucetUrl = address ? `https://faucet.0g.ai/?address=${address}` : 'https://faucet.0g.ai'
@@ -293,7 +294,7 @@ export default function DashboardLayout({
             {/* Page title */}
             <div className="flex-1 flex items-center justify-center sm:justify-start">
               <h1 className="text-lg font-semibold text-white">
-                {navigation.find((item) => item.href === pathname)?.name || "Dashboard"}
+                {allNavigation.find((item) => item.href === pathname)?.name || "Dashboard"}
               </h1>
             </div>
 

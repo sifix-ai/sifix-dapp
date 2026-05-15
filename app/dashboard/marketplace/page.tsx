@@ -134,7 +134,7 @@ export default function MarketplacePage() {
   }
 
   return (
-    <div className="space-y-8 max-w-5xl">
+    <div className="w-full max-w-6xl space-y-8">
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-2">

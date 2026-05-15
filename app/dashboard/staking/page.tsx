@@ -90,7 +90,7 @@ export default function StakingPage() {
 
   return (
     <>
-      <div className="space-y-8 max-w-5xl">
+      <div className="w-full max-w-6xl space-y-8">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
