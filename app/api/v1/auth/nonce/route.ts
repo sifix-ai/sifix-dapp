@@ -15,19 +15,30 @@ export async function GET(request: NextRequest) {
   }
 
   const nonce = randomUUID()
-  const timestamp = Date.now()
+  const issuedAt = new Date()
+  const expirationTime = new Date(issuedAt.getTime() + 5 * 60 * 1000)
+  const domain = request.nextUrl.hostname
+  const origin = request.nextUrl.origin
+  const chainId = request.nextUrl.searchParams.get("chainId") || "16601"
 
   const message = [
-    "SIFIX Extension Authentication",
+    `${domain} wants you to sign in with your Ethereum account:`,
+    walletAddress,
     "",
-    "Sign this message to verify your wallet ownership.",
-    "This does not cost any gas or tokens.",
+    "Authenticate SIFIX Extension to enable transaction protection.",
+    "No gas or token transfer will occur.",
     "",
-    `Wallet: ${walletAddress}`,
+    `URI: ${origin}`,
+    "Version: 1",
+    `Chain ID: ${chainId}`,
     `Nonce: ${nonce}`,
-    `Timestamp: ${timestamp}`,
-    `Expires: 5 minutes`,
+    `Issued At: ${issuedAt.toISOString()}`,
+    `Expiration Time: ${expirationTime.toISOString()}`,
+    "Resources:",
+    "- https://sifix.io/extension",
   ].join("\n")
+
+  const timestamp = issuedAt.getTime()
 
   // Store nonce via shared store (lowercase key for case-insensitive lookup)
   setNonce(walletAddress, nonce, timestamp)

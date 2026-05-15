@@ -154,23 +154,22 @@ export function useApiAuth(): UseApiAuthReturn {
     }
   }, [address, clearToken, hasRestoredToken, isConnected, token])
 
-  // Auto-authenticate when wallet connects (if no cached token)
-  // Only trigger once per address change, after token restore check finished
+  // Do not auto-sign on wallet connect / page reload.
+  // Authentication should happen only from explicit user action in the UI.
   useEffect(() => {
-    const normalizedAddress = address?.toLowerCase()
-
-    if (
-      hasRestoredToken &&
-      isConnected &&
-      normalizedAddress &&
-      !token &&
-      !isLoading &&
-      !isAuthenticating.current &&
-      lastAuthedAddress.current !== normalizedAddress
-    ) {
-      authenticate()
+    if (!hasRestoredToken || !isConnected || !address) {
+      return
     }
-  }, [isConnected, address, token, isLoading, authenticate, hasRestoredToken])
+
+    const normalizedAddress = address.toLowerCase()
+    const tokenWallet = typeof window !== 'undefined'
+      ? localStorage.getItem(TOKEN_WALLET_KEY)?.toLowerCase()
+      : null
+
+    if (token && tokenWallet === normalizedAddress) {
+      lastAuthedAddress.current = normalizedAddress
+    }
+  }, [address, hasRestoredToken, isConnected, token])
 
   // Clear token when wallet disconnects
   useEffect(() => {
