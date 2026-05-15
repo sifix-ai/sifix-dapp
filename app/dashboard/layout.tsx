@@ -22,7 +22,8 @@ import {
   ExternalLink,
   Eye,
   Tag,
-  Puzzle
+  Store,
+  Coins,
 } from "lucide-react"
 import { useAccount, useDisconnect } from "wagmi"
 import { cn } from "@/lib/utils"
@@ -81,6 +82,18 @@ const navigation = [
     name: "Agent ID",
     href: "/dashboard/agent",
     icon: Sparkles,
+    current: false,
+  },
+  {
+    name: "Marketplace",
+    href: "/dashboard/marketplace",
+    icon: Store,
+    current: false,
+  },
+  {
+    name: "Staking",
+    href: "/dashboard/staking",
+    icon: Coins,
     current: false,
   },
 ]

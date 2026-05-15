@@ -318,3 +318,18 @@ model watchlist {
   @@index([userAddress])
   @@index([watchedAddress])
 }
+
+model protocol_applications {
+  id            String   @id @default(cuid())
+  protocolName  String
+  website       String
+  contactEmail  String
+  useCase       String
+  requestedTier String
+  status        String   @default("PENDING")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+}

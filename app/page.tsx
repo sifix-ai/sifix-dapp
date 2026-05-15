@@ -9,6 +9,8 @@ import { SolutionSection } from '@/components/blocks/solution-section'
 import { PipelineSection } from '@/components/blocks/pipeline-flowchart'
 import { WhySifixSection } from '@/components/blocks/why-sifix'
 import { ExtensionSection } from '@/components/blocks/extension-section'
+import { B2BRevenueSection } from '@/components/blocks/b2b-revenue-section'
+import { Web3EconomySection } from '@/components/blocks/web3-economy-section'
 import { BackgroundPaths } from "@/components/ui/background-paths"
 
 // Dynamic import to avoid SSR hydration issues with motion hooks
@@ -43,6 +45,12 @@ export default function Home() {
 
       {/* Why Choose SIFIX Section */}
       <WhySifixSection />
+
+      {/* B2B Revenue: Marketplace + Protection-as-a-Service */}
+      <B2BRevenueSection />
+
+      {/* Web3 Economy: Staking + Bounty Infrastructure */}
+      <Web3EconomySection />
 
       {/* CTA Section with Background Paths */}
       <BackgroundPaths title="Ready to Secure Your Wallet?" />
