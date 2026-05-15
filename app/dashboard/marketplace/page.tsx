@@ -134,20 +134,23 @@ export default function MarketplacePage() {
   }
 
   return (
-    <div className="w-full max-w-6xl space-y-8">
+    <div className="w-full space-y-8">
       {/* Header */}
       <div>
         <div className="flex items-center gap-3 mb-2">
           <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-            <Store className="w-6 h-6 text-accent-green" />
+            <Store className="w-6 h-6 text-accent-blue" />
             Threat Intelligence Marketplace
           </h2>
-          <Badge className="bg-accent-green/15 text-accent-green border-accent-green/20 text-xs">
-            B2B
+          <Badge className="bg-accent-blue/10 text-accent-blue border-accent-blue/20 text-xs">
+            Dummy Preview
           </Badge>
         </div>
         <p className="text-white/60">
           Integrate SIFIX threat data into your protocol. Choose a tier and apply below.
+        </p>
+        <p className="mt-2 text-sm text-white/40">
+          Dummy page for now. Form flow and pricing are preview content.
         </p>
       </div>
 
@@ -160,27 +163,27 @@ export default function MarketplacePage() {
             className={`relative text-left rounded-2xl p-5 border transition-all duration-200 focus:outline-none ${
               selectedTier === tier.tierKey
                 ? tier.highlight
-                  ? "bg-accent-green/[0.08] border-accent-green/40 shadow-lg shadow-accent-green/10"
+                  ? "bg-accent-blue/[0.08] border-accent-blue/40 shadow-lg shadow-accent-blue/10"
                   : "bg-white/[0.07] border-white/30"
                 : tier.highlight
-                ? "bg-accent-green/[0.04] border-accent-green/15 hover:border-accent-green/30"
+                ? "bg-accent-blue/[0.04] border-accent-blue/15 hover:border-accent-blue/30"
                 : "bg-white/[0.03] border-white/[0.08] hover:border-white/20"
             }`}
           >
             {tier.highlight && (
-              <span className="absolute -top-2.5 right-4 px-2.5 py-0.5 bg-accent-green text-black text-xs font-bold rounded-full">
+              <span className="absolute -top-2.5 right-4 px-2.5 py-0.5 bg-accent-blue text-black text-xs font-bold rounded-full">
                 POPULAR
               </span>
             )}
             {selectedTier === tier.tierKey && (
               <div className="absolute top-3 right-3">
-                <CheckCircle2 className="w-4 h-4 text-accent-green" />
+                <CheckCircle2 className="w-4 h-4 text-accent-blue" />
               </div>
             )}
             <div className="mb-3">
               <p className="font-semibold text-white text-base">{tier.name}</p>
               <div className="flex items-baseline gap-1 mt-1">
-                <span className={`text-2xl font-bold ${tier.highlight ? "text-accent-green" : "text-white"}`}>
+                <span className={`text-2xl font-bold ${tier.highlight ? "text-accent-blue" : "text-white"}`}>
                   {tier.price}
                 </span>
                 {tier.period && (
@@ -193,7 +196,7 @@ export default function MarketplacePage() {
             <ul className="space-y-2">
               {tier.features.map((f) => (
                 <li key={f} className="flex items-center gap-2 text-xs text-white/70">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-accent-green flex-shrink-0" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-accent-blue flex-shrink-0" />
                   {f}
                 </li>
               ))}
@@ -229,8 +232,8 @@ export default function MarketplacePage() {
       <Card className="bg-white/[0.04] border-white/10 backdrop-blur-md p-6 lg:p-8">
         {submitted ? (
           <div className="flex flex-col items-center justify-center py-10 text-center gap-4">
-            <div className="w-16 h-16 bg-accent-green/15 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-8 h-8 text-accent-green" />
+            <div className="w-16 h-16 bg-accent-blue/15 rounded-full flex items-center justify-center">
+              <CheckCircle2 className="w-8 h-8 text-accent-blue" />
             </div>
             <div>
               <h3 className="text-xl font-semibold text-white mb-2">Application Received</h3>
@@ -242,21 +245,21 @@ export default function MarketplacePage() {
             <div className="px-4 py-2 bg-white/[0.05] border border-white/10 rounded-xl">
               <p className="text-xs text-white/40">
                 Selected tier:{" "}
-                <span className="text-accent-green font-medium">{selectedTier}</span>
+                <span className="text-accent-blue font-medium">{selectedTier}</span>
               </p>
             </div>
           </div>
         ) : (
           <>
             <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 bg-accent-green/10 rounded-xl flex items-center justify-center">
-                <Building2 className="w-5 h-5 text-accent-green" />
+              <div className="w-10 h-10 bg-accent-blue/10 rounded-xl flex items-center justify-center">
+                <Building2 className="w-5 h-5 text-accent-blue" />
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-white">Apply for Integration</h3>
                 <p className="text-sm text-white/50">
                   Tell us about your protocol. Applying for{" "}
-                  <span className="text-accent-green font-medium">{selectedTier}</span> tier
+                  <span className="text-accent-blue font-medium">{selectedTier}</span> tier
                 </p>
               </div>
             </div>
@@ -274,7 +277,7 @@ export default function MarketplacePage() {
                     placeholder="e.g. Uniswap, Aave"
                     value={form.protocolName}
                     onChange={(e) => setForm((f) => ({ ...f, protocolName: e.target.value }))}
-                    className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent-green/40 focus:bg-white/[0.08] transition-colors"
+                    className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent-blue/40 focus:bg-white/[0.08] transition-colors"
                   />
                 </div>
                 <div>
@@ -288,7 +291,7 @@ export default function MarketplacePage() {
                     placeholder="https://yourprotocol.com"
                     value={form.website}
                     onChange={(e) => setForm((f) => ({ ...f, website: e.target.value }))}
-                    className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent-green/40 focus:bg-white/[0.08] transition-colors"
+                    className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent-blue/40 focus:bg-white/[0.08] transition-colors"
                   />
                 </div>
               </div>
@@ -304,7 +307,7 @@ export default function MarketplacePage() {
                   placeholder="team@yourprotocol.com"
                   value={form.contactEmail}
                   onChange={(e) => setForm((f) => ({ ...f, contactEmail: e.target.value }))}
-                  className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent-green/40 focus:bg-white/[0.08] transition-colors"
+                  className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-accent-blue/40 focus:bg-white/[0.08] transition-colors"
                 />
               </div>
 
@@ -318,7 +321,7 @@ export default function MarketplacePage() {
                     required
                     value={form.useCase}
                     onChange={(e) => setForm((f) => ({ ...f, useCase: e.target.value }))}
-                    className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-accent-green/40 focus:bg-white/[0.08] transition-colors appearance-none"
+                    className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-accent-blue/40 focus:bg-white/[0.08] transition-colors appearance-none"
                   >
                     <option value="" disabled className="bg-[#0a0a0c] text-white/50">
                       Select use case…
@@ -339,7 +342,7 @@ export default function MarketplacePage() {
                     id="requestedTier"
                     value={selectedTier}
                     onChange={(e) => handleTierSelect(e.target.value as TierKey)}
-                    className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-accent-green/40 focus:bg-white/[0.08] transition-colors appearance-none"
+                    className="w-full px-3 py-2.5 bg-white/[0.06] border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-accent-blue/40 focus:bg-white/[0.08] transition-colors appearance-none"
                   >
                     <option value="BASIC" className="bg-[#0a0a0c] text-white">Basic — Free</option>
                     <option value="PRO" className="bg-[#0a0a0c] text-white">Pro — $499/mo</option>
@@ -361,7 +364,7 @@ export default function MarketplacePage() {
                 <Button
                   type="submit"
                   disabled={submitting}
-                  className="bg-accent-green text-black font-semibold hover:opacity-90 px-6 gap-2"
+                  className="bg-accent-blue text-black font-semibold hover:opacity-90 px-6 gap-2"
                 >
                   {submitting ? (
                     <>

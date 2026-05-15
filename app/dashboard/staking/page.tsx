@@ -90,29 +90,32 @@ export default function StakingPage() {
 
   return (
     <>
-      <div className="w-full max-w-6xl space-y-8">
+      <div className="w-full space-y-8">
         {/* Header */}
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                <Coins className="w-6 h-6 text-accent-yellow" />
+                <Coins className="w-6 h-6 text-accent-blue" />
                 Reputation Staking Economy
               </h2>
-              <Badge className="bg-accent-yellow/15 text-accent-yellow border-accent-yellow/20 text-xs">
-                Coming Soon
+              <Badge className="bg-accent-blue/10 text-accent-blue border-accent-blue/20 text-xs">
+                Dummy Preview
               </Badge>
             </div>
             <p className="text-white/60">
               Stake SIFIX tokens to unlock reporting rights and earn rewards for verified threat intelligence.
             </p>
+            <p className="mt-2 text-sm text-white/40">
+              Dummy page for now. Metrics and actions still placeholder.
+            </p>
           </div>
           <Button
             onClick={() => setStakeModalOpen(true)}
-            className="bg-accent-yellow/20 border border-accent-yellow/30 text-accent-yellow hover:bg-accent-yellow/30 gap-2 font-medium"
+            className="bg-accent-blue text-white hover:opacity-90 gap-2 font-medium"
           >
             <Zap className="w-4 h-4" />
-            Stake Tokens
+            View Dummy Flow
           </Button>
         </div>
 
