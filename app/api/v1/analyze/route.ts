@@ -25,6 +25,7 @@ function sanitizeThreats(input: unknown, maxItems = 5): string[] {
     .flatMap((item) => String(item ?? "").split(/\n|Known threats:/gi))
     .flatMap((item) => item.split(/,(?=\s*[A-Z])/g))
     .map((s) => s.replace(/\s+/g, ' ').trim())
+    .map((s) => s.replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, '').trim())
     .filter(Boolean)
     .filter((s) => s.length <= 180)
     .filter((s) => !/^known threats:?$/i.test(s))
@@ -33,8 +34,13 @@ function sanitizeThreats(input: unknown, maxItems = 5): string[] {
   const cleaned: string[] = []
 
   for (const token of tokens) {
-    const key = token.toLowerCase().trim()
-    if (seen.has(key)) continue
+    const key = token
+      .toLowerCase()
+      .replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+    if (!key || seen.has(key)) continue
     seen.add(key)
     cleaned.push(token)
     if (cleaned.length >= maxItems) break

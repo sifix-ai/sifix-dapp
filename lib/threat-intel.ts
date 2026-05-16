@@ -2,6 +2,37 @@ import { prisma } from '@/lib/prisma';
 import type { ThreatIntelProvider, AddressThreatIntel, ScanSummary } from '@sifix/agent';
 import type { Address } from 'viem';
 
+function sanitizeThreats(input: unknown, maxItems = 5): string[] {
+  const source = Array.isArray(input) ? input : [input];
+
+  const tokens = source
+    .flatMap((item) => String(item ?? '').split(/\n|Known threats:/gi))
+    .flatMap((item) => item.split(/,(?=\s*[A-Z])/g))
+    .map((s) => s.replace(/\s+/g, ' ').trim())
+    .map((s) => s.replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, '').trim())
+    .filter(Boolean)
+    .filter((s) => s.length <= 180)
+    .filter((s) => !/^known threats:?$/i.test(s));
+
+  const seen = new Set<string>();
+  const cleaned: string[] = [];
+
+  for (const token of tokens) {
+    const key = token
+      .toLowerCase()
+      .replace(/^[,;:\-\s]+|[,;:\-\s]+$/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    cleaned.push(token);
+    if (cleaned.length >= maxItems) break;
+  }
+
+  return cleaned;
+}
+
 /**
  * Prisma-based threat intelligence provider.
  * Implements @sifix/agent ThreatIntelProvider interface
@@ -38,12 +69,12 @@ export class PrismaThreatIntel implements ThreatIntelProvider {
     const maxRiskScore = Math.max(...riskScores);
 
     // Collect all unique threats
-    const allThreats = new Set<string>();
+    const allThreats: string[] = [];
     for (const scan of scans) {
       if (scan.threats) {
         try {
           const threats: string[] = JSON.parse(scan.threats);
-          threats.forEach((t) => allThreats.add(t));
+          allThreats.push(...sanitizeThreats(threats, 50));
         } catch {
           // Skip invalid JSON
         }
@@ -65,7 +96,7 @@ export class PrismaThreatIntel implements ThreatIntelProvider {
       riskScore: s.riskScore,
       riskLevel: s.riskLevel,
       recommendation: s.recommendation,
-      threats: s.threats ? JSON.parse(s.threats) : [],
+      threats: s.threats ? sanitizeThreats(JSON.parse(s.threats), 5) : [],
       timestamp: s.analyzedAt.toISOString(),
       rootHash: s.rootHash || undefined,
     }));
@@ -75,7 +106,7 @@ export class PrismaThreatIntel implements ThreatIntelProvider {
       totalScans: scans.length,
       avgRiskScore,
       maxRiskScore,
-      knownThreats: Array.from(allThreats),
+      knownThreats: sanitizeThreats(allThreats, 5),
       lastRecommendation: scans[0]?.recommendation || null,
       riskDistribution,
       recentScans,
