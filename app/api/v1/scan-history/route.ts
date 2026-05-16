@@ -21,13 +21,22 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
     return errors.invalidAddress()
   }
   
-  // Normalize address to lowercase for case-insensitive comparison
   const normalizedAddress = address.toLowerCase()
 
   const where = {
     OR: [
-      { fromAddress: normalizedAddress },
-      { toAddress: normalizedAddress },
+      {
+        fromAddress: {
+          equals: normalizedAddress,
+          mode: "insensitive" as const,
+        },
+      },
+      {
+        toAddress: {
+          equals: normalizedAddress,
+          mode: "insensitive" as const,
+        },
+      },
     ],
   }
 
