@@ -63,7 +63,7 @@
 
 **SIFIX** is an AI-powered wallet security platform that protects Web3 users from scams, phishing, and malicious smart contracts. The DApp serves as both a rich web dashboard and a comprehensive REST API backend, running on the **0G Galileo Testnet** (Chain ID: 16602).
 
-It leverages the `@sifix/agent` SDK for AI-driven security analysis and integrates with **0G Storage** for decentralized evidence archival and **0G Compute** for decentralized AI inference.
+It leverages the `@sifix/agent` SDK for AI-driven security analysis and integrates with **0G Chain**, **0G Compute**, **0G Storage**, and **0G Agentic ID** for transparent on-chain identity, verifiable evidence, and decentralized inference.
 
 ### Key Capabilities
 
