@@ -18,6 +18,31 @@ const threatIntel = new PrismaThreatIntel()
 let defaultAgent: SecurityAgent | null = null
 let computeAgent: SecurityAgent | null = null
 
+function sanitizeThreats(input: unknown, maxItems = 5): string[] {
+  const source = Array.isArray(input) ? input : [input]
+
+  const tokens = source
+    .flatMap((item) => String(item ?? "").split(/\n|Known threats:/gi))
+    .flatMap((item) => item.split(/,(?=\s*[A-Z])/g))
+    .map((s) => s.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .filter((s) => s.length <= 180)
+    .filter((s) => !/^known threats:?$/i.test(s))
+
+  const seen = new Set<string>()
+  const cleaned: string[] = []
+
+  for (const token of tokens) {
+    const key = token.toLowerCase().trim()
+    if (seen.has(key)) continue
+    seen.add(key)
+    cleaned.push(token)
+    if (cleaned.length >= maxItems) break
+  }
+
+  return cleaned
+}
+
 /**
  * Get or create the default agent (server AI config)
  */
@@ -280,7 +305,7 @@ export async function POST(request: NextRequest) {
       // Step 3: Enrich with GoPlus address intel (best-effort, non-blocking)
       const goplus = await enrichWithGoPlus(to as Address, 16602).catch(() => null)
       const goplusThreats = goplus?.flags || []
-      const mergedThreats = Array.from(new Set([...(result.analysis.threats || []), ...goplusThreats]))
+      const mergedThreats = sanitizeThreats([...(result.analysis.threats || []), ...goplusThreats], 5)
       const riskScore = Math.max(result.analysis.riskScore, goplus?.riskScore || 0)
 
       let riskLevel: string

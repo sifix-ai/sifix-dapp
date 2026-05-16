@@ -3,6 +3,31 @@ import { prisma } from "@/lib/prisma"
 import { apiSuccess, errors, withErrorHandler } from "@/lib/api-response"
 import { isValidEthereumAddress } from "@/lib/address-validation"
 
+function sanitizeThreats(input: unknown, maxItems = 5): string[] {
+  const source = Array.isArray(input) ? input : [input]
+
+  const tokens = source
+    .flatMap((item) => String(item ?? "").split(/\n|Known threats:/gi))
+    .flatMap((item) => item.split(/,(?=\s*[A-Z])/g))
+    .map((s) => s.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    .filter((s) => s.length <= 180)
+    .filter((s) => !/^known threats:?$/i.test(s))
+
+  const seen = new Set<string>()
+  const cleaned: string[] = []
+
+  for (const token of tokens) {
+    const key = token.toLowerCase().trim()
+    if (seen.has(key)) continue
+    seen.add(key)
+    cleaned.push(token)
+    if (cleaned.length >= maxItems) break
+  }
+
+  return cleaned
+}
+
 /**
  * GET /api/v1/scan-history?address=0x...&page=1&limit=20
  * Retrieve scan history for a given address (as fromAddress or toAddress)
@@ -68,7 +93,7 @@ export const GET = withErrorHandler(async (request: NextRequest) => {
         riskLevel: s.riskLevel,
         recommendation: s.recommendation,
         reasoning: s.reasoning,
-        threats: s.threats ? JSON.parse(s.threats) : [],
+        threats: s.threats ? sanitizeThreats(JSON.parse(s.threats), 5) : [],
         confidence: s.confidence,
         rootHash: s.rootHash,
         storageExplorer: s.storageExplorer,
