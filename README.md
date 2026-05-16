@@ -381,7 +381,7 @@ sifix-dapp/
 
 ```bash
 # Clone the repository
-git clone https://github.com/sifix/sifix-dapp.git
+git clone https://github.com/sifix-ai/sifix-dapp.git
 cd sifix-dapp
 
 # Install dependencies (includes prisma generate via postinstall)
