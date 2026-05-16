@@ -12,11 +12,11 @@ export class AddressService {
     let addr = await prisma.address.findUnique({
       where: { address: address.toLowerCase() },
       include: {
-        reports: {
+        threat_reports: {
           orderBy: { createdAt: 'desc' },
           take: 10,
         },
-        reputation: true,
+        reputation_scores: true,
       },
     });
 
@@ -28,7 +28,7 @@ export class AddressService {
         },
         include: {
           reports: true,
-          reputation: true,
+          reputation_scores: true,
         },
       });
     }
@@ -43,14 +43,14 @@ export class AddressService {
     return prisma.address.findUnique({
       where: { address: address.toLowerCase() },
       include: {
-        reports: {
+        threat_reports: {
           orderBy: { createdAt: 'desc' },
         },
         scans: {
           orderBy: { createdAt: 'desc' },
           take: 20,
         },
-        reputation: true,
+        reputation_scores: true,
       },
     });
   }
@@ -94,7 +94,7 @@ export class AddressService {
     return prisma.address.findMany({
       where: { riskLevel },
       include: {
-        reports: {
+        threat_reports: {
           where: { status: 'VERIFIED' },
           take: 1,
           orderBy: { createdAt: 'desc' },

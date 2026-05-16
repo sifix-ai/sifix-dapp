@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const data = applySchema.parse(body)
 
-    const application = await prisma.protocol_applications.create({
+    const application = await prisma.protocolApplication.create({
       data: {
         protocolName: data.protocolName,
         website: data.website,

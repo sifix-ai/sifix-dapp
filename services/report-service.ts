@@ -118,7 +118,7 @@ export class ReportService {
     if (filters?.riskLevel) where.riskLevel = filters.riskLevel;
     if (filters?.reporterAddress) where.reporterAddress = filters.reporterAddress.toLowerCase();
     if (filters?.address) {
-      where.address = {
+      where.addresses = {
         address: filters.address.toLowerCase(),
       };
     }
@@ -127,7 +127,7 @@ export class ReportService {
       prisma.threatReport.findMany({
         where,
         include: {
-          address: true,
+          addresses: true,
         },
         orderBy: {
           createdAt: 'desc',
@@ -162,7 +162,7 @@ export class ReportService {
     const addressRecord = await prisma.address.findUnique({
       where: { address },
       include: {
-        reports: {
+        threat_reports: {
           orderBy: {
             createdAt: 'desc',
           },
@@ -170,7 +170,7 @@ export class ReportService {
       },
     });
 
-    return addressRecord?.reports || [];
+    return addressRecord?.threat_reports || [];
   }
 
   /**

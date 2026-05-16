@@ -108,7 +108,7 @@ export class ScannerService {
     const addressRecord = await prisma.address.findUnique({
       where: { address },
       include: {
-        scans: {
+        transaction_scans: {
           orderBy: { createdAt: 'desc' },
           take: limit
         }

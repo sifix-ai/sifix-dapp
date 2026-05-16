@@ -91,7 +91,7 @@ export async function GET(request: NextRequest) {
     return apiSuccess({
       reports: reports.reports.map((r) => ({
         id: r.id,
-        address: r.address.address,
+        address: r.addresses.address,
         reporterAddress: r.reporterAddress,
         threatType: r.threatType,
         severity: r.severity,
@@ -202,7 +202,7 @@ export async function POST(request: NextRequest) {
         success: true,
         data: {
           id: report.id,
-          address: report.address.address,
+          address: report.addresses.address,
           reporterAddress: report.reporterAddress,
           threatType: report.threatType,
           severity: report.severity,

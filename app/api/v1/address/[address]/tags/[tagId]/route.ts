@@ -30,7 +30,7 @@ export async function DELETE(
     // Find the tag
     const tag = await prisma.addressTag.findUnique({
       where: { id: tagId },
-      include: { address: true },
+      include: { addresses: true },
     });
 
     if (!tag) {

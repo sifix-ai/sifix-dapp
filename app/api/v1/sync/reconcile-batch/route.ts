@@ -56,14 +56,14 @@ export async function POST(request: NextRequest) {
           continue
         }
 
-        let report: Awaited<ReturnType<typeof prisma.threatReport.findFirst<{ include: { address: true } }>>> | null = null
+        let report: Awaited<ReturnType<typeof prisma.threatReport.findFirst<{ include: { addresses: true } }>>> | null = null
 
         report = await prisma.threatReport.findFirst({
           where: {
             reportHash: evidenceHash?.toLowerCase?.() || evidenceHash,
             deadLetter: false,
           },
-          include: { address: true },
+          include: { addresses: true },
         })
 
         if (!report) {

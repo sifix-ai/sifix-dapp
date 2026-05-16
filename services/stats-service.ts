@@ -49,7 +49,7 @@ export class StatsService {
         orderBy: { reporterScore: 'desc' },
         take: 10,
         include: {
-          address: true,
+          addresses: true,
         },
       }),
     ]);
@@ -61,7 +61,7 @@ export class StatsService {
       criticalThreats,
       recentReports,
       topReporters: topReporters.map((r) => ({
-        address: r.address.address,
+        address: r.addresses.address,
         score: r.reporterScore,
         reportsSubmitted: r.reportsSubmitted,
         reportsVerified: r.reportsVerified,
@@ -92,7 +92,7 @@ export class StatsService {
 
     const reputation = await prisma.reputationScore.findFirst({
       where: {
-        address: {
+        addresses: {
           address: address.toLowerCase(),
         },
       },

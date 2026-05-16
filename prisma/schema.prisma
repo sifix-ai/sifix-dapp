@@ -8,24 +8,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model address_tags {
-  id        String    @id
+model AddressTag {
+  id        String    @id @default(cuid())
   addressId String
   tag       String
   taggedBy  String?
   upvotes   Int       @default(0)
   downvotes Int       @default(0)
   createdAt DateTime  @default(now())
-  addresses addresses @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  address    Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
 
   @@unique([addressId, tag])
   @@index([addressId])
   @@index([tag])
   @@index([taggedBy])
+  @@map("address_tags")
 }
 
-model addresses {
-  id                String              @id
+model Address {
+  id                String              @id @default(cuid())
   address           String              @unique
   chain             String              @default("0g-galileo")
   addressType       String              @default("EOA")
@@ -35,19 +36,21 @@ model addresses {
   firstSeenAt       DateTime            @default(now())
   lastSeenAt        DateTime            @default(now())
   createdAt         DateTime            @default(now())
-  updatedAt         DateTime
-  address_tags      address_tags[]
-  reputation_scores reputation_scores?
-  threat_reports    threat_reports[]
-  transaction_scans transaction_scans[]
+  updatedAt         DateTime @updatedAt
+  tags       AddressTag[]
+  reputation ReputationScore?
+  reports          ThreatReport[]
+  scans      TransactionScan[]
 
   @@index([chain])
   @@index([riskLevel])
   @@index([riskScore])
+
+  @@map("addresses")
 }
 
-model extension_sessions {
-  id            String   @id
+model ExtensionSession {
+  id            String   @id @default(cuid())
   walletAddress String
   token         String   @unique
   userAgent     String?
@@ -59,10 +62,12 @@ model extension_sessions {
   @@index([expiresAt])
   @@index([token])
   @@index([walletAddress])
+
+  @@map("extension_sessions")
 }
 
-model prediction_accuracy {
-  id                      String    @id
+model PredictionAccuracy {
+  id                      String    @id @default(cuid())
   targetAddress           String
   analysisType            String
   predictedRiskScore      Int
@@ -86,25 +91,29 @@ model prediction_accuracy {
   @@index([predictedRiskLevel])
   @@index([provider])
   @@index([targetAddress])
+
+  @@map("prediction_accuracy")
 }
 
-model report_votes {
-  id             String         @id
+model ReportVote {
+  id             String         @id @default(cuid())
   reportId       String
   voterAddress   String
   voteType       String
   weight         Int            @default(1)
   reason         String?
   createdAt      DateTime       @default(now())
-  threat_reports threat_reports @relation(fields: [reportId], references: [id], onDelete: Cascade)
+  report     ThreatReport @relation(fields: [reportId], references: [id], onDelete: Cascade)
 
   @@unique([reportId, voterAddress])
   @@index([reportId])
   @@index([voterAddress])
+
+  @@map("report_votes")
 }
 
-model reputation_scores {
-  id                String    @id
+model ReputationScore {
+  id                String    @id @default(cuid())
   addressId         String    @unique
   overallScore      Int       @default(0)
   reporterScore     Int       @default(0)
@@ -115,15 +124,17 @@ model reputation_scores {
   onchainReputation Int?
   lastSyncedAt      DateTime?
   createdAt         DateTime  @default(now())
-  updatedAt         DateTime
-  addresses         addresses @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  updatedAt         DateTime @updatedAt
+  address         Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
 
   @@index([overallScore])
   @@index([reporterScore])
+
+  @@map("reputation_scores")
 }
 
-model scam_domains {
-  id          String   @id
+model ScamDomain {
+  id          String   @id @default(cuid())
   domain      String   @unique
   riskScore   Int      @default(80)
   category    String   @default("PHISHING")
@@ -137,10 +148,12 @@ model scam_domains {
   @@index([category])
   @@index([domain])
   @@index([isActive])
+
+  @@map("scam_domains")
 }
 
-model scan_history {
-  id              String   @id
+model ScanHistory {
+  id              String   @id @default(cuid())
   fromAddress     String
   toAddress       String
   riskScore       Int
@@ -157,10 +170,12 @@ model scan_history {
   @@index([fromAddress])
   @@index([riskLevel])
   @@index([toAddress])
+
+  @@map("scan_history")
 }
 
-model search_history {
-  id          String   @id
+model SearchHistory {
+  id          String   @id @default(cuid())
   userAddress String?
   searchType  String
   query       String
@@ -171,10 +186,12 @@ model search_history {
 
   @@index([createdAt])
   @@index([userAddress])
+
+  @@map("search_history")
 }
 
-model sync_logs {
-  id             String    @id
+model SyncLog {
+  id             String    @id @default(cuid())
   source         String
   status         String
   recordsAdded   Int       @default(0)
@@ -185,10 +202,12 @@ model sync_logs {
 
   @@index([source])
   @@index([startedAt])
+
+  @@map("sync_logs")
 }
 
-model sync_state {
-  id           String   @id
+model SyncState {
+  id           String   @id @default(cuid())
   name         String   @unique
   lastBlock    Int      @default(0)
   chainId      Int
@@ -197,16 +216,18 @@ model sync_state {
   lastSyncAt   DateTime @default(now())
   errorMessage String?
   metadata     String?
-  updatedAt    DateTime
+  updatedAt    DateTime @updatedAt
   createdAt    DateTime @default(now())
 
   @@index([chainId])
   @@index([name])
   @@index([status])
+
+  @@map("sync_state")
 }
 
-model threat_reports {
-  id              String         @id
+model ThreatReport {
+  id              String         @id @default(cuid())
   addressId       String
   reporterAddress String
   threatType      String
@@ -234,9 +255,9 @@ model threat_reports {
   relayedAt       DateTime?
   deadLetter      Boolean        @default(false)
   createdAt       DateTime       @default(now())
-  updatedAt       DateTime
-  report_votes    report_votes[]
-  addresses       addresses      @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  updatedAt       DateTime @updatedAt
+  votes           ReportVote[]
+  address         Address      @relation(fields: [addressId], references: [id], onDelete: Cascade)
 
   @@index([addressId])
   @@index([addressId, status])
@@ -249,10 +270,12 @@ model threat_reports {
   @@index([riskLevel, status])
   @@index([status])
   @@index([threatType])
+
+  @@map("threat_reports")
 }
 
-model transaction_scans {
-  id                String    @id
+model TransactionScan {
+  id                String    @id @default(cuid())
   addressId         String
   from              String
   to                String
@@ -269,7 +292,7 @@ model transaction_scans {
   scanDuration      Int?
   agentVersion      String    @default("1.0.0")
   createdAt         DateTime  @default(now())
-  addresses         addresses @relation(fields: [addressId], references: [id], onDelete: Cascade)
+  address         Address @relation(fields: [addressId], references: [id], onDelete: Cascade)
 
   @@index([addressId])
   @@index([addressId, riskLevel])
@@ -277,10 +300,12 @@ model transaction_scans {
   @@index([from, createdAt])
   @@index([from])
   @@index([riskLevel])
+
+  @@map("transaction_scans")
 }
 
-model user_profiles {
-  id               String   @id
+model UserProfile {
+  id               String   @id @default(cuid())
   address          String   @unique
   scansPerformed   Int      @default(0)
   threatsDetected  Int      @default(0)
@@ -288,24 +313,28 @@ model user_profiles {
   autoReport       Boolean  @default(false)
   notifyOnThreat   Boolean  @default(true)
   createdAt        DateTime @default(now())
-  updatedAt        DateTime
+  updatedAt        DateTime @updatedAt
+
+  @@map("user_profiles")
 }
 
-model user_settings {
-  id         String   @id
+model UserSettings {
+  id         String   @id @default(cuid())
   address    String   @unique
   aiProvider String   @default("default")
   aiApiKey   String?
   aiBaseUrl  String?
   aiModel    String?
   createdAt  DateTime @default(now())
-  updatedAt  DateTime
+  updatedAt  DateTime @updatedAt
 
   @@index([address])
+
+  @@map("user_settings")
 }
 
-model watchlist {
-  id             String   @id
+model Watchlist {
+  id             String   @id @default(cuid())
   userAddress    String
   watchedAddress String
   label          String?
@@ -313,14 +342,16 @@ model watchlist {
   prevScore      Int      @default(0)
   alertOnChange  Boolean  @default(true)
   createdAt      DateTime @default(now())
-  updatedAt      DateTime
+  updatedAt      DateTime @updatedAt
 
   @@unique([userAddress, watchedAddress])
   @@index([userAddress])
   @@index([watchedAddress])
+
+  @@map("watchlist")
 }
 
-model protocol_applications {
+model ProtocolApplication {
   id            String   @id @default(cuid())
   protocolName  String
   website       String
@@ -333,4 +364,7 @@ model protocol_applications {
 
   @@index([status])
   @@index([createdAt])
+
+  @@map("protocol_applications")
 }
+
