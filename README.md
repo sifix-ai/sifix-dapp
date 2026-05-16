@@ -138,7 +138,7 @@ graph TB
 
     subgraph API["NEXT.JS APP ROUTER"]
         ROUTES[API Routes<br/>35 Endpoints]
-        ROUTES --> PRISMA[Prisma ORM<br/>SQLite · 13 Models]
+        ROUTES --> PRISMA[Prisma ORM<br/>PostgreSQL · 13 Models]
         ROUTES --> AGENT["@sifix/agent SDK<br/>SecurityAgent · AI · Simulation"]
     end
 
@@ -187,7 +187,7 @@ graph TB
 │         │                      │                                 │
 │  ┌──────▼──────┐  ┌───────────▼───────────┐                    │
 │  │   Prisma    │  │    @sifix/agent SDK    │                    │
-│  │  (SQLite)   │  │  SecurityAgent · AI    │                    │
+│  │(PostgreSQL) │  │  SecurityAgent · AI    │                    │
 │  │  13 models  │  │  Pattern Detection     │                    │
 │  └──────┬──────┘  └───────────┬───────────┘                    │
 └─────────┼─────────────────────┼────────────────────────────────┘
@@ -212,7 +212,7 @@ graph TB
 | **UI** | React | 19.2.4 |
 | **Language** | TypeScript | 5.x |
 | **Styling** | TailwindCSS | 4.x |
-| **Database** | SQLite via Prisma | 5.22.0 |
+| **Database** | PostgreSQL via Prisma | 5.22.0 |
 | **Wallet** | Wagmi | 3.6.9 |
 | **Blockchain** | Viem | 2.48.8 |
 | **AI SDK** | @sifix/agent | local |
@@ -404,7 +404,7 @@ See the [Environment Variables](#environment-variables-1) section below for the 
 # Generate Prisma client
 npm run db:generate
 
-# Push schema to SQLite (development)
+# Push schema to PostgreSQL (development)
 npm run db:push
 
 # Or run migrations
@@ -632,7 +632,7 @@ All icons use **Lucide React** (`lucide-react` v1.14.0) for a consistent, lightw
 
 | Variable | Description | Example |
 |---|---|---|
-| `DATABASE_URL` | SQLite database path | `file:./dev.db` |
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://user:password@127.0.0.1:5432/sifix` |
 | `NEXT_PUBLIC_ZG_RPC_URL` | 0G Galileo RPC endpoint | `https://evmrpc-testnet.0g.ai` |
 | `NEXT_PUBLIC_ZG_CHAIN_ID` | Chain ID for 0G Galileo | `16602` |
 | `AI_API_KEY` | API key for AI provider | `sk-...` |
@@ -683,7 +683,7 @@ All icons use **Lucide React** (`lucide-react` v1.14.0) for a consistent, lightw
 
 ## Prisma Models
 
-The database uses **SQLite** with **13 models** organized into three domains:
+The database uses **PostgreSQL** with **13 models** organized into three domains:
 
 ### Core Models
 
