@@ -87,7 +87,7 @@ export class AccuracyService {
         goPlusRiskScore: input.goPlusRiskScore ?? null,
         communityRiskLevel: input.communityRiskLevel ?? null,
         resolvedAt: input.resolvedAt ?? null,
-        // updatedAt is auto-managed by @updatedAt directive
+        updatedAt: new Date(),
       },
     })
     return record.id
