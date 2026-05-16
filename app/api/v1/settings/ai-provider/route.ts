@@ -57,11 +57,11 @@ export async function GET(request: NextRequest) {
 
     const addr = address.toLowerCase()
 
-    let settings = await prisma.userSettings.findUnique({ where: { address: addr } })
+    let settings = await prisma.user_settings.findUnique({ where: { address: addr } })
 
     if (!settings) {
-      settings = await prisma.userSettings.create({
-        data: { address: addr, aiProvider: "default", aiModel: DEFAULT_LOCKED_MODEL },
+      settings = await prisma.user_settings.create({
+        data: { address: addr, aiProvider: "default", aiModel: DEFAULT_LOCKED_MODEL, },
       })
     }
 
@@ -98,7 +98,7 @@ export async function PUT(request: NextRequest) {
 
     // "default" / "0g-compute" → locked profile
     if (provider === "default" || provider === "0g-compute") {
-      const settings = await prisma.userSettings.upsert({
+      const settings = await prisma.user_settings.upsert({
         where: { address: addr },
         update: {
           aiProvider: "default",
@@ -124,7 +124,7 @@ export async function PUT(request: NextRequest) {
     if (aiBaseUrl !== undefined) updateData.aiBaseUrl = aiBaseUrl || null
     if (aiModel !== undefined) updateData.aiModel = aiModel || null
 
-    const settings = await prisma.userSettings.upsert({
+    const settings = await prisma.user_settings.upsert({
       where: { address: addr },
       update: updateData,
       create: {
@@ -165,7 +165,7 @@ export async function DELETE(request: NextRequest) {
 
     const addr = address.toLowerCase()
 
-    const settings = await prisma.userSettings.upsert({
+    const settings = await prisma.user_settings.upsert({
       where: { address: addr },
       update: {
         aiProvider: "default",

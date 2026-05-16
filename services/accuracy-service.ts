@@ -71,7 +71,7 @@ export class AccuracyService {
    * Returns the created record ID.
    */
   static async recordPrediction(input: PredictionRecord): Promise<string> {
-    const record = await prisma.predictionAccuracy.create({
+    const record = await prisma.prediction_accuracy.create({
       data: {
         targetAddress: input.targetAddress.toLowerCase(),
         analysisType: input.analysisType,
@@ -87,6 +87,7 @@ export class AccuracyService {
         goPlusRiskScore: input.goPlusRiskScore ?? null,
         communityRiskLevel: input.communityRiskLevel ?? null,
         resolvedAt: input.resolvedAt ?? null,
+        // updatedAt is auto-managed by @updatedAt directive
       },
     })
     return record.id
@@ -105,7 +106,7 @@ export class AccuracyService {
       communityRiskLevel?: string
     },
   ): Promise<void> {
-    await prisma.predictionAccuracy.update({
+    await prisma.prediction_accuracy.update({
       where: { id },
       data: {
         actualOutcome: actual.outcome,
@@ -127,7 +128,7 @@ export class AccuracyService {
     goPlusRiskScore: number,
   ): Promise<number> {
     // Find unresolved predictions for this address
-    const unresolved = await prisma.predictionAccuracy.findMany({
+    const unresolved = await prisma.prediction_accuracy.findMany({
       where: {
         targetAddress: targetAddress.toLowerCase(),
         isCorrect: null,
@@ -144,7 +145,7 @@ export class AccuracyService {
 
       const isCorrect = (predHigh && gpHigh) || (predLow && gpLow)
 
-      await prisma.predictionAccuracy.update({
+      await prisma.prediction_accuracy.update({
         where: { id: pred.id },
         data: {
           actualOutcome: `goplus:${goPlusRiskLevel}`,
@@ -168,7 +169,7 @@ export class AccuracyService {
     communityConsensus: 'malicious' | 'benign' | 'unclear',
     communityRiskLevel: string,
   ): Promise<number> {
-    const unresolved = await prisma.predictionAccuracy.findMany({
+    const unresolved = await prisma.prediction_accuracy.findMany({
       where: {
         targetAddress: targetAddress.toLowerCase(),
         isCorrect: null,
@@ -184,7 +185,7 @@ export class AccuracyService {
 
       const isCorrect = communityConsensus === 'unclear' ? null : (predHigh && commHigh) || (predLow && commLow)
 
-      await prisma.predictionAccuracy.update({
+      await prisma.prediction_accuracy.update({
         where: { id: pred.id },
         data: {
           actualOutcome: `community:${communityConsensus}`,
@@ -206,7 +207,7 @@ export class AccuracyService {
     const where: any = {}
     if (since) where.createdAt = { gte: since }
 
-    const all = await prisma.predictionAccuracy.findMany({ where })
+    const all = await prisma.prediction_accuracy.findMany({ where })
 
     const resolved = all.filter((p) => p.isCorrect !== null)
     const correct = resolved.filter((p) => p.isCorrect === true)

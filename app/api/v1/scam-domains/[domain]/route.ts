@@ -17,7 +17,7 @@ export async function GET(
 
     const normalizedDomain = decodeURIComponent(domain).trim().toLowerCase();
 
-    const scamDomain = await prisma.scamDomain.findUnique({
+    const scamDomain = await prisma.scam_domains.findUnique({
       where: { domain: normalizedDomain },
     });
 

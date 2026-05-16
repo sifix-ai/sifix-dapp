@@ -114,7 +114,7 @@ export class OnchainRelayerService {
     const { prisma } = await import('@/lib/prisma')
 
     // Get current report state
-    const report = await prisma.threatReport.findUnique({
+    const report = await prisma.threat_reports.findUnique({
       where: { id: reportId },
     })
 
@@ -134,7 +134,7 @@ export class OnchainRelayerService {
       const result = await this.submitReportVote(targetAddress, reportHash, isScam)
 
       // Update report on success
-      await prisma.threatReport.update({
+      await prisma.threat_reports.update({
         where: { id: reportId },
         data: {
           onchainStatus: 'SUBMITTED',
@@ -154,7 +154,7 @@ export class OnchainRelayerService {
       // Check if max attempts reached
       if (attempt >= RELAY_RETRY_POLICY.MAX_ATTEMPTS) {
         // Mark as dead letter
-        await prisma.threatReport.update({
+        await prisma.threat_reports.update({
           where: { id: reportId },
           data: {
             localStatus: 'RELAY_FAILED',
@@ -172,7 +172,7 @@ export class OnchainRelayerService {
         const backoffMs = RELAY_RETRY_POLICY.BACKOFF_MS[attempt - 1] || RELAY_RETRY_POLICY.BACKOFF_MS.at(-1)!
         const nextRelayAt = new Date(Date.now() + backoffMs)
 
-        await prisma.threatReport.update({
+        await prisma.threat_reports.update({
           where: { id: reportId },
           data: {
             localStatus: 'QUEUED',

@@ -72,10 +72,17 @@ async function selectAgent(walletAddress?: string): Promise<{ agent: SecurityAge
   let agent: SecurityAgent
   let provider: string = "default"
 
+  // Check if prisma is initialized
+  if (!prisma) {
+    console.error('[API] Prisma client is undefined - DATABASE_URL not set!')
+    throw new Error('Database connection not available. Please set DATABASE_URL environment variable.')
+  }
+
   if (walletAddress) {
-    const userSettings = await prisma.userSettings.findUnique({
-      where: { address: walletAddress.toLowerCase() },
-    })
+    try {
+      const userSettings = await prisma.user_settings.findUnique({
+        where: { address: walletAddress.toLowerCase() },
+      })
 
     if (userSettings && userSettings.aiProvider !== "default") {
       provider = userSettings.aiProvider
@@ -84,7 +91,7 @@ async function selectAgent(walletAddress?: string): Promise<{ agent: SecurityAge
         agent = await getComputeAgent()
       } else if (userSettings.aiProvider === "ollama") {
         agent = new SecurityAgent({
-          rpcUrl: process.env.NEXT_PUBLIC_ZG_RPC_URL || "https://evmrpc-testnet.0g.ai",
+        rpcUrl: process.env.NEXT_PUBLIC_ZG_RPC_URL || "https://evmrpc-testnet.0g.ai",
           aiProvider: {
             apiKey: "ollama",
             baseURL: userSettings.aiBaseUrl || "http://localhost:11434/v1",
@@ -121,6 +128,16 @@ async function selectAgent(walletAddress?: string): Promise<{ agent: SecurityAge
         agent = getDefaultAgent()
       }
     }
+    } catch (error) {
+      console.error('[API] Error fetching user settings:', error)
+      // Fallback to default agent if user settings fetch fails
+      if (process.env.COMPUTE_PROVIDER_ADDRESS) {
+        agent = await getComputeAgent()
+        provider = "0g-compute"
+      } else {
+        agent = getDefaultAgent()
+      }
+    }
   } else {
     if (process.env.COMPUTE_PROVIDER_ADDRESS) {
       agent = await getComputeAgent()
@@ -131,6 +148,22 @@ async function selectAgent(walletAddress?: string): Promise<{ agent: SecurityAge
   }
 
   return { agent, provider }
+}
+
+/**
+ * OPTIONS /api/v1/analyze
+ * Handle CORS preflight requests
+ */
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400',
+    },
+  })
 }
 
 /**
