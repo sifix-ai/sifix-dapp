@@ -118,7 +118,7 @@ export class ReportService {
     if (filters?.riskLevel) where.riskLevel = filters.riskLevel;
     if (filters?.reporterAddress) where.reporterAddress = filters.reporterAddress.toLowerCase();
     if (filters?.address) {
-      where.addresses = {
+      where.address = {
         address: filters.address.toLowerCase(),
       };
     }
@@ -127,7 +127,7 @@ export class ReportService {
       prisma.threatReport.findMany({
         where,
         include: {
-          addresses: true,
+          address: true,
         },
         orderBy: {
           createdAt: 'desc',

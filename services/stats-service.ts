@@ -49,7 +49,7 @@ export class StatsService {
         orderBy: { reporterScore: 'desc' },
         take: 10,
         include: {
-          addresses: true,
+          address: true,
         },
       }),
     ]);
@@ -61,7 +61,7 @@ export class StatsService {
       criticalThreats,
       recentReports,
       topReporters: topReporters.map((r) => ({
-        address: r.addresses.address,
+        address: r.address.address,
         score: r.reporterScore,
         reportsSubmitted: r.reportsSubmitted,
         reportsVerified: r.reportsVerified,

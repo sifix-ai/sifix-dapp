@@ -11,7 +11,7 @@ const MIN_REPUTATION = Number(process.env.VOTE_REPUTATION_MIN || 50)
 async function recomputeStatus(reportId: string) {
   const [votes, report] = await Promise.all([
     prisma.reportVote.findMany({ where: { reportId } }),
-    prisma.threatReport.findUnique({ where: { id: reportId }, include: { addresses: true } }),
+    prisma.threatReport.findUnique({ where: { id: reportId }, include: { address: true } }),
   ])
 
   const unique = new Set(votes.map(v => v.voterAddress)).size
@@ -32,11 +32,11 @@ async function recomputeStatus(reportId: string) {
 
   if (report?.address?.address) {
     if (status === 'VERIFIED') {
-      await AccuracyService.resolveWithCommunity(report.addresses.address, 'malicious', 'HIGH')
+      await AccuracyService.resolveWithCommunity(report.address.address, 'malicious', 'HIGH')
     } else if (status === 'REJECTED') {
-      await AccuracyService.resolveWithCommunity(report.addresses.address, 'benign', 'SAFE')
+      await AccuracyService.resolveWithCommunity(report.address.address, 'benign', 'SAFE')
     } else if (unique >= MIN_UNIQUE) {
-      await AccuracyService.resolveWithCommunity(report.addresses.address, 'unclear', 'MEDIUM')
+      await AccuracyService.resolveWithCommunity(report.address.address, 'unclear', 'MEDIUM')
     }
   }
 
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
   if (!['FOR', 'AGAINST'].includes(voteType)) return NextResponse.json({ error: 'voteType must be FOR or AGAINST' }, { status: 400 })
 
-  const rep = await prisma.reputationScore.findFirst({ where: { address: { address: voter } }, include: { addresses: true } }).catch(() => null)
+  const rep = await prisma.reputationScore.findFirst({ where: { address: { address: voter } }, include: { address: true } }).catch(() => null)
   const score = rep?.overallScore ?? 0
   if (score < MIN_REPUTATION) return NextResponse.json({ error: `Minimum reputation ${MIN_REPUTATION} required` }, { status: 403 })
 
