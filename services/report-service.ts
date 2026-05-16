@@ -31,18 +31,22 @@ export class ReportService {
    */
   static async create(input: CreateReportInput) {
     // Get or create address
-    let addressRecord = await prisma.addresses.findUnique({
-      where: { address: input.address }
+    let addressRecord = await prisma.address.findUnique({
+      where: { address: input.address.toLowerCase() }
     });
 
     if (!addressRecord) {
-      addressRecord = await prisma.addresses.create({
-        data: { address: input.address }
+      addressRecord = await prisma.address.create({
+        data: {
+          address: input.address.toLowerCase(),
+          riskScore: 0,
+          riskLevel: 'LOW',
+        }
       });
     }
 
     // Duplicate guard: 1 report per reporter per address
-    const existing = await prisma.threat_reports.findFirst({
+    const existing = await prisma.threatReport.findFirst({
       where: {
         addressId: addressRecord.id,
         reporterAddress: input.reporterAddress.toLowerCase(),
@@ -59,7 +63,7 @@ export class ReportService {
     else if (input.severity >= 40) riskLevel = 'MEDIUM';
 
     // Create report
-    const report = await prisma.threat_reports.create({
+    const report = await prisma.threatReport.create({
       data: {
         addressId: addressRecord.id,
         reporterAddress: input.reporterAddress.toLowerCase(),
@@ -77,7 +81,7 @@ export class ReportService {
         onchainStatus: 'NONE',
       },
       include: {
-        addresses: true,
+        address: true,
       },
     });
 
@@ -91,10 +95,10 @@ export class ReportService {
    * Get report by ID
    */
   static async getById(id: string) {
-    return prisma.threat_reports.findUnique({
+    return prisma.threatReport.findUnique({
       where: { id },
       include: {
-        addresses: true,
+        address: true,
       },
     });
   }
@@ -119,15 +123,17 @@ export class ReportService {
     if (filters?.reporterAddress) where.reporterAddress = filters.reporterAddress.toLowerCase();
     if (filters?.address) {
       where.address = {
-        address: filters.address.toLowerCase(),
+        is: {
+          address: filters.address.toLowerCase(),
+        },
       };
     }
 
     const [reports, total] = await Promise.all([
-      prisma.threat_reports.findMany({
+      prisma.threatReport.findMany({
         where,
         include: {
-          addresses: true,
+          address: true,
         },
         orderBy: {
           createdAt: 'desc',
@@ -135,7 +141,7 @@ export class ReportService {
         take: filters?.limit || 50,
         skip: filters?.offset || 0,
       }),
-      prisma.threat_reports.count({ where }),
+      prisma.threatReport.count({ where }),
     ]);
 
     return { reports, total };
@@ -145,7 +151,7 @@ export class ReportService {
    * Update report status
    */
   static async updateStatus(id: string, status: string, verifiedBy?: string) {
-    return prisma.threat_reports.update({
+    return prisma.threatReport.update({
       where: { id },
       data: {
         status,
@@ -159,10 +165,10 @@ export class ReportService {
    * Get reports for address
    */
   static async getByAddress(address: string) {
-    const addressRecord = await prisma.addresses.findUnique({
+    const addressRecord = await prisma.address.findUnique({
       where: { address },
       include: {
-        threat_reports: {
+        reports: {
           orderBy: {
             createdAt: 'desc',
           },
@@ -170,14 +176,14 @@ export class ReportService {
       },
     });
 
-    return addressRecord?.threat_reports || [];
+    return addressRecord?.reports || [];
   }
 
   /**
    * Update address risk score based on reports
    */
   private static async updateAddressRiskScore(addressId: string) {
-    const reports = await prisma.threat_reports.findMany({
+    const reports = await prisma.threatReport.findMany({
       where: { addressId },
     });
 
@@ -193,7 +199,7 @@ export class ReportService {
     else if (avgSeverity >= 40) riskLevel = 'MEDIUM';
 
     // Update address
-    await prisma.addresses.update({
+    await prisma.address.update({
       where: { id: addressId },
       data: {
         riskScore: Math.round(avgSeverity),

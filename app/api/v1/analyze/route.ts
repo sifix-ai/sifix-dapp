@@ -80,7 +80,7 @@ async function selectAgent(walletAddress?: string): Promise<{ agent: SecurityAge
 
   if (walletAddress) {
     try {
-      const userSettings = await prisma.user_settings.findUnique({
+      const userSettings = await prisma.userSettings.findUnique({
         where: { address: walletAddress.toLowerCase() },
       })
 

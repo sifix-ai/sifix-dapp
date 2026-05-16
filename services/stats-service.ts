@@ -16,16 +16,16 @@ export class StatsService {
       topReporters,
     ] = await Promise.all([
       // Total addresses tracked
-      prisma.addresses.count(),
+      prisma.address.count(),
 
       // Total threat reports
-      prisma.threat_reports.count(),
+      prisma.threatReport.count(),
 
       // Total transaction scans
-      prisma.transaction_scans.count(),
+      prisma.transactionScan.count(),
 
       // Critical threats (last 7 days)
-      prisma.threat_reports.count({
+      prisma.threatReport.count({
         where: {
           riskLevel: 'CRITICAL',
           status: 'VERIFIED',
@@ -36,7 +36,7 @@ export class StatsService {
       }),
 
       // Recent reports (last 24h)
-      prisma.threat_reports.count({
+      prisma.threatReport.count({
         where: {
           createdAt: {
             gte: new Date(Date.now() - 24 * 60 * 60 * 1000),
@@ -45,11 +45,11 @@ export class StatsService {
       }),
 
       // Top reporters
-      prisma.reputation_scores.findMany({
+      prisma.reputationScore.findMany({
         orderBy: { reporterScore: 'desc' },
         take: 10,
         include: {
-          addresses: true,
+          address: true,
         },
       }),
     ]);
@@ -61,7 +61,7 @@ export class StatsService {
       criticalThreats,
       recentReports,
       topReporters: topReporters.map((r) => ({
-        address: r.addresses.address,
+        address: r.address.address,
         score: r.reporterScore,
         reportsSubmitted: r.reportsSubmitted,
         reportsVerified: r.reportsVerified,
@@ -73,11 +73,11 @@ export class StatsService {
    * Get leaderboard
    */
   static async getLeaderboard(limit: number = 50) {
-    return prisma.reputation_scores.findMany({
+    return prisma.reputationScore.findMany({
       orderBy: { overallScore: 'desc' },
       take: limit,
       include: {
-        addresses: true,
+        address: true,
       },
     });
   }
@@ -86,14 +86,16 @@ export class StatsService {
    * Get user stats
    */
   static async getUserStats(address: string) {
-    const profile = await prisma.user_profiles.findUnique({
+    const profile = await prisma.userProfile.findUnique({
       where: { address: address.toLowerCase() },
     });
 
-    const reputation = await prisma.reputation_scores.findFirst({
+    const reputation = await prisma.reputationScore.findFirst({
       where: {
-        addresses: {
-          address: address.toLowerCase(),
+        address: {
+          is: {
+            address: address.toLowerCase(),
+          },
         },
       },
     });
